@@ -17,7 +17,7 @@ package tojs
 
 import (
 	"bufio"
-	_"fmt"
+	_ "fmt"
 	"go/parser"
 	"go/scanner"
 	"go/token"
@@ -25,7 +25,7 @@ import (
 	"os"
 )
 
-// Checks that Go sintaxis is correct.
+// Checks that the Go sintaxis is correct.
 func checkSintaxis(filename string) error {
 	_, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
 	if err != nil {
@@ -45,13 +45,10 @@ func Compile(filename string) error {
 
 	bufConst := bufio.NewWriter(os.Stdout)
 	//bufVar := bufio.NewWriter(os.Stdout)
-	
-
 
 	fset := token.NewFileSet()
 	fileSet := fset.AddFile(filename, fset.Base(), len(file)) // register file
-	s.Init(fileSet, file, nil, 0)
-
+	s.Init(fileSet, file, nil, scanner.InsertSemis)
 
 	//_, tok, lit := s.Scan()
 	for {
@@ -80,47 +77,45 @@ func Compile(filename string) error {
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
 func _const(buf *bufio.Writer, s scanner.Scanner) {
-	buf.WriteString("const ")
+	isNew := true // to know when write the keyword "const"
 
 	for {
 		_, tok, lit := s.Scan()
-		if tok.IsKeyword() {
-			buf.WriteString(";\n")
+		if tok.IsKeyword() || tok == token.RPAREN {
 			break
 		}
 
+		// There are multiple statements
 		if tok == token.LPAREN { // (
-			_constMultiple(buf, s)
-			return
-		}
-
-		if tok.IsLiteral() {
-			if isType(lit) {
-				continue
-			}
-			buf.WriteString(lit)
-			println("LIT", lit)
 			continue
 		}
 
-		// IsOperator
+		if tok.IsLiteral() {
+			if isType(tok, lit) {
+				continue
+			}
+
+			if isNew && tok == token.IDENT {
+				buf.WriteString("const ")
+				isNew = false
+			}
+
+			buf.WriteString(lit)
+			continue
+		}
+
+		// === IsOperator
 		switch tok {
 		case token.COMMA:
-			buf.WriteString(lit+" ")
+			buf.WriteString(lit + " ")
 		case token.ASSIGN:
-			buf.WriteString(" "+lit+" ")
-		//case token.
-		/*case token.LPAREN:
-			isMultiple = true*/
+			buf.WriteString(" " + lit + " ")
+		case token.SEMICOLON: // End of statement
+			buf.WriteString(";\n")
+			isNew = true
 		default:
-			//panic("[_const] IsOperator: " + lit)
 			buf.WriteString(lit)
 		}
 
 	}
 }
-
-func _constMultiple(buf *bufio.Writer, s scanner.Scanner) {
-	return
-}
-

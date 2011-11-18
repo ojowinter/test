@@ -15,6 +15,8 @@
 
 package tojs
 
+import "go/token"
+
 var types = []string{
 	"bool", "string",
 
@@ -27,9 +29,13 @@ var types = []string{
 }
 
 // Checks if a literal is a type.
-func isType(name string) bool {
+func isType(tok token.Token, lit string) bool {
+	if tok != token.IDENT {
+		return false
+	}
+
 	for _, v := range types {
-		if v == name {
+		if v == lit {
 			return true
 		}
 	}

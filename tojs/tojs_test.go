@@ -36,5 +36,5 @@ func TestConst(t *testing.T) {
 // * * *
 
 func file(name string) string {
-	return "../test/"+name
+	return "../test/" + name
 }
