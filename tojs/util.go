@@ -13,13 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package tojs
 
-import (
+var types = []string{
+	"bool", "string",
 
-	"github.com/kless/GotoJS/tojs"
-)
+	// Numeric types
+	"uint8", "uint16", "uint32", "uint64",
+	"int8", "int16", "int32", "int64",
+	"float32", "float64",
+	"complex64", "complex128",
+	"byte", "rune", "uint", "int", "uintptr",
+}
 
-func main() {
-
+// Checks if a literal is a type.
+func isType(name string) bool {
+	for _, v := range types {
+		if v == name {
+			return true
+		}
+	}
+	return false
 }

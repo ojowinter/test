@@ -13,13 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package tojs
 
-import (
+import "testing"
 
-	"github.com/kless/GotoJS/tojs"
-)
+var files = []string{"const.go"}
 
-func main() {
+func TestSintaxis(t *testing.T) {
+	for _, v := range files {
+		if err := checkSintaxis(file(v)); err != nil {
+			t.Fatalf("expected correct sintaxis, got\n%s", err)
+		}
+	}
+}
 
+func TestConst(t *testing.T) {
+	if err := Compile(file("const.go")); err != nil {
+		t.Fatalf("expected scanning file, got\n%s", err)
+	}
+}
+
+// * * *
+
+func file(name string) string {
+	return "../test/"+name
 }
