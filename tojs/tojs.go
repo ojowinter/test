@@ -16,18 +16,17 @@
 package tojs
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
-	"go/scanner"
 	"go/token"
 )
 
 // Compiles a Go source file into JavaScript.
 func Compile(filename string) error {
-	//bufConst := bufio.NewWriter(os.Stdout)
-	//bufVar := bufio.NewWriter(os.Stdout)
+	bufConst := new(bytes.Buffer)
+	//bufVar := new(bytes.Buffer)
 
 	// If Go sintaxis is incorrect then there will be an error.
 	node, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0) //parser.ParseComments)
@@ -44,12 +43,12 @@ func Compile(filename string) error {
 
 			// Constants
 			if genDecl.Tok == token.CONST {
-				getConst(genDecl.Specs)
+				getConst(bufConst, genDecl.Specs)
 			}
 		}
 	}
 
-	//bufConst.Flush()
+	fmt.Print(bufConst.String())
 	return nil
 }
 
@@ -57,53 +56,68 @@ func Compile(filename string) error {
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
-func getConst(spec []ast.Spec) {
-	// Each "ValueSpec" can have several identifiers with its values
+func getConst(buf *bytes.Buffer, spec []ast.Spec) {
+	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
+	//   Names   []*Ident      // value names (len(Names) > 0)
+	//   Values  []Expr        // initial values; or nil
 	for _, s := range spec {
-		vSpec := s.(*ast.ValueSpec) // spec of token.CONST
+		buf.WriteString("const ")
+		vSpec := s.(*ast.ValueSpec)
 
-fmt.Print("const ")
-
-		// Names
+		// === Names
+		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+		//   Name    string    // identifier name
 		for i, v := range vSpec.Names {
 			if i != 0 {
-				fmt.Print(", " + v.Name)
+				buf.WriteString(", " + v.Name)
 			} else {
-				fmt.Print(v.Name)
+				buf.WriteString(v.Name)
 			}
 		}
 
-fmt.Print(" = ")
+		buf.WriteString(" = ")
 
-		// Values
+		// === Values
+		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
+		//   type Expr interface
 		for i, v := range vSpec.Values {
 			if i != 0 {
-				fmt.Print(", ")
+				buf.WriteString(", ")
 			}
-			getType(v)
+			getType(buf, v)
 		}
 
-fmt.Print(";\n")
+		buf.WriteString(";\n")
 	}
 }
 
 // Gets the type.
 // It throws a panic message for types no added.
-func getType(i interface{}) {
-	// Get the type
+func getType(buf *bytes.Buffer, i interface{}) {
+	// type Expr
 	switch typ := i.(type) {
+
+	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
+	//   Value    string      // literal string
 	case *ast.BasicLit:
-fmt.Print(i.(*ast.BasicLit).Value)
+		buf.WriteString(i.(*ast.BasicLit).Value)
+
+	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
+	//   Op    token.Token // operator
+	//   X     Expr        // operand
 	case *ast.UnaryExpr:
 		unaryExpr := i.(*ast.UnaryExpr)
-fmt.Print(unaryExpr.Op)
-		getType(unaryExpr.X)
+		buf.WriteString(unaryExpr.Op.String())
+		getType(buf, unaryExpr.X)
+
+	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	case *ast.Ident:
 		if typ.Name == "iota" {
-			fmt.Print("iota")
+			buf.WriteString("0")
 		} else {
 			panic(fmt.Sprintf("[getType:*ast.Ident] name: %v", typ.Name))
 		}
+
 	default:
 		panic(fmt.Sprintf("[getType:default] type: %T, value: %v", i, i))
 	}

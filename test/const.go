@@ -9,6 +9,19 @@ const (
 const a, b, c = 3, 4, "foo" // a = 3, b = 4, c = "foo", untyped integer and string constants
 const u, v float32 = 0, 3   // u = 0.0, v = 3.0
 
+// === iota
+
+const (
+	Sunday = iota
+	Monday
+	Tuesday
+	Wednesday
+	Thursday
+	Friday
+	Partyday
+	numberOfDays  // this constant is not exported
+)
+
 const x = iota // x == 0 (iota has been reset)
 const y = iota // y == 0 (iota has been reset)
 
