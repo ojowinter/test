@@ -1,4 +1,4 @@
-// Copyright 2011  The "GotoJS" Authors
+// Copyright 2011  The "GotoScript" Authors
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,22 +19,10 @@ import "testing"
 
 var files = []string{"const.go"}
 
-func TestSintaxis(t *testing.T) {
-	for _, v := range files {
-		if err := checkSintaxis(file(v)); err != nil {
-			t.Fatalf("expected correct sintaxis, got\n%s", err)
+func TestParse(t *testing.T) {
+	for _, f := range files {
+		if err := Compile("../test/" + f); err != nil {
+			t.Fatalf("expected parse file, got\n%s", err)
 		}
 	}
-}
-
-func TestConst(t *testing.T) {
-	if err := Compile(file("const.go")); err != nil {
-		t.Fatalf("expected scanning file, got\n%s", err)
-	}
-}
-
-// * * *
-
-func file(name string) string {
-	return "../test/" + name
 }

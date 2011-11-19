@@ -1,4 +1,4 @@
-// Copyright 2011  The "GotoJS" Authors
+// Copyright 2011  The "GotoScript" Authors
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ package main
 
 import (
 
-	"github.com/kless/GotoJS/tojs"
+	"github.com/kless/GotoScript/tojs"
 )
 
 func main() {

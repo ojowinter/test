@@ -1,4 +1,4 @@
-// Copyright 2011  The "GotoJS" Authors
+// Copyright 2011  The "GotoScript" Authors
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,58 +17,39 @@ package tojs
 
 import (
 	"bufio"
-	_ "fmt"
+	"fmt"
+	"go/ast"
 	"go/parser"
 	"go/scanner"
 	"go/token"
-	"io/ioutil"
-	"os"
 )
 
-// Checks that the Go sintaxis is correct.
-func checkSintaxis(filename string) error {
-	_, err := parser.ParseFile(token.NewFileSet(), filename, nil, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Compiles a Go source file to JavaScript.
+// Compiles a Go source file into JavaScript.
 func Compile(filename string) error {
-	var s scanner.Scanner
-
-	file, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	bufConst := bufio.NewWriter(os.Stdout)
+	//bufConst := bufio.NewWriter(os.Stdout)
 	//bufVar := bufio.NewWriter(os.Stdout)
 
-	fset := token.NewFileSet()
-	fileSet := fset.AddFile(filename, fset.Base(), len(file)) // register file
-	s.Init(fileSet, file, nil, scanner.InsertSemis)
+	// If Go sintaxis is incorrect then there will be an error.
+	node, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0) //parser.ParseComments)
+	if err != nil {
+		return err
+	}
 
-	//_, tok, lit := s.Scan()
-	for {
-		_, tok, lit := s.Scan()
-		if tok == token.EOF {
-			break
-		}
+	for _, decl := range node.Decls {
+//	fmt.Printf("%T : %v\n", decl,decl)
 
-		switch tok {
-		case token.PACKAGE:
-			_, _, lit = s.Scan()
-			println(lit)
+		switch decl.(type) {
+		case *ast.GenDecl:
+			genDecl := decl.(*ast.GenDecl)
 
-		case token.CONST:
-			_const(bufConst, s)
-			break
+			// Constants
+			if genDecl.Tok == token.CONST {
+				getConst(genDecl.Specs)
+			}
 		}
 	}
 
-	bufConst.Flush()
+	//bufConst.Flush()
 	return nil
 }
 
@@ -76,46 +57,54 @@ func Compile(filename string) error {
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
-func _const(buf *bufio.Writer, s scanner.Scanner) {
-	isNew := true // to know when write the keyword "const"
+func getConst(spec []ast.Spec) {
+	// Each "ValueSpec" can have several identifiers with its values
+	for _, s := range spec {
+		vSpec := s.(*ast.ValueSpec) // spec of token.CONST
 
-	for {
-		_, tok, lit := s.Scan()
-		if tok.IsKeyword() || tok == token.RPAREN {
-			break
-		}
+fmt.Print("const ")
 
-		// There are multiple statements
-		if tok == token.LPAREN { // (
-			continue
-		}
-
-		if tok.IsLiteral() {
-			if isType(tok, lit) {
-				continue
+		// Names
+		for i, v := range vSpec.Names {
+			if i != 0 {
+				fmt.Print(", " + v.Name)
+			} else {
+				fmt.Print(v.Name)
 			}
+		}
 
-			if isNew && tok == token.IDENT {
-				buf.WriteString("const ")
-				isNew = false
+fmt.Print(" = ")
+
+		// Values
+		for i, v := range vSpec.Values {
+			if i != 0 {
+				fmt.Print(", ")
 			}
-
-			buf.WriteString(lit)
-			continue
+			getType(v)
 		}
 
-		// === IsOperator
-		switch tok {
-		case token.COMMA:
-			buf.WriteString(lit + " ")
-		case token.ASSIGN:
-			buf.WriteString(" " + lit + " ")
-		case token.SEMICOLON: // End of statement
-			buf.WriteString(";\n")
-			isNew = true
-		default:
-			buf.WriteString(lit)
-		}
+fmt.Print(";\n")
+	}
+}
 
+// Gets the type.
+// It throws a panic message for types no added.
+func getType(i interface{}) {
+	// Get the type
+	switch typ := i.(type) {
+	case *ast.BasicLit:
+fmt.Print(i.(*ast.BasicLit).Value)
+	case *ast.UnaryExpr:
+		unaryExpr := i.(*ast.UnaryExpr)
+fmt.Print(unaryExpr.Op)
+		getType(unaryExpr.X)
+	case *ast.Ident:
+		if typ.Name == "iota" {
+			fmt.Print("iota")
+		} else {
+			panic(fmt.Sprintf("[getType:*ast.Ident] name: %v", typ.Name))
+		}
+	default:
+		panic(fmt.Sprintf("[getType:default] type: %T, value: %v", i, i))
 	}
 }

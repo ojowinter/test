@@ -1,7 +1,7 @@
-GotoJS
-======
+GotoScript
+==========
 
-<< DESCRIBE PROJECT >>
+Compiles Go into JavaScript excepting some restrictions like goroutines, channels.
 
 
 ## Installation
@@ -21,7 +21,7 @@ GotoJS
 
 ## Copyright and licensing
 
-***Copyright 2011  The "GotoJS" Authors***  
+***Copyright 2011  The "GotoScript" Authors***  
 See file AUTHORS and CONTRIBUTORS.
 
 Licensed under **GNU General Public License, version 3 or later**.  
