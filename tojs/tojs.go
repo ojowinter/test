@@ -26,7 +26,7 @@ import (
 // Compiles a Go source file into JavaScript.
 func Compile(filename string) error {
 	bufConst := new(bytes.Buffer)
-	//bufVar := new(bytes.Buffer)
+	bufVar := new(bytes.Buffer)
 
 	// If Go sintaxis is incorrect then there will be an error.
 	node, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0) //parser.ParseComments)
@@ -41,14 +41,17 @@ func Compile(filename string) error {
 		case *ast.GenDecl:
 			genDecl := decl.(*ast.GenDecl)
 
-			// Constants
-			if genDecl.Tok == token.CONST {
+			switch genDecl.Tok {
+			case token.CONST:
 				getConst(bufConst, genDecl.Specs)
+			case token.VAR:
+				getVar(bufVar, genDecl.Specs)
 			}
 		}
 	}
 
 	fmt.Print(bufConst.String())
+	fmt.Print(bufVar.String())
 	return nil
 }
 
@@ -77,7 +80,7 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
 		}
 
-		skipName := make([]bool, len(vSpec.Names)) // for identifiers like "_"
+		skipName := make([]bool, len(vSpec.Names)) // for blank identifiers "_"
 		names := make([]string, 0)                 // identifiers
 		values := make([]string, 0)
 
@@ -100,7 +103,7 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 			for i, v := range vSpec.Values {
 				var expr string
 
-				val := newValue()
+				val := newValue(names[i])
 				val.getValue(v)
 
 				if val.useIota {
@@ -138,7 +141,7 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 			}
 		}
 
-		// It is possible that it is only an identifier "_"
+		// It is possible that there is only a blank identifier
 		if isFirst {
 			continue
 		}
@@ -149,6 +152,87 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 				continue
 			}
 
+			// TODO: calculate expression using "exp/types"
+			if isFirst {
+				isFirst = false
+				buf.WriteString(" = " + v)
+			} else {
+				buf.WriteString(", " + v)
+			}
+		}
+
+		buf.WriteString(";\n")
+	}
+}
+
+// Variables
+//
+// http://golang.org/doc/go_spec.html#Variable_declarations
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/var
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
+//
+// TODO: use let for local variables
+func getVar(buf *bytes.Buffer, spec []ast.Spec) {
+	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
+	for _, s := range spec {
+		vSpec := s.(*ast.ValueSpec)
+
+		skipName := make([]bool, len(vSpec.Names))
+		names := make([]string, 0)
+		values := make([]string, 0)
+
+		// === Names
+		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+		for i, v := range vSpec.Names {
+			// Mark blank identifier
+			if v.Name == "_" {
+				skipName[i] = true
+				continue
+			}
+			names = append(names, v.Name)
+		}
+
+		// === Values
+		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
+		for i, v := range vSpec.Values {
+			//var expr string
+
+			// Skip when it is not a function
+			if skipName[i] {
+				if _, ok := v.(*ast.CallExpr); !ok {
+					continue
+				}
+			}
+
+			val := newValue(names[i])
+			val.getValue(v)
+			if !skipName[i] {
+				values = append(values, val.String())
+			}
+		}
+
+		// === Write
+		isFirst := true
+		for i, v := range names {
+			if skipName[i] {
+				continue
+			}
+
+			if isFirst {
+				isFirst = false
+				buf.WriteString("var " + v)
+			} else {
+				buf.WriteString(", " + v)
+			}
+		}
+
+		isFirst = true
+		for i, v := range values {
+			if skipName[i] {
+				continue
+			}
+
+			// TODO: calculate expression using "exp/types"
 			if isFirst {
 				isFirst = false
 				buf.WriteString(" = " + v)
@@ -166,12 +250,14 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 // Represents a value.
 type value struct {
 	useIota bool
+	ident   string // variable's identifier
+	lit     string // store the last literal
 	*bytes.Buffer
 }
 
 // Initializes a new type of "value".
-func newValue() *value {
-	return &value{false, new(bytes.Buffer)}
+func newValue(identifier string) *value {
+	return &value{false, identifier, "", new(bytes.Buffer)}
 }
 
 // Gets the value.
@@ -183,7 +269,10 @@ func (v *value) getValue(iface interface{}) {
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
 	//  Value    string      // literal string
 	case *ast.BasicLit:
-		v.WriteString(iface.(*ast.BasicLit).Value)
+		lit := iface.(*ast.BasicLit).Value
+
+		v.WriteString(lit)
+		v.lit = lit
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
 	//  Op    token.Token // operator
@@ -201,7 +290,6 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.BinaryExpr:
 		binaryExpr := iface.(*ast.BinaryExpr)
 
-		// TODO: calculate expression
 		v.getValue(binaryExpr.X)
 		v.WriteString(" " + binaryExpr.Op.String() + " ")
 		v.getValue(binaryExpr.Y)
@@ -215,7 +303,38 @@ func (v *value) getValue(iface interface{}) {
 			v.WriteString(typ.Name)
 		}
 
+	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
+	//  Type   Expr      // literal type; or nil
+	//  Elts   []Expr    // list of composite elements; or nil
+	case *ast.CompositeLit:
+		composite := iface.(*ast.CompositeLit)
+
+		v.getValue(composite.Type)
+		fmt.Println(composite.Elts)
+
+	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
+	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
+	//  Elt    Expr      // element type
+	case *ast.ArrayType:
+		array := iface.(*ast.ArrayType)
+
+		if v.lit == "" {
+			v.WriteString("new Array(")
+			v.getValue(array.Len)
+			v.WriteString(")")
+		} else {
+			v.WriteString(fmt.Sprintf("; for (i=0; i<%s; i++) %s[i]=new Array(",
+				v.lit, v.ident))
+			v.getValue(array.Len)
+			v.WriteString(")")
+		}
+
+		if _, ok:= array.Elt.(*ast.ArrayType); ok {
+			v.getValue(array.Elt)
+		}
+
 	default:
-		panic(fmt.Sprintf("[getValue:default] type: %T, value: %v", iface, iface))
+		panic(fmt.Sprintf("[getValue:default] unimplemented: %T, value: %v",
+			iface, iface))
 	}
 }

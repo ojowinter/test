@@ -6,8 +6,10 @@ supported by JavaScript, like goroutines, channels, etc.
 
 Status:
 
-	const	[OK]
-	itoa	[OK]
+	const				[OK]
+	itoa				[OK]
+	blank identifiers	[OK]
+	var					[OK]
 
 
 ## Installation

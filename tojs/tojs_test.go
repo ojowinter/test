@@ -17,12 +17,13 @@ package tojs
 
 import "testing"
 
-var files = []string{"const.go"}
+func TestConst(t *testing.T) { compile("const.go", t) }
+func TestVar(t *testing.T) { compile("var.go", t) }
 
-func TestParse(t *testing.T) {
-	for _, f := range files {
-		if err := Compile("../test/" + f); err != nil {
-			t.Fatalf("expected parse file, got\n%s", err)
-		}
+// * * *
+
+func compile(filename string, t *testing.T) {
+	if err := Compile("../test/" + filename); err != nil {
+		t.Fatalf("expected parse file, got\n%s", err)
 	}
 }
