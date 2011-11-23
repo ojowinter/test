@@ -80,25 +80,12 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
 		}
 
-		skipName := make([]bool, len(vSpec.Names)) // for blank identifiers "_"
-		names := make([]string, 0)                 // identifiers
+		names, skipName := getName(vSpec)
 		values := make([]string, 0)
-
-		// === Names
-		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
-		//  Name    string    // identifier name
-		for i, v := range vSpec.Names {
-			names = append(names, v.Name)
-
-			if v.Name == "_" {
-				skipName[i] = true
-			}
-		}
 
 		// === Values
 		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
 		//  type Expr interface
-
 		if len(vSpec.Values) != 0 {
 			for i, v := range vSpec.Values {
 				var expr string
@@ -127,6 +114,7 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 		}
 
 		// === Write
+		// TODO: calculate expression using "exp/types"
 		isFirst := true
 		for i, v := range names {
 			if skipName[i] {
@@ -135,30 +123,15 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				buf.WriteString("const " + v)
+				buf.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
 			} else {
-				buf.WriteString(", " + v)
+				buf.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
 			}
 		}
 
 		// It is possible that there is only a blank identifier
 		if isFirst {
 			continue
-		}
-
-		isFirst = true
-		for i, v := range values {
-			if skipName[i] {
-				continue
-			}
-
-			// TODO: calculate expression using "exp/types"
-			if isFirst {
-				isFirst = false
-				buf.WriteString(" = " + v)
-			} else {
-				buf.WriteString(", " + v)
-			}
 		}
 
 		buf.WriteString(";\n")
@@ -176,27 +149,12 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
-
-		skipName := make([]bool, len(vSpec.Names))
-		names := make([]string, 0)
+		names, skipName := getName(vSpec)
 		values := make([]string, 0)
-
-		// === Names
-		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
-		for i, v := range vSpec.Names {
-			// Mark blank identifier
-			if v.Name == "_" {
-				skipName[i] = true
-				continue
-			}
-			names = append(names, v.Name)
-		}
 
 		// === Values
 		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
 		for i, v := range vSpec.Values {
-			//var expr string
-
 			// Skip when it is not a function
 			if skipName[i] {
 				if _, ok := v.(*ast.CallExpr); !ok {
@@ -212,129 +170,25 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) {
 		}
 
 		// === Write
+		// TODO: calculate expression using "exp/types"
 		isFirst := true
-		for i, v := range names {
+		for i, n := range names {
 			if skipName[i] {
 				continue
 			}
 
 			if isFirst {
 				isFirst = false
-				buf.WriteString("var " + v)
+				buf.WriteString("var " + n)
 			} else {
-				buf.WriteString(", " + v)
-			}
-		}
-
-		isFirst = true
-		for i, v := range values {
-			if skipName[i] {
-				continue
+				buf.WriteString(", " + n)
 			}
 
-			// TODO: calculate expression using "exp/types"
-			if isFirst {
-				isFirst = false
-				buf.WriteString(" = " + v)
-			} else {
-				buf.WriteString(", " + v)
+			if len(values) != 0 {
+				buf.WriteString(" = " + values[i])
 			}
 		}
 
 		buf.WriteString(";\n")
-	}
-}
-
-// * * *
-
-// Represents a value.
-type value struct {
-	useIota bool
-	ident   string // variable's identifier
-	lit     string // store the last literal
-	*bytes.Buffer
-}
-
-// Initializes a new type of "value".
-func newValue(identifier string) *value {
-	return &value{false, identifier, "", new(bytes.Buffer)}
-}
-
-// Gets the value.
-// It throws a panic message for types no added.
-func (v *value) getValue(iface interface{}) {
-	// type Expr
-	switch typ := iface.(type) {
-
-	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
-	//  Value    string      // literal string
-	case *ast.BasicLit:
-		lit := iface.(*ast.BasicLit).Value
-
-		v.WriteString(lit)
-		v.lit = lit
-
-	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
-	//  Op    token.Token // operator
-	//  X     Expr        // operand
-	case *ast.UnaryExpr:
-		unaryExpr := iface.(*ast.UnaryExpr)
-
-		v.WriteString(unaryExpr.Op.String())
-		v.getValue(unaryExpr.X)
-
-	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
-	//  X     Expr        // left operand
-	//  Op    token.Token // operator
-	//  Y     Expr        // right operand
-	case *ast.BinaryExpr:
-		binaryExpr := iface.(*ast.BinaryExpr)
-
-		v.getValue(binaryExpr.X)
-		v.WriteString(" " + binaryExpr.Op.String() + " ")
-		v.getValue(binaryExpr.Y)
-
-	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
-	case *ast.Ident:
-		if typ.Name == "iota" {
-			v.WriteString("%d")
-			v.useIota = true
-		} else {
-			v.WriteString(typ.Name)
-		}
-
-	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
-	//  Type   Expr      // literal type; or nil
-	//  Elts   []Expr    // list of composite elements; or nil
-	case *ast.CompositeLit:
-		composite := iface.(*ast.CompositeLit)
-
-		v.getValue(composite.Type)
-		fmt.Println(composite.Elts)
-
-	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
-	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
-	//  Elt    Expr      // element type
-	case *ast.ArrayType:
-		array := iface.(*ast.ArrayType)
-
-		if v.lit == "" {
-			v.WriteString("new Array(")
-			v.getValue(array.Len)
-			v.WriteString(")")
-		} else {
-			v.WriteString(fmt.Sprintf("; for (i=0; i<%s; i++) %s[i]=new Array(",
-				v.lit, v.ident))
-			v.getValue(array.Len)
-			v.WriteString(")")
-		}
-
-		if _, ok:= array.Elt.(*ast.ArrayType); ok {
-			v.getValue(array.Elt)
-		}
-
-	default:
-		panic(fmt.Sprintf("[getValue:default] unimplemented: %T, value: %v",
-			iface, iface))
 	}
 }

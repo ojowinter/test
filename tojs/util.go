@@ -15,7 +15,12 @@
 
 package tojs
 
-import "go/token"
+import (
+	"bytes"
+	"fmt"
+	"go/ast"
+	"go/token"
+)
 
 var types = []string{
 	"bool", "string",
@@ -40,4 +45,119 @@ func isType(tok token.Token, lit string) bool {
 		}
 	}
 	return false
+}
+
+//
+// === Get
+
+// Gets the identifiers.
+//
+// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+//  Name    string    // identifier name
+func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
+	skipName = make([]bool, len(spec.Names)) // for blank identifiers "_"
+
+	for i, v := range spec.Names {
+		if v.Name == "_" {
+			skipName[i] = true
+			continue
+		}
+		names = append(names, v.Name)
+	}
+
+	return
+}
+
+// * * *
+
+// Represents a value.
+type value struct {
+	useIota bool
+	ident   string // variable's identifier
+	lit     string // store the last literal
+	*bytes.Buffer
+}
+
+// Initializes a new type of "value".
+func newValue(identifier string) *value {
+	return &value{false, identifier, "", new(bytes.Buffer)}
+}
+
+// Gets the value.
+// It throws a panic message for types no added.
+func (v *value) getValue(iface interface{}) {
+	// type Expr
+	switch typ := iface.(type) {
+
+	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
+	//  Value    string      // literal string
+	case *ast.BasicLit:
+		lit := iface.(*ast.BasicLit).Value
+
+		v.WriteString(lit)
+		v.lit = lit
+
+	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
+	//  Op    token.Token // operator
+	//  X     Expr        // operand
+	case *ast.UnaryExpr:
+		unaryExpr := iface.(*ast.UnaryExpr)
+
+		v.WriteString(unaryExpr.Op.String())
+		v.getValue(unaryExpr.X)
+
+	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
+	//  X     Expr        // left operand
+	//  Op    token.Token // operator
+	//  Y     Expr        // right operand
+	case *ast.BinaryExpr:
+		binaryExpr := iface.(*ast.BinaryExpr)
+
+		v.getValue(binaryExpr.X)
+		v.WriteString(" " + binaryExpr.Op.String() + " ")
+		v.getValue(binaryExpr.Y)
+
+	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+	case *ast.Ident:
+		if typ.Name == "iota" {
+			v.WriteString("%d")
+			v.useIota = true
+		} else {
+			v.WriteString(typ.Name)
+		}
+
+	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
+	//  Type   Expr      // literal type; or nil
+	//  Elts   []Expr    // list of composite elements; or nil
+	case *ast.CompositeLit:
+		composite := iface.(*ast.CompositeLit)
+
+		v.getValue(composite.Type)
+		fmt.Println(composite.Elts)
+
+	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
+	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
+	//  Elt    Expr      // element type
+	case *ast.ArrayType:
+		array := iface.(*ast.ArrayType)
+
+		if v.lit == "" {
+			v.WriteString("new Array(")
+			v.getValue(array.Len)
+			v.WriteString(")")
+		} else {
+			v.WriteString(fmt.Sprintf("; for (i=0; i<%s; i++) %s[i]=new Array(",
+				v.lit, v.ident))
+			v.getValue(array.Len)
+			v.WriteString(")")
+		}
+
+		if _, ok:= array.Elt.(*ast.ArrayType); ok {
+			v.getValue(array.Elt)
+		}
+
+	default:
+		panic(fmt.Sprintf("[getValue:default] unimplemented: %T, value: %v",
+			iface, iface))
+	}
 }

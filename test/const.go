@@ -23,19 +23,19 @@ const (
 	numberOfDays // this constant is not exported
 )
 const ( // iota is reset to 0
-	c0 = iota // c0 == 0
-	c1 = iota // c1 == 1
-	c2 = iota // c2 == 2
+	a0 = iota // a0 == 0
+	a1 = iota // a1 == 1
+	a2 = iota // a2 == 2
 )
 const (
-	a = 1 << iota // a == 1 (iota has been reset)
-	b = 1 << iota // b == 2
-	c = 1 << iota // c == 4
+	b0 = 1 << iota // b0 == 1 (iota has been reset)
+	b1 = 1 << iota // b1 == 2
+	b2 = 1 << iota // b2 == 4
 )
 const (
-	u         = iota * 42 // u == 0     (untyped integer constant)
-	v float64 = iota * 42 // v == 42.0  (float64 constant)
-	w         = iota * 42 // w == 84    (untyped integer constant)
+	c0         = iota * 42 // c0 == 0     (untyped integer constant)
+	c1 float64 = iota * 42 // c1 == 42.0  (float64 constant)
+	c2         = iota * 42 // c2 == 84    (untyped integer constant)
 )
 
 const x = iota // x == 0 (iota has been reset)
