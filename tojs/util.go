@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strconv"
+	"strings"
 )
 
 var types = []string{
@@ -73,14 +75,25 @@ func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
 // Represents a value.
 type value struct {
 	useIota bool
-	ident   string // variable's identifier
-	lit     string // store the last literal
+	ident   string   // variable's identifier
+	lit     []string // store the last literals (for array)
 	*bytes.Buffer
 }
 
 // Initializes a new type of "value".
 func newValue(identifier string) *value {
-	return &value{false, identifier, "", new(bytes.Buffer)}
+	return &value{false, identifier, make([]string, 0), new(bytes.Buffer)}
+}
+
+// Returns the values of an array formatted like "[i0][i1]..."
+func (v *value) printArray() string {
+	a := ""
+
+	for i := 0; i < len(v.lit); i++ {
+		vArray := "i" + strconv.Itoa(i)
+		a = fmt.Sprintf("%s[%s]", a, vArray)
+	}
+	return a
 }
 
 // Gets the value.
@@ -95,7 +108,7 @@ func (v *value) getValue(iface interface{}) {
 		lit := iface.(*ast.BasicLit).Value
 
 		v.WriteString(lit)
-		v.lit = lit
+		v.lit = append(v.lit, lit)
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
 	//  Op    token.Token // operator
@@ -141,19 +154,24 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.ArrayType:
 		array := iface.(*ast.ArrayType)
 
-		if v.lit == "" {
+		if len(v.lit) == 0 {
 			v.WriteString("new Array(")
 			v.getValue(array.Len)
 			v.WriteString(")")
 		} else {
-			v.WriteString(fmt.Sprintf("; for (i=0; i<%s; i++) %s[i]=new Array(",
-				v.lit, v.ident))
+			iArray := len(v.lit) - 1 // index of array
+			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
+
+			v.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
+				vArray, vArray, v.lit[iArray], vArray, v.ident, v.printArray()))
 			v.getValue(array.Len)
 			v.WriteString(")")
 		}
 
 		if _, ok:= array.Elt.(*ast.ArrayType); ok {
 			v.getValue(array.Elt)
+		} else if len(v.lit) > 0 {
+			v.WriteString(" " + strings.Repeat("}", len(v.lit)-1))
 		}
 
 	default:

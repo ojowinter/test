@@ -1,8 +1,8 @@
 GotoScript
 ==========
 
-Compiles Go into JavaScript excepting some Go's features which can not be
-supported by JavaScript, like goroutines, channels, etc.
+Compiles transforming Go into JavaScript excepting some Go's features which can
+not be supported by JavaScript, like goroutines, channels, etc.
 
 Status:
 

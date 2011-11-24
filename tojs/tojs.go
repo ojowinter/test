@@ -49,9 +49,9 @@ func Compile(filename string) error {
 			}
 		}
 	}
-
-	fmt.Print(bufConst.String())
-	fmt.Print(bufVar.String())
+// TODO: delete
+fmt.Print(bufConst.String())
+fmt.Print(bufVar.String())
 	return nil
 }
 
