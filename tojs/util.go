@@ -170,12 +170,28 @@ func (v *value) getValue(iface interface{}) {
 
 		if _, ok:= array.Elt.(*ast.ArrayType); ok {
 			v.getValue(array.Elt)
-		} else if len(v.lit) > 0 {
+		} else if len(v.lit) > 1 {
 			v.WriteString(" " + strings.Repeat("}", len(v.lit)-1))
 		}
 
+	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
+	//  Fun      Expr      // function expression
+	//  Args     []Expr    // function arguments; or nil
+	case *ast.CallExpr:
+		call := iface.(*ast.CallExpr)
+		callIdent := call.Fun.(*ast.Ident).Name
+
+		// Check if it is an array
+		if callIdent == "new" {
+			if _, ok := call.Args[0].(*ast.ArrayType); ok {
+				for _, arg := range call.Args {
+					v.getValue(arg)
+				}
+			}
+		}
+
 	default:
-		panic(fmt.Sprintf("[getValue:default] unimplemented: %T, value: %v",
+		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",
 			iface, iface))
 	}
 }

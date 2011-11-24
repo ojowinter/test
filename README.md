@@ -10,6 +10,7 @@ Status:
 	itoa				[OK]
 	blank identifiers	[OK]
 	var					[OK]
+	array				[OK]
 
 
 ## Installation
