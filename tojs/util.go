@@ -146,7 +146,7 @@ func (v *value) getValue(iface interface{}) {
 		composite := iface.(*ast.CompositeLit)
 
 		v.getValue(composite.Type)
-		fmt.Println(composite.Elts)
+		//fmt.Println(composite.Elts) // TODO: to debug
 
 	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
@@ -181,13 +181,23 @@ func (v *value) getValue(iface interface{}) {
 		call := iface.(*ast.CallExpr)
 		callIdent := call.Fun.(*ast.Ident).Name
 
-		// Check if it is an array
-		if callIdent == "new" {
+		switch callIdent {
+		case "new":
+			// Check if it is an array
 			if _, ok := call.Args[0].(*ast.ArrayType); ok {
 				for _, arg := range call.Args {
 					v.getValue(arg)
 				}
 			}
+		case "make":
+			// Check if it is a slice
+			if _, ok := call.Args[0].(*ast.ArrayType); ok {
+				v.WriteString("new Array(")
+				v.getValue(call.Args[len(call.Args) - 1]) // capacity
+				v.WriteString(")")
+			}
+		default:
+			panic(fmt.Sprintf("[getValue] unimplemented: %s", callIdent))
 		}
 
 	default:

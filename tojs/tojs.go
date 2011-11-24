@@ -38,6 +38,10 @@ func Compile(filename string) error {
 		//fmt.Printf("%T : %v\n", decl,decl) // TODO: to delete when it's finished
 
 		switch decl.(type) {
+
+		// http://golang.org/pkg/go/ast/#GenDecl || godoc go/ast GenDecl
+		//  Tok    token.Token   // IMPORT, CONST, TYPE, VAR
+		//  Specs  []Spec
 		case *ast.GenDecl:
 			genDecl := decl.(*ast.GenDecl)
 

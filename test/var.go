@@ -1,20 +1,21 @@
 package test
 
-var n int
-var U, V, W float64
-var k = 0
-var x, y float32 = -1, -2
+var a int
+var b, c, d float64
+var e = 0
+var f, g float32 = -1, -2
 var (
-	j        int
-	u, v, st = 2.0, 3.0, "bar"
+	h        int
+	i, j, k = 2.0, 3.0, "bar"
 )
-//var re, im = complexSqrt(-1)
-//var _, found = entries[name] // map lookup; only interested in "found"
 
-var b = true   // t has type bool
-var i = 0      // i has type int
-var f = 3.0    // f has type float64
-var s = "OMDB" // s has type string
+var l = true   // l has type bool
+var m = 0      // m has type int
+var n = 3.0    // n has type float64
+var o = "OMDB" // o has type string
+
+//var A, B = complexSqrt(-1)
+//var _, found = entries[name] // map lookup; only interested in "found"
 
 // Array
 var (
@@ -25,16 +26,24 @@ var (
 	a5 = [4]byte{}
 	a6 = [3][5]int{}
 	a7 = [2][2][2]float64{} // same as [2]([2]([2]float64))
+
+	b1 = [32]byte{1, 2, 3, 4}
+)
+
+// Slice
+var (
+	s1 = make([]int, 10)
+	s2 = make([]int, 10, 20)
 )
 
 func main() {
 	// === Short variable declarations
-	i, j := 0, 10
+	a, b := 0, 10
 	f := func() int { return 7 }
 	ch := make(chan int)
-	r, w := os.Pipe(fd) // os.Pipe() returns two values
-	_, y, _ := coord(p) // coord() returns three values; only interested in y coordinate
+	fa, fb := os.Pipe(fd) // os.Pipe() returns two values
+	_, fc, _ := coord(p)  // coord() returns three values; only interested in y coordinate
 
-	field1, offset := nextField(str, 0)
-	field2, offset := nextField(str, offset) // redeclares offset
+	fd, fe := nextField(str, 0)
+	ff, fg := nextField(str, offset) // redeclares offset
 }
