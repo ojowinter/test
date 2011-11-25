@@ -135,9 +135,14 @@ func (v *value) getValue(iface interface{}) {
 		if typ.Name == "iota" {
 			v.WriteString("%d")
 			v.useIota = true
-		} else {
-			v.WriteString(typ.Name)
+			break
 		}
+		// array / slice
+		if len(v.lit) != 0 && typ.Name == "_" {
+			break
+		}
+
+		v.WriteString(typ.Name)
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
 	//  Type   Expr      // literal type; or nil
