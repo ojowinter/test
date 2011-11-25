@@ -17,8 +17,9 @@ package tojs
 
 import "testing"
 
-func TestConst(t *testing.T) { compile("const.go", t) }
-func TestVar(t *testing.T)   { compile("var.go", t) }
+func TestConst(t *testing.T)  { compile("const.go", t) }
+func TestVar(t *testing.T)    { compile("var.go", t) }
+func TestStruct(t *testing.T) { compile("struct.go", t) }
 
 // * * *
 
