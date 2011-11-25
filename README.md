@@ -12,6 +12,7 @@ Status:
 	var					[OK]
 	array				[OK]
 	slice				[OK]
+	ellipsis			[OK]
 
 TODO:
 
@@ -27,7 +28,7 @@ http://kishorelive.com/2011/11/22/ecmascript-6-looks-promising/
 
 ## Configuration
 
-<< INSTRUCTIONS TO CONFIGURE THE PROGRAM, IF ANY >>
+Nothing.
 
 
 ## Operating instructions
