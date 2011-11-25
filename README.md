@@ -13,6 +13,7 @@ Status:
 	array				[OK]
 	slice				[OK]
 	ellipsis			[OK]
+	struct				[.]
 
 TODO:
 
@@ -24,19 +25,6 @@ http://kishorelive.com/2011/11/22/ecmascript-6-looks-promising/
 ## Installation
 
 	goinstall << DOWNLOAD URL >>
-
-
-## Testing
-
-The JavaScript output of the files in directory "test" have been checked using
-[JavaScript Lint](http://javascriptlint.com/download.htm):
-
-	wget http://javascriptlint.com/download/jsl-0.3.0-src.tar.gz
-	tar xzf jsl-*.tar.gz && cd jsl-*/src && make -f Makefile.ref BUILD_OPT=1 &&
-	sudo ln -s $(pwd)/Linux_All_*.OBJ/jsl /usr/local/bin/jsl && cd - &&
-	sudo cp Linux_All_*.OBJ/jsl /usr/local/bin/ && cd - && rm -rf jsl-*
-
-	jsl -process test/var.js
 
 
 ## Configuration
