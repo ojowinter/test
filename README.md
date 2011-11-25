@@ -8,7 +8,7 @@ Status:
 
 	const				[OK]
 	itoa				[OK]
-	blank identifiers	[OK]
+	blank identifier	[OK]
 	var					[OK]
 	array				[OK]
 	slice				[OK]
