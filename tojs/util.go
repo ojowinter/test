@@ -136,7 +136,7 @@ func (v *value) getValue(iface interface{}) {
 		if _, ok := array.Elt.(*ast.ArrayType); ok {
 			v.getValue(array.Elt)
 		} else if len(v.lit) > 1 {
-			v.WriteString(" " + strings.Repeat("}", len(v.lit)-1))
+			v.WriteString("; " + strings.Repeat("}", len(v.lit)-1))
 		}
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit

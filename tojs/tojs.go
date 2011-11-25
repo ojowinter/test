@@ -205,6 +205,12 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) {
 			}
 		}
 
-		buf.WriteString(";\n")
+		last := buf.Bytes()[buf.Len()-1] // last character
+
+		if last != '}' {
+			buf.WriteString(";\n")
+		} else {
+			buf.WriteString("\n")
+		}
 	}
 }
