@@ -38,7 +38,7 @@ var (
 
 	s3 = []int{2, 4, 6}
 	s4 = []int{1, _, 3}
-	//s5 = [...]string{"a", "b", "c"}
+	s5 = [...]string{"a", "b", "c"}
 )
 
 func main() {

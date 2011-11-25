@@ -77,12 +77,13 @@ type value struct {
 	useIota bool
 	ident   string   // variable's identifier
 	lit     []string // store the last literals (for array)
+	len     int      // store length of array, to use in case of ellipsis (...)
 	*bytes.Buffer
 }
 
 // Initializes a new type of "value".
 func newValue(identifier string) *value {
-	return &value{false, identifier, make([]string, 0), new(bytes.Buffer)}
+	return &value{false, identifier, make([]string, 0), 0, new(bytes.Buffer)}
 }
 
 // Returns the values of an array formatted like "[i0][i1]..."
@@ -102,76 +103,6 @@ func (v *value) getValue(iface interface{}) {
 	// type Expr
 	switch typ := iface.(type) {
 
-	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
-	//  Value    string      // literal string
-	case *ast.BasicLit:
-		lit := iface.(*ast.BasicLit).Value
-
-		v.WriteString(lit)
-		v.lit = append(v.lit, lit)
-
-	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
-	//  Op    token.Token // operator
-	//  X     Expr        // operand
-	case *ast.UnaryExpr:
-		unaryExpr := iface.(*ast.UnaryExpr)
-
-		v.WriteString(unaryExpr.Op.String())
-		v.getValue(unaryExpr.X)
-
-	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
-	//  X     Expr        // left operand
-	//  Op    token.Token // operator
-	//  Y     Expr        // right operand
-	case *ast.BinaryExpr:
-		binaryExpr := iface.(*ast.BinaryExpr)
-
-		v.getValue(binaryExpr.X)
-		v.WriteString(" " + binaryExpr.Op.String() + " ")
-		v.getValue(binaryExpr.Y)
-
-	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
-	case *ast.Ident:
-		if typ.Name == "iota" {
-			v.WriteString("%d")
-			v.useIota = true
-			break
-		}
-		// array / slice
-		if len(v.lit) != 0 && typ.Name == "_" {
-			break
-		}
-
-		v.WriteString(typ.Name)
-
-	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
-	//  Type   Expr      // literal type; or nil
-	//  Elts   []Expr    // list of composite elements; or nil
-	case *ast.CompositeLit:
-		composite := iface.(*ast.CompositeLit)
-
-		switch typ := composite.Type.(type) {
-		case *ast.ArrayType:
-			v.getValue(composite.Type)
-
-			// For arrays initialized
-			if len(composite.Elts) != 0 {
-				if typ.Len == nil {
-					v.WriteString("[")
-				} else {
-					v.WriteString(fmt.Sprintf("; %s = [", v.ident))
-				}
-
-				for i, el := range composite.Elts {
-					if i != 0 {
-						v.WriteString(",")
-					}
-					v.getValue(el)
-				}
-				v.WriteString("]")
-			}
-		}
-
 	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
 	//  Elt    Expr      // element type
@@ -184,7 +115,13 @@ func (v *value) getValue(iface interface{}) {
 
 		if len(v.lit) == 0 {
 			v.WriteString("new Array(")
-			v.getValue(array.Len)
+
+			if v.len != 0 { // ellipsis
+				v.WriteString(strconv.Itoa(v.len))
+			} else {
+				v.getValue(array.Len)
+			}
+
 			v.WriteString(")")
 		} else {
 			iArray := len(v.lit) - 1             // index of array
@@ -201,6 +138,25 @@ func (v *value) getValue(iface interface{}) {
 		} else if len(v.lit) > 1 {
 			v.WriteString(" " + strings.Repeat("}", len(v.lit)-1))
 		}
+
+	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
+	//  Value    string      // literal string
+	case *ast.BasicLit:
+		lit := iface.(*ast.BasicLit).Value
+
+		v.WriteString(lit)
+		v.lit = append(v.lit, lit)
+
+	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
+	//  X     Expr        // left operand
+	//  Op    token.Token // operator
+	//  Y     Expr        // right operand
+	case *ast.BinaryExpr:
+		binaryExpr := iface.(*ast.BinaryExpr)
+
+		v.getValue(binaryExpr.X)
+		v.WriteString(" " + binaryExpr.Op.String() + " ")
+		v.getValue(binaryExpr.Y)
 
 	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
 	//  Fun      Expr      // function expression
@@ -227,6 +183,62 @@ func (v *value) getValue(iface interface{}) {
 		default:
 			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
 		}
+
+	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
+	//  Type   Expr      // literal type; or nil
+	//  Elts   []Expr    // list of composite elements; or nil
+	case *ast.CompositeLit:
+		composite := iface.(*ast.CompositeLit)
+
+		switch typ := composite.Type.(type) {
+		case *ast.ArrayType:
+			v.len = len(composite.Elts) // for ellipsis
+			v.getValue(composite.Type)
+
+			// For arrays initialized
+			if len(composite.Elts) != 0 {
+				if typ.Len == nil {
+					v.WriteString("[")
+				} else {
+					v.WriteString(fmt.Sprintf("; %s = [", v.ident))
+				}
+
+				for i, el := range composite.Elts {
+					if i != 0 {
+						v.WriteString(",")
+					}
+					v.getValue(el)
+				}
+				v.WriteString("]")
+			}
+		}
+
+	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
+	//  Elt      Expr      // ellipsis element type (parameter lists only); or nil
+	//case *ast.Ellipsis:
+
+	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+	case *ast.Ident:
+		if typ.Name == "iota" {
+			v.WriteString("%d")
+			v.useIota = true
+			break
+		}
+		// Undefined value in array / slice
+		if len(v.lit) != 0 && typ.Name == "_" {
+			break
+		}
+
+		v.WriteString(typ.Name)
+
+	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
+	//  Op    token.Token // operator
+	//  X     Expr        // operand
+	case *ast.UnaryExpr:
+		unaryExpr := iface.(*ast.UnaryExpr)
+
+		v.WriteString(unaryExpr.Op.String())
+		v.getValue(unaryExpr.X)
 
 	default:
 		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",
