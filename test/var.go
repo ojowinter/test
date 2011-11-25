@@ -5,7 +5,7 @@ var b, c, d float64
 var e = 0
 var f, g float32 = -1, -2
 var (
-	h        int
+	h       int
 	i, j, k = 2.0, 3.0, "bar"
 )
 
@@ -34,10 +34,12 @@ var (
 var (
 	s1 = make([]int, 10)
 	s2 = make([]int, 10, 20)
+
+	s3 = []int{2, 4, 5}
+	//s4 = [...]string{"a", "b", "c"}
 )
 
 func main() {
-	// === Short variable declarations
 	a, b := 0, 10
 	f := func() int { return 7 }
 	ch := make(chan int)

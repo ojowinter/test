@@ -145,8 +145,27 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.CompositeLit:
 		composite := iface.(*ast.CompositeLit)
 
-		v.getValue(composite.Type)
-		//fmt.Println(composite.Elts) // TODO: to debug
+		switch typ := composite.Type.(type) {
+		case *ast.ArrayType:
+			v.getValue(composite.Type)
+
+			// For arrays initialized
+			if len(composite.Elts) != 0 {
+				if typ.Len == nil {
+					v.WriteString("[")
+				} else {
+					v.WriteString(fmt.Sprintf("; %s = [", v.ident))
+				}
+
+				for i, el := range composite.Elts {
+					if i != 0 {
+						v.WriteString(",")
+					}
+					v.getValue(el)
+				}
+				v.WriteString("]")
+			}
+		}
 
 	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
@@ -154,12 +173,16 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.ArrayType:
 		array := iface.(*ast.ArrayType)
 
+		if array.Len == nil { // slice
+			break
+		}
+
 		if len(v.lit) == 0 {
 			v.WriteString("new Array(")
 			v.getValue(array.Len)
 			v.WriteString(")")
 		} else {
-			iArray := len(v.lit) - 1 // index of array
+			iArray := len(v.lit) - 1             // index of array
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
 			v.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
@@ -168,7 +191,7 @@ func (v *value) getValue(iface interface{}) {
 			v.WriteString(")")
 		}
 
-		if _, ok:= array.Elt.(*ast.ArrayType); ok {
+		if _, ok := array.Elt.(*ast.ArrayType); ok {
 			v.getValue(array.Elt)
 		} else if len(v.lit) > 1 {
 			v.WriteString(" " + strings.Repeat("}", len(v.lit)-1))
@@ -193,11 +216,11 @@ func (v *value) getValue(iface interface{}) {
 			// Check if it is a slice
 			if _, ok := call.Args[0].(*ast.ArrayType); ok {
 				v.WriteString("new Array(")
-				v.getValue(call.Args[len(call.Args) - 1]) // capacity
+				v.getValue(call.Args[len(call.Args)-1]) // capacity
 				v.WriteString(")")
 			}
 		default:
-			panic(fmt.Sprintf("[getValue] unimplemented: %s", callIdent))
+			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
 		}
 
 	default:
