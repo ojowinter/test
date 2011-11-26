@@ -17,26 +17,29 @@ package tojs
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 
-	"io/ioutil"
-	"path"
-	"strings"
+	//"io/ioutil"
+	"os"
+	//"path"
+	//"strings"
 )
 
 // Compiles a Go source file into JavaScript.
 // Writes the output in "filename" but with extension ".js".
 func Compile(filename string) error {
+	var hasError bool
+
 	// If Go sintaxis is incorrect then there will be an error.
 	node, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0) //parser.ParseComments)
 	if err != nil {
 		return err
 	}
 
-	jsFile := strings.Replace(filename, path.Ext(filename), ".js", 1)
 	// === Buffers
 	bufConst := new(bytes.Buffer)
 	bufType := new(bytes.Buffer)
@@ -61,9 +64,16 @@ func Compile(filename string) error {
 			case token.TYPE:
 				getType(bufType, genDecl.Specs)
 			case token.VAR:
-				getVar(bufVar, genDecl.Specs)
+				if err := getVar(bufVar, genDecl.Specs); err != nil {
+					fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+					hasError = true
+				}
 			}
 		}
+	}
+
+	if hasError {
+		return errors.New("error: not supported in JavaScript")
 	}
 
 	// Write all buffers in the first one
@@ -71,6 +81,7 @@ func Compile(filename string) error {
 	bufConst.Write(bufVar.Bytes())
 	fmt.Print(bufConst.String()) // TODO: delete
 
-	return ioutil.WriteFile(jsFile, bufConst.Bytes(), 0664)
-//	return nil
+	//jsFile := strings.Replace(filename, path.Ext(filename), ".js", 1)
+	//return ioutil.WriteFile(jsFile, bufConst.Bytes(), 0664)
+	return nil
 }

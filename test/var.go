@@ -43,12 +43,17 @@ var (
 
 // Map
 var (
-	m1 = make(map[string] int, 100)  // map with initial space for 100 elements
-	m2 = make(map[string] int)
+	m1 = make(map[string]int, 100) // map with initial space for 100 elements
+	m2 = make(map[string]int)
 	m3 = map[int]string{
 		1: "first",
 		2: "second",
 		3: "third",
+	}
+	m4 = map[int]interface{}{
+		1: "first",
+		2: 2,
+		3: 3,
 	}
 )
 

@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/ast"
+	"go/token"
 	"strconv"
 	"strings"
 )
@@ -50,7 +51,7 @@ func (v *value) printArray() string {
 
 // Gets the value.
 // It throws a panic message for types no added.
-func (v *value) getValue(iface interface{}) {
+func (v *value) getValue(iface interface{}) error {
 	// type Expr
 	switch typ := iface.(type) {
 
@@ -117,9 +118,14 @@ func (v *value) getValue(iface interface{}) {
 		callIdent := call.Fun.(*ast.Ident).Name
 
 		switch callIdent {
-		case "make":
+		default:
+			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
 
-			switch call.Args[0].(type) {
+		case "make":
+			switch typ := call.Args[0].(type) {
+			default:
+				panic(fmt.Sprintf("[getValue] call of 'make' unimplemented: %T", typ))
+
 			// For slice
 			case *ast.ArrayType:
 				v.WriteString("new Array(")
@@ -130,17 +136,23 @@ func (v *value) getValue(iface interface{}) {
 			// is not useful in JS since it is dynamic.
 			case *ast.MapType:
 				v.WriteString("{};") // or "new Object()"
+
+			case *ast.ChanType:
+				return fmt.Errorf("channel type, at line: %v",
+					call.Args[0].(*ast.ChanType).Pos())
 			}
 
 		case "new":
+			switch typ := call.Args[0].(type) {
+			default:
+				panic(fmt.Sprintf("[getValue] call of 'new' unimplemented: %T", typ))
+
 			// Check if it is an array
-			if _, ok := call.Args[0].(*ast.ArrayType); ok {
+			case *ast.ArrayType:
 				for _, arg := range call.Args {
 					v.getValue(arg)
 				}
 			}
-		default:
-			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
 		}
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
@@ -170,6 +182,10 @@ func (v *value) getValue(iface interface{}) {
 				}
 				v.WriteString("]")
 			}
+
+		// http://golang.org/pkg/go/ast/#MapType || godoc go/ast MapType
+		//  Key   Expr
+		//  Value Expr
 		case *ast.MapType:
 			lenElts := len(composite.Elts) - 1
 			v.WriteString("{")
@@ -219,6 +235,11 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.UnaryExpr:
 		unaryExpr := iface.(*ast.UnaryExpr)
 
+		if unaryExpr.Op == token.ARROW { // channel
+			return fmt.Errorf("channel operator, at line: %d",
+				unaryExpr.OpPos)
+		}
+
 		v.WriteString(unaryExpr.Op.String())
 		v.getValue(unaryExpr.X)
 
@@ -226,4 +247,6 @@ func (v *value) getValue(iface interface{}) {
 		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",
 			iface, iface))
 	}
+
+	return nil
 }

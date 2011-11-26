@@ -29,3 +29,10 @@ var m3 = {
 	2: "second",
 	3: "third"
 };
+var m4 = {
+	1: "first",
+	2: 2,
+	3: 3
+};
+var c1 = ;
+var c2 = ;

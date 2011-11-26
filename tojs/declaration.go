@@ -112,7 +112,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) {
 		tSpec := s.(*ast.TypeSpec)
 
 		name := tSpec.Name.Name
-		fmt.Printf("%T : %v\n", name,name)
+		fmt.Printf("%T : %v\n", name, name)
 	}
 }
 
@@ -123,7 +123,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) {
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
 //
 // TODO: use let for local variables
-func getVar(buf *bytes.Buffer, spec []ast.Spec) {
+func getVar(buf *bytes.Buffer, spec []ast.Spec) error {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
@@ -141,7 +141,11 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) {
 			}
 
 			val := newValue(names[i])
-			val.getValue(v)
+			// Ckeck types not supported in JS
+			if err := val.getValue(v); err != nil {
+				return err
+			}
+
 			if !skipName[i] {
 				values = append(values, val.String())
 			}
@@ -175,4 +179,6 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) {
 			buf.WriteString("\n")
 		}
 	}
+
+	return nil
 }

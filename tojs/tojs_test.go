@@ -15,11 +15,23 @@
 
 package tojs
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestConst(t *testing.T)  { compile("const.go", t) }
 func TestVar(t *testing.T)    { compile("var.go", t) }
 func TestStruct(t *testing.T) { compile("struct.go", t) }
+
+func TestError(t *testing.T) {
+	err := Compile("../test/error.go")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+
+	fmt.Println(err.Error())
+}
 
 // * * *
 

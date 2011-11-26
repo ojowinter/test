@@ -14,6 +14,8 @@ Status:
 	slice				[OK]
 	ellipsis			[OK]
 	map					[OK]
+	empty interface		[OK]
+	channel				[OK]
 	struct				[.]
 
 TODO:
