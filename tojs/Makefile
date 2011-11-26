@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=github.com/kless/GotoScript/tojs
+TARG=github.com/kless/GoScript/tojs
 GOFILES=\
 	declaration.go\
 	tojs.go\

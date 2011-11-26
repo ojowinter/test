@@ -1,4 +1,4 @@
-GotoScript
+GoScript
 ==========
 
 Compiles transforming Go into JavaScript excepting some Go's features which can
@@ -36,7 +36,7 @@ Nothing.
 
 ## Copyright and licensing
 
-***Copyright 2011  The "GotoScript" Authors***  
+***Copyright 2011  The "GoScript" Authors***  
 See file AUTHORS and CONTRIBUTORS.
 
 Licensed under **GNU General Public License, version 3 or later**.  
