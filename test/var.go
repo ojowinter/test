@@ -41,6 +41,17 @@ var (
 	s5 = [...]string{"a", "b", "c"}
 )
 
+// Map
+var (
+	m1 = make(map[string] int, 100)  // map with initial space for 100 elements
+	m2 = make(map[string] int)
+	m3 = map[int]string{
+		1: "first",
+		2: "second",
+		3: "third",
+	}
+)
+
 func main() {
 	a, b := 0, 10
 	f := func() int { return 7 }

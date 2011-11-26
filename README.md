@@ -13,6 +13,7 @@ Status:
 	array				[OK]
 	slice				[OK]
 	ellipsis			[OK]
+	map					[OK]
 	struct				[.]
 
 TODO:

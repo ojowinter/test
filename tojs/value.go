@@ -117,19 +117,27 @@ func (v *value) getValue(iface interface{}) {
 		callIdent := call.Fun.(*ast.Ident).Name
 
 		switch callIdent {
+		case "make":
+
+			switch call.Args[0].(type) {
+			// For slice
+			case *ast.ArrayType:
+				v.WriteString("new Array(")
+				v.getValue(call.Args[len(call.Args)-1]) // capacity
+				v.WriteString(")")
+
+			// The second argument (in Args), if any, is the capacity which
+			// is not useful in JS since it is dynamic.
+			case *ast.MapType:
+				v.WriteString("{};") // or "new Object()"
+			}
+
 		case "new":
 			// Check if it is an array
 			if _, ok := call.Args[0].(*ast.ArrayType); ok {
 				for _, arg := range call.Args {
 					v.getValue(arg)
 				}
-			}
-		case "make":
-			// Check if it is a slice
-			if _, ok := call.Args[0].(*ast.ArrayType); ok {
-				v.WriteString("new Array(")
-				v.getValue(call.Args[len(call.Args)-1]) // capacity
-				v.WriteString(")")
 			}
 		default:
 			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
@@ -162,6 +170,18 @@ func (v *value) getValue(iface interface{}) {
 				}
 				v.WriteString("]")
 			}
+		case *ast.MapType:
+			lenElts := len(composite.Elts) - 1
+			v.WriteString("{")
+
+			for i, el := range composite.Elts {
+				v.getValue(el)
+
+				if i != lenElts {
+					v.WriteString(",")
+				}
+			}
+			v.WriteString("\n};")
 		}
 
 	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
@@ -181,6 +201,17 @@ func (v *value) getValue(iface interface{}) {
 		}
 
 		v.WriteString(typ.Name)
+
+	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
+	//  Key   Expr
+	//  Value Expr
+	case *ast.KeyValueExpr:
+		keyValueExpr := iface.(*ast.KeyValueExpr)
+
+		v.WriteString("\n\t")
+		v.getValue(keyValueExpr.Key)
+		v.WriteString(": ")
+		v.getValue(keyValueExpr.Value)
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
 	//  Op    token.Token // operator

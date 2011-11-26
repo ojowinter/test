@@ -111,7 +111,8 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) {
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
 
-		
+		name := tSpec.Name.Name
+		fmt.Printf("%T : %v\n", name,name)
 	}
 }
 
@@ -168,7 +169,7 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) {
 
 		last := buf.Bytes()[buf.Len()-1] // last character
 
-		if last != '}' {
+		if last != '}' && last != ';' {
 			buf.WriteString(";\n")
 		} else {
 			buf.WriteString("\n")

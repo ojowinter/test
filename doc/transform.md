@@ -18,6 +18,27 @@ Transforming to JavaScript
 [Reference](http://bytes.com/topic/javascript/answers/441203-structs-javascript)
 
 
+## Map
+
+It is defined using an object.
+
+	`var m1 = new Object();` or `var m1 = {};`
+
+	m1['one']='first';
+	m1['two']='second';
+	m1['three']='third';
+
+To create a map with values initialized:
+
+	var m2 = {
+		1: 'Joe',
+		3: 'Sam',
+		8: 'Eve',
+	};
+
++ Loop: `for(var i in m1)`
+
+
 ## Testing
 
 The JavaScript output of the files in directory "test" have been checked using

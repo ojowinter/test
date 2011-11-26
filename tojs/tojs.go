@@ -21,9 +21,10 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-//	"io/ioutil"
-//	"path"
-//	"strings"
+
+	"io/ioutil"
+	"path"
+	"strings"
 )
 
 // Compiles a Go source file into JavaScript.
@@ -35,7 +36,7 @@ func Compile(filename string) error {
 		return err
 	}
 
-//	jsFile := strings.Replace(filename, path.Ext(filename), ".js", 1)
+	jsFile := strings.Replace(filename, path.Ext(filename), ".js", 1)
 	// === Buffers
 	bufConst := new(bytes.Buffer)
 	bufType := new(bytes.Buffer)
@@ -70,6 +71,6 @@ func Compile(filename string) error {
 	bufConst.Write(bufVar.Bytes())
 	fmt.Print(bufConst.String()) // TODO: delete
 
-//	return ioutil.WriteFile(jsFile, bufConst.Bytes(), 0664)
-	return nil
+	return ioutil.WriteFile(jsFile, bufConst.Bytes(), 0664)
+//	return nil
 }

@@ -22,3 +22,10 @@ var s2 = new Array(20);
 var s3 = [2,4,6];
 var s4 = [1,,3];
 var s5 = new Array(3); s5 = ["a","b","c"];
+var m1 = {};
+var m2 = {};
+var m3 = {
+	1: "first",
+	2: "second",
+	3: "third"
+};
