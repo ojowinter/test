@@ -18,12 +18,6 @@ Status:
 	channel				[OK]
 	struct				[.]
 
-TODO:
-
-+ Substitute "var" by "let" for local variables, when browsers use ECMAScript 6
-
-http://kishorelive.com/2011/11/22/ecmascript-6-looks-promising/
-
 
 ## Installation
 
