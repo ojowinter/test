@@ -104,16 +104,87 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 // Types
 //
 // http://golang.org/doc/go_spec.html#Type_declarations
-func getType(buf *bytes.Buffer, spec []ast.Spec) {
+func getType(buf *bytes.Buffer, spec []ast.Spec) error {
+	// Format fields
+	format := func(fields []string) (args, allFields string) {
+		for i, f := range fields {
+			if i == 0 {
+				args = f
+			} else {
+				args += ", " + f
+			}
+
+			allFields += fmt.Sprintf("\n\tthis.%s = %s;", f, f)
+		}
+		return
+	}
+
 	// http://golang.org/pkg/go/ast/#TypeSpec || godoc go/ast TypeSpec
 	//  Name    *Ident        // type name
 	//  Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
+		fields := make([]string, 0) // names of fields
+		//!anonField := make([]bool, 0) // anonymous field
 
+		switch typ := tSpec.Type.(type) {
+		default:
+			panic(fmt.Sprintf("[getType] unimplemented: %T", typ))
+
+		case *ast.Ident:
+			//!anonField = append(anonField, true)
+			return fmt.Errorf("Anonymous field in struct: line %d",
+				1)
+
+		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
+		//  Struct     token.Pos  // position of "struct" keyword
+		//  Fields     *FieldList // list of field declarations
+		//  Incomplete bool       // true if (source) fields are missing in the Fields list
+		case *ast.StructType:
+			if typ.Incomplete {
+				panic("[getType:StructType] list of fields incomplete ???")
+			}
+
+			// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
+			//  List    []*Field  // field list; or nil
+			for _, field := range typ.Fields.List {
+				if _, ok := field.Type.(*ast.FuncType); ok {
+					return fmt.Errorf("Function type in struct: line %d",
+						0)
+				}
+
+				// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
+				//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
+				//  Type    Expr          // field/method/parameter type
+				//  Tag     *BasicLit     // field tag; or nil
+				for _, n := range field.Names {
+					name := n.Name
+
+					if name == "_" {
+						continue
+					}
+
+					fields = append(fields, name)
+					//!anonField = append(anonField, false)
+				}
+			}
+		}
+
+		// === Write
 		name := tSpec.Name.Name
-		fmt.Printf("%T : %v\n", name, name)
+		args, allFields := format(fields)
+
+		buf.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
+
+		if len(allFields) != 0 {
+			buf.WriteString(allFields)
+			buf.WriteString("\n}\n")
+		} else {
+			buf.WriteString("}\n") //! empty struct
+		}
 	}
+
+	return nil
 }
 
 // Variables

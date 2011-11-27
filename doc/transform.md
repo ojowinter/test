@@ -46,6 +46,8 @@ break/continue/fallthrough)
 
 http://kishorelive.com/2011/11/22/ecmascript-6-looks-promising/
 
++ Should be translated empty structs? Or simply ignored?
+
 
 ## Struct
 

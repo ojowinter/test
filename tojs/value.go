@@ -131,7 +131,7 @@ func (v *value) getValue(iface interface{}) error {
 				v.WriteString("{};") // or "new Object()"
 
 			case *ast.ChanType:
-				return fmt.Errorf("channel type, at line: %v",
+				return fmt.Errorf("Channel type: line %v",
 					typ.Args[0].(*ast.ChanType).Pos())
 			}
 
@@ -232,7 +232,7 @@ func (v *value) getValue(iface interface{}) error {
 	//  X     Expr        // operand
 	case *ast.UnaryExpr:
 		if typ.Op == token.ARROW { // channel
-			return fmt.Errorf("channel operator, at line: %d",
+			return fmt.Errorf("Channel operator: line %d",
 				typ.OpPos)
 		}
 
