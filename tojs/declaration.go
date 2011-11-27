@@ -134,7 +134,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 		case *ast.Ident:
 			//!anonField = append(anonField, true)
 			return fmt.Errorf("Anonymous field in struct: line %d",
-				1)
+				tSpec.Pos())
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 		//  Struct     token.Pos  // position of "struct" keyword
@@ -150,7 +150,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					return fmt.Errorf("Function type in struct: line %d",
-						0)
+						field.Pos())
 				}
 
 				// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field

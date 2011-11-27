@@ -12,4 +12,11 @@ type s1 struct {
 	//F func()
 }
 
+// The tag strings define the protocol buffer field numbers.
+type s2 struct {
+	microsec  uint64 "field 1"
+	serverIP6 uint64 "field 2"
+	process   string "field 3"
+}
+
 func main() {}
