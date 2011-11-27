@@ -16,7 +16,7 @@ Status:
 	map					[OK]
 	empty interface		[OK]
 	channel				[OK]
-	struct				[.]
+	struct				[OK]
 
 
 ## Installation

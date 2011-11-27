@@ -13,10 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package tojs
+package goscript
 
 import (
-	"go/ast"
 	"go/token"
 )
 
@@ -43,25 +42,4 @@ func isType(tok token.Token, lit string) bool {
 		}
 	}
 	return false
-}
-
-//
-// === Get
-
-// Gets the identifiers.
-//
-// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
-//  Name    string    // identifier name
-func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
-	skipName = make([]bool, len(spec.Names)) // for blank identifiers "_"
-
-	for i, v := range spec.Names {
-		if v.Name == "_" {
-			skipName[i] = true
-			continue
-		}
-		names = append(names, v.Name)
-	}
-
-	return
 }

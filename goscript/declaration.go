@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package tojs
+package goscript
 
 import (
 	"bytes"
@@ -99,6 +99,73 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 
 		buf.WriteString(";\n")
 	}
+}
+
+// Variables
+//
+// http://golang.org/doc/go_spec.html#Variable_declarations
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/var
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
+//
+// TODO: use let for local variables
+func getVar(buf *bytes.Buffer, spec []ast.Spec) error {
+	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
+	for _, s := range spec {
+		vSpec := s.(*ast.ValueSpec)
+		names, skipName := getName(vSpec)
+		values := make([]string, 0)
+
+		// === Values
+		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
+		for i, v := range vSpec.Values {
+			// Skip when it is not a function
+			if skipName[i] {
+				if _, ok := v.(*ast.CallExpr); !ok {
+					continue
+				}
+			}
+
+			val := newValue(names[i])
+			// Ckeck types not supported in JS
+			if err := val.getValue(v); err != nil {
+				return err
+			}
+
+			if !skipName[i] {
+				values = append(values, val.String())
+			}
+		}
+
+		// === Write
+		// TODO: calculate expression using "exp/types"
+		isFirst := true
+		for i, n := range names {
+			if skipName[i] {
+				continue
+			}
+
+			if isFirst {
+				isFirst = false
+				buf.WriteString("var " + n)
+			} else {
+				buf.WriteString(", " + n)
+			}
+
+			if len(values) != 0 {
+				buf.WriteString(" = " + values[i])
+			}
+		}
+
+		last := buf.Bytes()[buf.Len()-1] // last character
+
+		if last != '}' && last != ';' {
+			buf.WriteString(";\n")
+		} else {
+			buf.WriteString("\n")
+		}
+	}
+
+	return nil
 }
 
 // Types
@@ -187,69 +254,23 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 	return nil
 }
 
-// Variables
 //
-// http://golang.org/doc/go_spec.html#Variable_declarations
-// https://developer.mozilla.org/en/JavaScript/Reference/Statements/var
-// https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
+// === Utility
+
+// Gets the identifiers.
 //
-// TODO: use let for local variables
-func getVar(buf *bytes.Buffer, spec []ast.Spec) error {
-	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
-	for _, s := range spec {
-		vSpec := s.(*ast.ValueSpec)
-		names, skipName := getName(vSpec)
-		values := make([]string, 0)
+// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+//  Name    string    // identifier name
+func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
+	skipName = make([]bool, len(spec.Names)) // for blank identifiers "_"
 
-		// === Values
-		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
-		for i, v := range vSpec.Values {
-			// Skip when it is not a function
-			if skipName[i] {
-				if _, ok := v.(*ast.CallExpr); !ok {
-					continue
-				}
-			}
-
-			val := newValue(names[i])
-			// Ckeck types not supported in JS
-			if err := val.getValue(v); err != nil {
-				return err
-			}
-
-			if !skipName[i] {
-				values = append(values, val.String())
-			}
+	for i, v := range spec.Names {
+		if v.Name == "_" {
+			skipName[i] = true
+			continue
 		}
-
-		// === Write
-		// TODO: calculate expression using "exp/types"
-		isFirst := true
-		for i, n := range names {
-			if skipName[i] {
-				continue
-			}
-
-			if isFirst {
-				isFirst = false
-				buf.WriteString("var " + n)
-			} else {
-				buf.WriteString(", " + n)
-			}
-
-			if len(values) != 0 {
-				buf.WriteString(" = " + values[i])
-			}
-		}
-
-		last := buf.Bytes()[buf.Len()-1] // last character
-
-		if last != '}' && last != ';' {
-			buf.WriteString(";\n")
-		} else {
-			buf.WriteString("\n")
-		}
+		names = append(names, v.Name)
 	}
 
-	return nil
+	return
 }

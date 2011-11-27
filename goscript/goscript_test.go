@@ -13,13 +13,30 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package goscript
 
 import (
-
-	"github.com/kless/GoScript/tojs"
+	"fmt"
+	"testing"
 )
 
-func main() {
+func TestConst(t *testing.T)  { compile("const.go", t) }
+func TestVar(t *testing.T)    { compile("var.go", t) }
+func TestStruct(t *testing.T) { compile("struct.go", t) }
 
+func TestError(t *testing.T) {
+	err := Compile("../test/error.go")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+
+	fmt.Println(err.Error())
+}
+
+// * * *
+
+func compile(filename string, t *testing.T) {
+	if err := Compile("../test/" + filename); err != nil {
+		t.Fatalf("expected parse file, got\n%s", err)
+	}
 }
