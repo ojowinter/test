@@ -29,16 +29,22 @@ const MAX_EXPRESSION = 10
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
-func getConst(buf *bytes.Buffer, spec []ast.Spec) {
+func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
+	var errs []error
 	iotas := make([]int, MAX_EXPRESSION)
 	lastValues := make([]string, MAX_EXPRESSION)
 
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	//  Names   []*Ident      // value names (len(Names) > 0)
+	//  Type    Expr          // value type; or nil
 	//  Values  []Expr        // initial values; or nil
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
+		if err := checkType(vSpec.Type); err != nil {
+			errs = append(errs, err)
+			continue
+		}
 		if len(vSpec.Values) > MAX_EXPRESSION {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
 		}
@@ -76,6 +82,11 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 			iotas[0]++
 		}
 
+		// Skip write buffer, if any error
+		if errs != nil {
+			continue
+		}
+
 		// === Write
 		// TODO: calculate expression using "exp/types"
 		isFirst := true
@@ -99,6 +110,8 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 
 		buf.WriteString(";\n")
 	}
+
+	return errs
 }
 
 // Variables
@@ -108,10 +121,18 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) {
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
 //
 // TODO: use let for local variables
-func getVar(buf *bytes.Buffer, spec []ast.Spec) error {
+func getVar(buf *bytes.Buffer, spec []ast.Spec) []error {
+	var errs []error
+
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
+
+		if err := checkType(vSpec.Type); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
 		names, skipName := getName(vSpec)
 		values := make([]string, 0)
 
@@ -128,12 +149,17 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) error {
 			val := newValue(names[i])
 			// Ckeck types not supported in JS
 			if err := val.getValue(v); err != nil {
-				return err
+				errs = append(errs, err)
+				continue
 			}
 
 			if !skipName[i] {
 				values = append(values, val.String())
 			}
+		}
+
+		if errs != nil {
+			continue
 		}
 
 		// === Write
@@ -165,13 +191,15 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) error {
 		}
 	}
 
-	return nil
+	return errs
 }
 
 // Types
 //
 // http://golang.org/doc/go_spec.html#Type_declarations
-func getType(buf *bytes.Buffer, spec []ast.Spec) error {
+func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
+	var errs []error
+
 	// Format fields
 	format := func(fields []string) (args, allFields string) {
 		for i, f := range fields {
@@ -194,14 +222,18 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 		fields := make([]string, 0) // names of fields
 		//!anonField := make([]bool, 0) // anonymous field
 
+		/*if err := checkType(tSpec.Type); err != nil {
+			return err
+		}*/
+
 		switch typ := tSpec.Type.(type) {
 		default:
 			panic(fmt.Sprintf("[getType] unimplemented: %T", typ))
 
 		case *ast.Ident:
 			//!anonField = append(anonField, true)
-			return fmt.Errorf("Anonymous field in struct: line %d",
-				tSpec.Pos())
+			errs = append(errs,
+				fmt.Errorf("Anonymous field in struct: line %d", tSpec.Pos()))
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 		//  Struct     token.Pos  // position of "struct" keyword
@@ -216,14 +248,20 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 			//  List    []*Field  // field list; or nil
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
-					return fmt.Errorf("Function type in struct: line %d",
-						field.Pos())
+					errs = append(errs,
+						fmt.Errorf("Function type in struct: line %d", field.Pos()))
+					continue
 				}
 
 				// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
 				//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
 				//  Type    Expr          // field/method/parameter type
 				//  Tag     *BasicLit     // field tag; or nil
+				if err := checkType(field.Type); err != nil {
+					errs = append(errs, err)
+					continue
+				}
+
 				for _, n := range field.Names {
 					name := n.Name
 
@@ -235,6 +273,10 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 					//!anonField = append(anonField, false)
 				}
 			}
+		}
+
+		if errs != nil {
+			continue
 		}
 
 		// === Write
@@ -251,7 +293,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) error {
 		}
 	}
 
-	return nil
+	return errs
 }
 
 //

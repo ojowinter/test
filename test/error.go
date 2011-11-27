@@ -10,14 +10,14 @@ var c3 = <- 0
 // Struct
 type s1 struct {
 	a, b int
-	f    float32
+	f    float64
 	_    float32 // padding
 	F func()
 }
 
 type i int
 type s2 struct {
-	a int
+	a int64
 	i
 	f float32
 }

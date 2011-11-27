@@ -16,6 +16,8 @@
 package goscript
 
 import (
+	"fmt"
+	"go/ast"
 	"go/token"
 )
 
@@ -30,7 +32,12 @@ var types = []string{
 	"byte", "rune", "uint", "int", "uintptr",
 }
 
-// Checks if a literal is a type.
+// JavaScript does not support numbers of 64 bits.
+var invalidTypes = []string{
+	"uint64", "int64", "float64", "complex64", "complex128", //"uintptr",
+}
+
+// Checks if the literal is a type.
 func isType(tok token.Token, lit string) bool {
 	if tok != token.IDENT {
 		return false
@@ -42,4 +49,49 @@ func isType(tok token.Token, lit string) bool {
 		}
 	}
 	return false
+}
+
+// Checks if the literal is a valid type for JavaScript.
+func isValidType(lit string) bool {
+	for _, v := range invalidTypes {
+		if v == lit {
+			return false
+		}
+	}
+	return true
+}
+
+// * * *
+
+// Checks if it is a valid type.
+func checkType(expr ast.Expr) error {
+	ok := true
+
+	switch typ := expr.(type) {
+	default:
+		panic(fmt.Sprintf("[checkType] unimplemented: %T", typ))
+
+	// The type has not been indicated
+	case nil:
+
+	// Elt    Expr      // element type
+	case *ast.ArrayType:
+		checkType(typ.Elt)
+
+	// Name    string    // identifier name
+	case *ast.Ident:
+		ok = isValidType(typ.Name)
+
+	// X    Expr      // operand
+	case *ast.StarExpr:
+		checkType(typ.X)
+
+	//case *ast.StructType:
+		
+	}
+
+	if !ok {
+		return fmt.Errorf("Big numeric type: line %d", expr.Pos())
+	}
+	return nil
 }
