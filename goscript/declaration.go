@@ -222,10 +222,6 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
 		fields := make([]string, 0) // names of fields
 		//!anonField := make([]bool, 0) // anonymous field
 
-		/*if err := checkType(tSpec.Type); err != nil {
-			return err
-		}*/
-
 		switch typ := tSpec.Type.(type) {
 		default:
 			panic(fmt.Sprintf("[getType] unimplemented: %T", typ))

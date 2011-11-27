@@ -85,9 +85,6 @@ func checkType(expr ast.Expr) error {
 	// X    Expr      // operand
 	case *ast.StarExpr:
 		checkType(typ.X)
-
-	//case *ast.StructType:
-		
 	}
 
 	if !ok {

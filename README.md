@@ -15,8 +15,9 @@ Status:
 	ellipsis			[OK]
 	map					[OK]
 	empty interface		[OK]
-	channel				[OK]
+	check channel		[OK]
 	struct				[OK]
+	check big numbers	[OK]
 
 
 ## Installation
