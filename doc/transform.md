@@ -85,6 +85,12 @@ To create a map with values initialized:
 + Loop: `for(var i in m1)`
 
 
+## Numbers
+
+http://rx4ajax-jscore.com/ecmacore/datatype/number.html
+http://stackoverflow.com/questions/506200/javascript-64-bit-numeric-precision
+
+
 ## Testing
 
 The JavaScript output of the files in directory "test" have been checked using

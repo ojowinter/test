@@ -59,9 +59,7 @@ func (v *value) getValue(iface interface{}) error {
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
 	//  Elt    Expr      // element type
 	case *ast.ArrayType:
-		array := iface.(*ast.ArrayType)
-
-		if array.Len == nil { // slice
+		if typ.Len == nil { // slice
 			break
 		}
 
@@ -71,7 +69,7 @@ func (v *value) getValue(iface interface{}) error {
 			if v.len != 0 { // ellipsis
 				v.WriteString(strconv.Itoa(v.len))
 			} else {
-				v.getValue(array.Len)
+				v.getValue(typ.Len)
 			}
 
 			v.WriteString(")")
@@ -81,12 +79,12 @@ func (v *value) getValue(iface interface{}) error {
 
 			v.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
 				vArray, vArray, v.lit[iArray], vArray, v.ident, v.printArray()))
-			v.getValue(array.Len)
+			v.getValue(typ.Len)
 			v.WriteString(")")
 		}
 
-		if _, ok := array.Elt.(*ast.ArrayType); ok {
-			v.getValue(array.Elt)
+		if _, ok := typ.Elt.(*ast.ArrayType); ok {
+			v.getValue(typ.Elt)
 		} else if len(v.lit) > 1 {
 			v.WriteString("; " + strings.Repeat("}", len(v.lit)-1))
 		}
@@ -94,42 +92,37 @@ func (v *value) getValue(iface interface{}) error {
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
 	//  Value    string      // literal string
 	case *ast.BasicLit:
-		lit := iface.(*ast.BasicLit).Value
-
-		v.WriteString(lit)
-		v.lit = append(v.lit, lit)
+		v.WriteString(typ.Value)
+		v.lit = append(v.lit, typ.Value)
 
 	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
 	//  X     Expr        // left operand
 	//  Op    token.Token // operator
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
-		binaryExpr := iface.(*ast.BinaryExpr)
-
-		v.getValue(binaryExpr.X)
-		v.WriteString(" " + binaryExpr.Op.String() + " ")
-		v.getValue(binaryExpr.Y)
+		v.getValue(typ.X)
+		v.WriteString(" " + typ.Op.String() + " ")
+		v.getValue(typ.Y)
 
 	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
 	//  Fun      Expr      // function expression
 	//  Args     []Expr    // function arguments; or nil
 	case *ast.CallExpr:
-		call := iface.(*ast.CallExpr)
-		callIdent := call.Fun.(*ast.Ident).Name
+		callIdent := typ.Fun.(*ast.Ident).Name
 
 		switch callIdent {
 		default:
 			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
 
 		case "make":
-			switch typ := call.Args[0].(type) {
+			switch argType := typ.Args[0].(type) {
 			default:
-				panic(fmt.Sprintf("[getValue] call of 'make' unimplemented: %T", typ))
+				panic(fmt.Sprintf("[getValue] call of 'make' unimplemented: %T", argType))
 
 			// For slice
 			case *ast.ArrayType:
 				v.WriteString("new Array(")
-				v.getValue(call.Args[len(call.Args)-1]) // capacity
+				v.getValue(typ.Args[len(typ.Args)-1]) // capacity
 				v.WriteString(")")
 
 			// The second argument (in Args), if any, is the capacity which
@@ -139,17 +132,17 @@ func (v *value) getValue(iface interface{}) error {
 
 			case *ast.ChanType:
 				return fmt.Errorf("channel type, at line: %v",
-					call.Args[0].(*ast.ChanType).Pos())
+					typ.Args[0].(*ast.ChanType).Pos())
 			}
 
 		case "new":
-			switch typ := call.Args[0].(type) {
+			switch argType := typ.Args[0].(type) {
 			default:
-				panic(fmt.Sprintf("[getValue] call of 'new' unimplemented: %T", typ))
+				panic(fmt.Sprintf("[getValue] call of 'new' unimplemented: %T", argType))
 
 			// Check if it is an array
 			case *ast.ArrayType:
-				for _, arg := range call.Args {
+				for _, arg := range typ.Args {
 					v.getValue(arg)
 				}
 			}
@@ -159,22 +152,23 @@ func (v *value) getValue(iface interface{}) error {
 	//  Type   Expr      // literal type; or nil
 	//  Elts   []Expr    // list of composite elements; or nil
 	case *ast.CompositeLit:
-		composite := iface.(*ast.CompositeLit)
+		switch litType := typ.Type.(type) {
+		default:
+			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", litType))
 
-		switch typ := composite.Type.(type) {
 		case *ast.ArrayType:
-			v.len = len(composite.Elts) // for ellipsis
-			v.getValue(composite.Type)
+			v.len = len(typ.Elts) // for ellipsis
+			v.getValue(typ.Type)
 
 			// For arrays initialized
-			if len(composite.Elts) != 0 {
-				if typ.Len == nil {
+			if len(typ.Elts) != 0 {
+				if litType.Len == nil {
 					v.WriteString("[")
 				} else {
 					v.WriteString(fmt.Sprintf("; %s = [", v.ident))
 				}
 
-				for i, el := range composite.Elts {
+				for i, el := range typ.Elts {
 					if i != 0 {
 						v.WriteString(",")
 					}
@@ -187,10 +181,10 @@ func (v *value) getValue(iface interface{}) error {
 		//  Key   Expr
 		//  Value Expr
 		case *ast.MapType:
-			lenElts := len(composite.Elts) - 1
+			lenElts := len(typ.Elts) - 1
 			v.WriteString("{")
 
-			for i, el := range composite.Elts {
+			for i, el := range typ.Elts {
 				v.getValue(el)
 
 				if i != lenElts {
@@ -222,26 +216,28 @@ func (v *value) getValue(iface interface{}) error {
 	//  Key   Expr
 	//  Value Expr
 	case *ast.KeyValueExpr:
-		keyValueExpr := iface.(*ast.KeyValueExpr)
-
 		v.WriteString("\n\t")
-		v.getValue(keyValueExpr.Key)
+		v.getValue(typ.Key)
 		v.WriteString(": ")
-		v.getValue(keyValueExpr.Value)
+		v.getValue(typ.Value)
+
+	// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
+	//  Struct     token.Pos  // position of "struct" keyword
+	//  Fields     *FieldList // list of field declarations
+	//  Incomplete bool       // true if (source) fields are missing in the Fields list
+	/*case *ast.StructType:*/
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
 	//  Op    token.Token // operator
 	//  X     Expr        // operand
 	case *ast.UnaryExpr:
-		unaryExpr := iface.(*ast.UnaryExpr)
-
-		if unaryExpr.Op == token.ARROW { // channel
+		if typ.Op == token.ARROW { // channel
 			return fmt.Errorf("channel operator, at line: %d",
-				unaryExpr.OpPos)
+				typ.OpPos)
 		}
 
-		v.WriteString(unaryExpr.Op.String())
-		v.getValue(unaryExpr.X)
+		v.WriteString(typ.Op.String())
+		v.getValue(typ.X)
 
 	default:
 		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",

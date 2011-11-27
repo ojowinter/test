@@ -22,7 +22,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-
 	//"io/ioutil"
 	"os"
 	//"path"
