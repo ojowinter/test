@@ -1,8 +1,30 @@
 GoScript
 ========
 
-Compiles transforming Go into JavaScript excepting some Go's features which can
-not be supported by JavaScript, like goroutines, channels, etc.
+Compiles transforming Go into JavaScript so you can continue using a clean and
+concise sintaxis.  
+In fact, it is used a subset of Go since JavaScript has not native way to
+represent some types neither Go's statements, although some of them could be
+emulated (but that is not my goal).
+
+Advantages:
+
++ Use one only language for all development. A great advantage for a company.
+
++ It allows many type errors to be caught early in the development cycle, due
+to static typing.
+
++ The mathematical expressions are calculated at the translation stage. (ToDo)
+
++ The lines numbers in the unminified generated JavaScript match up with the
+lines numbers in the original source file. (ToDo)
+
+Go sintaxis not supported:
+
++ Complex numbers, numeric types of 64 bits
++ Function and interface types excepting the empty interface
++ Channels, goroutines (ToDo)
++ Import declarations from core library (ToDo)
 
 Status:
 
