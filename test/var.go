@@ -57,6 +57,13 @@ var (
 	}
 )
 
+// Pointer
+var (
+	p0 *byte
+	p1 *int = 2
+	p2 *bool = true
+)
+
 func main() {
 	a, b := 0, 10
 	f := func() int { return 7 }

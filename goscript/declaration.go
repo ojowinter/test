@@ -16,7 +16,6 @@
 package goscript
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 )
@@ -29,8 +28,7 @@ const MAX_EXPRESSION = 10
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
-func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
-	var errs []error
+func (tr *transform) getConst(spec []ast.Spec) {
 	iotas := make([]int, MAX_EXPRESSION)
 	lastValues := make([]string, MAX_EXPRESSION)
 
@@ -41,27 +39,28 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
-		if err := checkType(vSpec.Type); err != nil {
-			errs = append(errs, err)
-			continue
-		}
 		if len(vSpec.Values) > MAX_EXPRESSION {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
 		}
+		if err := checkType(vSpec.Type); err != nil {
+			tr.err = append(tr.err, err)
+			continue
+		}
 
 		names, skipName := getName(vSpec)
-		values := make([]string, 0)
 
 		// === Values
 		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
 		//  type Expr interface
+		values := make([]string, 0)
+
 		if len(vSpec.Values) != 0 {
 			for i, v := range vSpec.Values {
 				var expr string
 				val := newValue(names[i])
 
 				if err := val.getValue(v); err != nil {
-					errs = append(errs, err)
+					tr.err = append(tr.err, err)
 					continue
 				}
 
@@ -86,7 +85,7 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
 		}
 
 		// Skip write buffer, if any error
-		if errs != nil {
+		if tr.err != nil {
 			continue
 		}
 
@@ -100,9 +99,9 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
 
 			if isFirst {
 				isFirst = false
-				buf.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
+				tr.bConst.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
 			} else {
-				buf.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
+				tr.bConst.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
 			}
 		}
 
@@ -111,10 +110,8 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
 			continue
 		}
 
-		buf.WriteString(";\n")
+		tr.bConst.WriteString(";\n")
 	}
-
-	return errs
 }
 
 // Variables
@@ -124,23 +121,22 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
 //
 // TODO: use let for local variables
-func getVar(buf *bytes.Buffer, spec []ast.Spec) []error {
-	var errs []error
-
+func (tr *transform) getVar(spec []ast.Spec) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
 		if err := checkType(vSpec.Type); err != nil {
-			errs = append(errs, err)
+			tr.err = append(tr.err, err)
 			continue
 		}
 
 		names, skipName := getName(vSpec)
-		values := make([]string, 0)
 
 		// === Values
 		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
+		values := make([]string, 0)
+
 		for i, v := range vSpec.Values {
 			// Skip when it is not a function
 			if skipName[i] {
@@ -152,7 +148,7 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) []error {
 			val := newValue(names[i])
 
 			if err := val.getValue(v); err != nil {
-				errs = append(errs, err)
+				tr.err = append(tr.err, err)
 				continue
 			}
 
@@ -161,7 +157,7 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) []error {
 			}
 		}
 
-		if errs != nil {
+		if tr.err != nil {
 			continue
 		}
 
@@ -175,34 +171,30 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) []error {
 
 			if isFirst {
 				isFirst = false
-				buf.WriteString("var " + n)
+				tr.bVar.WriteString("var " + n)
 			} else {
-				buf.WriteString(", " + n)
+				tr.bVar.WriteString(", " + n)
 			}
 
 			if len(values) != 0 {
-				buf.WriteString(" = " + values[i])
+				tr.bVar.WriteString(" = " + values[i])
 			}
 		}
 
-		last := buf.Bytes()[buf.Len()-1] // last character
+		last := tr.bVar.Bytes()[tr.bVar.Len()-1] // last character
 
 		if last != '}' && last != ';' {
-			buf.WriteString(";\n")
+			tr.bVar.WriteString(";\n")
 		} else {
-			buf.WriteString("\n")
+			tr.bVar.WriteString("\n")
 		}
 	}
-
-	return errs
 }
 
 // Types
 //
 // http://golang.org/doc/go_spec.html#Type_declarations
-func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
-	var errs []error
-
+func (tr *transform) getType(spec []ast.Spec) {
 	// Format fields
 	format := func(fields []string) (args, allFields string) {
 		for i, f := range fields {
@@ -231,7 +223,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
 
 		case *ast.Ident:
 			//!anonField = append(anonField, true)
-			errs = append(errs,
+			tr.err = append(tr.err,
 				fmt.Errorf("Anonymous field in struct: line %d", tSpec.Pos()))
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
@@ -247,7 +239,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
 			//  List    []*Field  // field list; or nil
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
-					errs = append(errs,
+					tr.err = append(tr.err,
 						fmt.Errorf("Function type in struct: line %d", field.Pos()))
 					continue
 				}
@@ -257,7 +249,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
 				//  Type    Expr          // field/method/parameter type
 				//  Tag     *BasicLit     // field tag; or nil
 				if err := checkType(field.Type); err != nil {
-					errs = append(errs, err)
+					tr.err = append(tr.err, err)
 					continue
 				}
 
@@ -274,7 +266,7 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
 			}
 		}
 
-		if errs != nil {
+		if tr.err != nil {
 			continue
 		}
 
@@ -282,17 +274,15 @@ func getType(buf *bytes.Buffer, spec []ast.Spec) []error {
 		name := tSpec.Name.Name
 		args, allFields := format(fields)
 
-		buf.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
+		tr.bType.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
 
 		if len(allFields) != 0 {
-			buf.WriteString(allFields)
-			buf.WriteString("\n}\n")
+			tr.bType.WriteString(allFields)
+			tr.bType.WriteString("\n}\n")
 		} else {
-			buf.WriteString("}\n") //! empty struct
+			tr.bType.WriteString("}\n") //! empty struct
 		}
 	}
-
-	return errs
 }
 
 //

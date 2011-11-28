@@ -19,6 +19,8 @@ to static typing.
 + The lines numbers in the unminified generated JavaScript match up with the
 lines numbers in the original source file. (ToDo)
 
++ Generate minimized JavaScript. (ToDo)
+
 Go sintaxis not supported:
 
 + Complex numbers, numeric types of 64 bits
@@ -39,7 +41,8 @@ Status:
 	empty interface		[OK]
 	check channel		[OK]
 	struct				[OK]
-	check big numbers	[OK]
+	check big number	[OK]
+	pointer				[OK]
 
 
 ## Installation
