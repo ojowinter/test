@@ -58,9 +58,12 @@ func getConst(buf *bytes.Buffer, spec []ast.Spec) []error {
 		if len(vSpec.Values) != 0 {
 			for i, v := range vSpec.Values {
 				var expr string
-
 				val := newValue(names[i])
-				val.getValue(v)
+
+				if err := val.getValue(v); err != nil {
+					errs = append(errs, err)
+					continue
+				}
 
 				if val.useIota {
 					expr = fmt.Sprintf(val.String(), iotas[i])
@@ -147,7 +150,7 @@ func getVar(buf *bytes.Buffer, spec []ast.Spec) []error {
 			}
 
 			val := newValue(names[i])
-			// Ckeck types not supported in JS
+
 			if err := val.getValue(v); err != nil {
 				errs = append(errs, err)
 				continue

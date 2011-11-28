@@ -63,7 +63,7 @@ func isValidType(lit string) bool {
 
 // * * *
 
-// Checks if it is a valid type.
+// Checks if it is a valid type, when it is used an explicit type.
 func checkType(expr ast.Expr) error {
 	ok := true
 

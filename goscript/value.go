@@ -90,8 +90,16 @@ func (v *value) getValue(iface interface{}) error {
 		}
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
+	//  Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
 	//  Value    string      // literal string
 	case *ast.BasicLit:
+		// Note that it is not checked if a value INT or FLOAT is of 64 bits
+		// since it is almost impossible that somebody enters such number.
+		// Instead, it is checked after calculating mathematical expressions.
+		if typ.Kind == token.IMAG {
+			return fmt.Errorf("Complex numeric type: line %v", typ.Pos())
+		}
+
 		v.WriteString(typ.Value)
 		v.lit = append(v.lit, typ.Value)
 
