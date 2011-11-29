@@ -64,31 +64,33 @@ func isValidType(lit string) bool {
 // * * *
 
 // Checks if it is a valid type, when it is used an explicit type.
-func checkType(expr ast.Expr) error {
-	ok := true
+func checkType(expr ...ast.Expr) error {
+	for _, v := range expr {
+		switch typ := v.(type) {
+		default:
+			panic(fmt.Sprintf("[checkType] unimplemented: %T", typ))
 
-	switch typ := expr.(type) {
-	default:
-		panic(fmt.Sprintf("[checkType] unimplemented: %T", typ))
+		// The type has not been indicated
+		case nil:
 
-	// The type has not been indicated
-	case nil:
+		// Elt    Expr      // element type
+		case *ast.ArrayType:
+			return checkType(typ.Elt)
 
-	// Elt    Expr      // element type
-	case *ast.ArrayType:
-		checkType(typ.Elt)
+		// Name    string    // identifier name
+		case *ast.Ident:
+			if ok := isValidType(typ.Name); !ok {
+				return fmt.Errorf("Unsupported %q type: line %d",
+					typ.Name, typ.Pos())
+			}
 
-	// Name    string    // identifier name
-	case *ast.Ident:
-		ok = isValidType(typ.Name)
+		case *ast.InterfaceType:
 
-	// X    Expr      // operand
-	case *ast.StarExpr:
-		checkType(typ.X)
+		// X    Expr      // operand
+		case *ast.StarExpr:
+			return checkType(typ.X)
+		}
 	}
 
-	if !ok {
-		return fmt.Errorf("Big numeric type: line %d", expr.Pos())
-	}
 	return nil
 }

@@ -59,6 +59,11 @@ func (v *value) getValue(iface interface{}) error {
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
 	//  Elt    Expr      // element type
 	case *ast.ArrayType:
+		// Checking
+		if err := checkType(typ.Elt); err != nil {
+			return err
+		}
+
 		if typ.Len == nil { // slice
 			break
 		}
@@ -96,9 +101,10 @@ func (v *value) getValue(iface interface{}) error {
 		// Note that it is not checked if a value INT or FLOAT is of 64 bits
 		// since it is almost impossible that somebody enters such number.
 		// Instead, it is checked after calculating mathematical expressions.
-		if typ.Kind == token.IMAG {
-			return fmt.Errorf("Complex numeric type: line %v", typ.Pos())
-		}
+		// Checking
+		/*if typ.Kind == token.INT || typ.Kind == token.FLOAT {
+			// check bits size
+		}*/
 
 		v.WriteString(typ.Value)
 		v.lit = append(v.lit, typ.Value)
@@ -129,6 +135,11 @@ func (v *value) getValue(iface interface{}) error {
 
 			// For slice
 			case *ast.ArrayType:
+				// Checking
+				if err := checkType(argType.Elt); err != nil {
+					return err
+				}
+
 				v.WriteString("new Array(")
 				v.getValue(typ.Args[len(typ.Args)-1]) // capacity
 				v.WriteString(")")
@@ -136,6 +147,11 @@ func (v *value) getValue(iface interface{}) error {
 			// The second argument (in Args), if any, is the capacity which
 			// is not useful in JS since it is dynamic.
 			case *ast.MapType:
+				// Checking
+				if err := checkType(argType.Key, argType.Value); err != nil {
+					return err
+				}
+
 				v.WriteString("{};") // or "new Object()"
 
 			case *ast.ChanType:
@@ -148,8 +164,12 @@ func (v *value) getValue(iface interface{}) error {
 			default:
 				panic(fmt.Sprintf("[getValue] call of 'new' unimplemented: %T", argType))
 
-			// Check if it is an array
 			case *ast.ArrayType:
+				// Checking
+				if err := checkType(argType.Elt); err != nil {
+					return err
+				}
+
 				for _, arg := range typ.Args {
 					v.getValue(arg)
 				}
@@ -165,6 +185,11 @@ func (v *value) getValue(iface interface{}) error {
 			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", litType))
 
 		case *ast.ArrayType:
+			// Checking
+			if err := checkType(litType.Elt); err != nil {
+				return err
+			}
+
 			v.len = len(typ.Elts) // for ellipsis
 			v.getValue(typ.Type)
 
@@ -189,6 +214,11 @@ func (v *value) getValue(iface interface{}) error {
 		//  Key   Expr
 		//  Value Expr
 		case *ast.MapType:
+			// Checking
+			if err := checkType(litType.Key, litType.Value); err != nil {
+				return err
+			}
+
 			lenElts := len(typ.Elts) - 1
 			v.WriteString("{")
 

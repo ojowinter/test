@@ -42,6 +42,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		if len(vSpec.Values) > MAX_EXPRESSION {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
 		}
+		// Checking
 		if err := checkType(vSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
@@ -126,6 +127,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
+		// Checking
 		if err := checkType(vSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
@@ -146,7 +148,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			}
 
 			val := newValue(names[i])
-
+			// Checking
 			if err := val.getValue(v); err != nil {
 				tr.err = append(tr.err, err)
 				continue
@@ -248,6 +250,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 				//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
 				//  Type    Expr          // field/method/parameter type
 				//  Tag     *BasicLit     // field tag; or nil
+
+				// Checking
 				if err := checkType(field.Type); err != nil {
 					tr.err = append(tr.err, err)
 					continue
