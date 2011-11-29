@@ -23,7 +23,7 @@ lines numbers in the original source file. (ToDo)
 
 Go sintaxis not supported:
 
-+ Complex numbers, numeric types of 64 bits
++ Complex numbers
 + Function and interface types excepting the empty interface
 + Channels, goroutines (ToDo)
 + Import declarations from core library (ToDo)
@@ -41,7 +41,7 @@ Status:
 	empty interface		[OK]
 	check channel		[OK]
 	struct				[OK]
-	check big number	[OK]
+	check big number	[.]
 	pointer				[OK]
 
 

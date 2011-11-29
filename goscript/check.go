@@ -39,9 +39,9 @@ var types = []string{
 	"byte", "rune", "uint", "int", "uintptr",
 }
 
-// JavaScript does not support numbers of 64 bits.
+// Types not supported in JavaScript.
 var invalidTypes = []string{
-	"uint64", "int64", "float64", "complex64", "complex128", //"uintptr",
+	"complex64", "complex128", //"uintptr",
 }
 
 // Checks if the literal is a type.
