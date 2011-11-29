@@ -89,8 +89,14 @@ To create a map with values initialized:
 
 ## Numbers
 
+All JavaScript numbers are double floats (64 bits) but 11 bits are used to store
+the position of the fractional dot within the number. And one extra bit is used
+with the signed numbers.  
+So you can't actually do meaningful integer arithmetic on anything bigger than
+2^53.
+
+http://www.jwz.org/blog/2010/10/every-day-i-learn-something-new-and-stupid/
 http://rx4ajax-jscore.com/ecmacore/datatype/number.html
-http://stackoverflow.com/questions/506200/javascript-64-bit-numeric-precision
 
 
 ## Testing

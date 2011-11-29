@@ -2,6 +2,11 @@
 
 package test
 
+var (
+	i  = MAX_INT_JS + 1
+	ui = MAX_UINT_JS + 1
+)
+
 // === Chan
 var c1 = make(chan int, 10)
 var c2 = make(chan bool)
@@ -12,7 +17,7 @@ type i int
 
 type s1 struct {
 	a, b int
-	f    float64
+	c    float64
 	_    float32 // padding
 	F func()
 }

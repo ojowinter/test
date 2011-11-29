@@ -26,16 +26,24 @@ import (
 
 // Represents a value.
 type value struct {
+	ident   string // variable's identifier
 	useIota bool
-	ident   string   // variable's identifier
-	lit     []string // store the last literals (for array)
+	isNegative bool
 	len     int      // store length of array, to use in case of ellipsis (...)
+	lit     []string // store the last literals (for array)
 	*bytes.Buffer
 }
 
 // Initializes a new type of "value".
 func newValue(identifier string) *value {
-	return &value{false, identifier, make([]string, 0), 0, new(bytes.Buffer)}
+	return &value{
+		identifier,
+		false,
+		false,
+		0,
+		make([]string, 0),
+		new(bytes.Buffer),
+	}
 }
 
 // Returns the values of an array formatted like "[i0][i1]..."
@@ -98,12 +106,12 @@ func (v *value) getValue(iface interface{}) error {
 	//  Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
 	//  Value    string      // literal string
 	case *ast.BasicLit:
-		// Note that it is not checked if a value INT or FLOAT is of 64 bits
-		// since it is almost impossible that somebody enters such number.
-		// Instead, it is checked after calculating mathematical expressions.
+		// Check after calculating the mathematical expressions. ToDo
 		// Checking
-		/*if typ.Kind == token.INT || typ.Kind == token.FLOAT {
-			// check bits size
+		/*if typ.Kind == token.INT {
+			if err := checkInt(typ.Value, v.isNegative, typ.Pos()); err != nil {
+				return err
+			}
 		}*/
 
 		v.WriteString(typ.Value)
@@ -269,9 +277,11 @@ func (v *value) getValue(iface interface{}) error {
 	//  Op    token.Token // operator
 	//  X     Expr        // operand
 	case *ast.UnaryExpr:
-		if typ.Op == token.ARROW { // channel
-			return fmt.Errorf("Channel operator: line %d",
-				typ.OpPos)
+		switch typ.Op {
+		case token.SUB:
+			v.isNegative = true
+		case token.ARROW: // channel
+			return fmt.Errorf("Channel operator: line %d", typ.OpPos)
 		}
 
 		v.WriteString(typ.Op.String())

@@ -19,6 +19,13 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strconv"
+)
+
+// Maximum size for integers in JavaScript.
+const (
+	MAX_UINT_JS = 1<<53 - 1
+	MAX_INT_JS  = 1<<52 - 1
 )
 
 var types = []string{
@@ -92,5 +99,45 @@ func checkType(expr ...ast.Expr) error {
 		}
 	}
 
+	return nil
+}
+
+// Checks the maximum size of an integer for JavaScript.
+func checkInt(num string, isNegative bool, pos token.Pos) error {
+	var errConv, errMax bool
+	intString := "integer" // to print
+
+	if isNegative {
+		n, err := strconv.Atoi64(num)
+		if err != nil {
+			errConv = true
+		}
+
+		if n > MAX_INT_JS {
+			errMax = true
+		}
+
+		num = "-" + num // to print the sign
+	} else {
+		intString = "unsigned " + intString
+
+		n, err := strconv.Atoui64(num)
+		if err != nil {
+			errConv = true
+		}
+
+		if n > MAX_UINT_JS {
+			errMax = true
+		}
+	}
+
+	if errConv {
+		return fmt.Errorf("%q could not be converted to %s: line %d",
+			num, intString, pos)
+	}
+	if errMax {
+		return fmt.Errorf("%q does not safely fit in a JavaScript number: line %d",
+			num, pos)
+	}
 	return nil
 }
