@@ -1,10 +1,10 @@
 package test
 
-const Pi float32 = 3.14159265358979323846
+const Pi float64 = 3.14159265358979323846
 const Pi2 = Pi
 const zero = 0.0 // untyped floating-point constant
 const (
-	size int32 = 1024
+	size int64 = 1024
 	eof        = -1 // untyped integer constant
 )
 const a, b, c = 3, 4, "foo" // a = 3, b = 4, c = "foo", untyped integer and string constants
@@ -34,7 +34,7 @@ const (
 )
 const (
 	c0         = iota * 42 // c0 == 0     (untyped integer constant)
-	c1 float32 = iota * 42 // c1 == 42.0  (float32 constant)
+	c1 float64 = iota * 42 // c1 == 42.0  (float64 constant)
 	c2         = iota * 42 // c2 == 84    (untyped integer constant)
 )
 

@@ -39,11 +39,6 @@ var types = []string{
 	"byte", "rune", "uint", "int", "uintptr",
 }
 
-// Types not supported in JavaScript.
-var invalidTypes = []string{
-	"complex64", "complex128", //"uintptr",
-}
-
 // Checks if the literal is a type.
 func isType(tok token.Token, lit string) bool {
 	if tok != token.IDENT {
@@ -58,57 +53,113 @@ func isType(tok token.Token, lit string) bool {
 	return false
 }
 
-// Checks if the literal is a valid type for JavaScript.
-func isValidType(lit string) bool {
-	for _, v := range invalidTypes {
-		if v == lit {
-			return false
-		}
-	}
-	return true
-}
-
-// * * *
-
-// Checks if it is a valid type, when it is used an explicit type.
-func checkType(expr ...ast.Expr) error {
-	for _, v := range expr {
-		switch typ := v.(type) {
+// Gets both type name and position.
+// If returns an empty literal, then it has not been indicated.
+func getType(expr ...ast.Expr) (name []string, pos []token.Pos, err error) {
+	for _, e := range expr {
+		switch typ := e.(type) {
 		default:
 			panic(fmt.Sprintf("[checkType] unimplemented: %T", typ))
 
 		// The type has not been indicated
 		case nil:
+			//return "", 0//, typ.Pos()
 
-		// Elt    Expr      // element type
-		case *ast.ArrayType:
-			return checkType(typ.Elt)
+		// 
+		case *ast.BasicLit:
+			//return "", 0//
 
-		// Name    string    // identifier name
+		// Get the type data
 		case *ast.Ident:
-			if ok := isValidType(typ.Name); !ok {
-				return fmt.Errorf("Unsupported %q type: line %d",
-					typ.Name, typ.Pos())
+			name = append(name, typ.Name)
+			pos = append(pos, typ.Pos())
+
+		// * * *
+
+		case *ast.ArrayType:
+			return getType(typ.Elt)
+
+		case *ast.BinaryExpr:
+			return getType(typ.X, typ.Y)
+
+		case *ast.CallExpr:
+			switch typ.Fun.(*ast.Ident).Name {
+			case "make", "new":
+				return getType(typ.Args[0])
 			}
 
-		case *ast.InterfaceType:
+		case *ast.ChanType:
+			err = fmt.Errorf("%d: channel type", typ.Pos())
 
-		// X    Expr      // operand
+		case *ast.CompositeLit:
+			return getType(typ.Type)
+
+		case *ast.InterfaceType: // ToDo: review
+
+		case *ast.MapType:
+			return getType(typ.Key, typ.Value)
+
+		// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
+		//  X    Expr      // operand
 		case *ast.StarExpr:
-			return checkType(typ.X)
+			return getType(typ.X)
+
+		case *ast.UnaryExpr:
+			// Channel
+			if typ.Op == token.ARROW {
+				err = fmt.Errorf("%d: channel operator", typ.Pos())
+				break
+			}
+			return getType(typ.X)
 		}
 	}
 
+	return
+}
+
+// * * *
+
+// Checks if it has a valid type for JavaScript.
+func checkType(expr ast.Expr) error {
+	name, pos, err := getType(expr)
+	if err != nil {
+		return err
+	}
+
+	for i, v := range name {
+		if v == "complex64" || v == "complex128" { // || v == "uintptr"
+			return fmt.Errorf("%d: %s type", pos[i], v)
+		}
+	}
 	return nil
 }
 
 // Checks the maximum size of an integer for JavaScript.
-func checkInt(num string, isNegative bool, pos token.Pos) error {
-	var errConv, errMax bool
+func checkInt(value, type_ string, isNegative bool, pos token.Pos) error {
+	var errConv, errMax, isInt bool
 	intString := "integer" // to print
 
+//println(type_)
+
+	// Check overflow
 	if isNegative {
-		n, err := strconv.Atoi64(num)
+		switch type_ {
+		case "uint", "uint8", "uint16", "uint32", "uint64":
+			return fmt.Errorf("%d: -%s overflows %s", pos, value, type_)
+		}
+	}
+
+	switch type_ {
+	case "int", "int64", "": // an integer type is "int", by default
+		isInt = true
+	case "uint", "uint64":
+		intString = "unsigned " + intString
+	default:
+		return nil
+	}
+
+	if isInt {
+		n, err := strconv.Atoi64(value)
 		if err != nil {
 			errConv = true
 		}
@@ -116,12 +167,8 @@ func checkInt(num string, isNegative bool, pos token.Pos) error {
 		if n > MAX_INT_JS {
 			errMax = true
 		}
-
-		num = "-" + num // to print the sign
 	} else {
-		intString = "unsigned " + intString
-
-		n, err := strconv.Atoui64(num)
+		n, err := strconv.Atoui64(value)
 		if err != nil {
 			errConv = true
 		}
@@ -131,13 +178,20 @@ func checkInt(num string, isNegative bool, pos token.Pos) error {
 		}
 	}
 
-	if errConv {
-		return fmt.Errorf("%q could not be converted to %s: line %d",
-			num, intString, pos)
+	if !errConv && !errMax {
+		return nil
 	}
+
+	// To print the sign
+	if isNegative {
+		value = "-" + value
+	}
+
 	if errMax {
-		return fmt.Errorf("%q does not safely fit in a JavaScript number: line %d",
-			num, pos)
+		return fmt.Errorf("%d: %s does not safely fit in a JS number",
+			pos, value)
 	}
-	return nil
+	// if errConv {
+	return fmt.Errorf("%d: %s could not be converted to %s",
+		pos, value, intString)
 }

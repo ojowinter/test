@@ -2,15 +2,52 @@
 
 package test
 
+/*const (
+	badInt = MAX_INT_JS + 1
+	badUint = MAX_UINT_JS + 1
+)*/
+
 var (
-	i  = MAX_INT_JS + 1
-	ui = MAX_UINT_JS + 1
+	a complex128
+	b, c, d complex128
+	e complex128 = 1
+	f, g complex128 = -1, -2
+
+	h = 4503599627370496 // MAX_INT_JS + 1
+	i uint64 = -9007199254740992 // MAX_UINT_JS + 1
 )
 
-// === Chan
-var c1 = make(chan int, 10)
-var c2 = make(chan bool)
-var c3 = <- 0
+// Array
+var (
+	a1 = new([2][4]complex64)
+	a2 = [3][5]complex64{}
+	a3 = [32]complex64{1, 2, 3, 4}
+)
+
+// Slice
+var (
+	s1 = make([]complex128, 10)
+	s2 = []complex128{2, 4, 6}
+	s3 = [...]complex128{1, 2, 3}
+)
+
+// Map
+var (
+	m1 = make(map[complex64]int, 100)
+	m2 = make(map[string]complex64)
+	m3 = map[complex64]string{
+		1: "first",
+		2: "second",
+		3: "third",
+	}
+)
+
+// Chan
+var (
+	c1 = make(chan int, 10)
+	c2 = make(chan bool)
+	c3 = <- 0
+)
 
 // === Struct
 type i int
@@ -25,7 +62,7 @@ type s1 struct {
 type s2 struct {
 	a int64
 	i
-	f float32
+	f complex128
 }
 
 func main() {}

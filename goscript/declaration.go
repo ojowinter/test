@@ -60,6 +60,11 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				var expr string
 				val := newValue(names[i])
 
+				/*if err := checkType(v); err != nil {
+					tr.err = append(tr.err, err)
+					continue
+				}*/
+
 				if err := val.getValue(v); err != nil {
 					tr.err = append(tr.err, err)
 					continue
@@ -140,6 +145,12 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		values := make([]string, 0)
 
 		for i, v := range vSpec.Values {
+			// Checking
+			if err := checkType(v); err != nil {
+				tr.err = append(tr.err, err)
+				continue
+			}
+
 			// Skip when it is not a function
 			if skipName[i] {
 				if _, ok := v.(*ast.CallExpr); !ok {
@@ -148,7 +159,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			}
 
 			val := newValue(names[i])
-			// Checking
+
 			if err := val.getValue(v); err != nil {
 				tr.err = append(tr.err, err)
 				continue
@@ -226,7 +237,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 		case *ast.Ident:
 			//!anonField = append(anonField, true)
 			tr.err = append(tr.err,
-				fmt.Errorf("Anonymous field in struct: line %d", tSpec.Pos()))
+				fmt.Errorf("%d: anonymous field in struct", tSpec.Pos()))
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 		//  Struct     token.Pos  // position of "struct" keyword
@@ -242,7 +253,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					tr.err = append(tr.err,
-						fmt.Errorf("Function type in struct: line %d", field.Pos()))
+						fmt.Errorf("%d: function type in struct", field.Pos()))
 					continue
 				}
 

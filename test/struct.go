@@ -14,8 +14,8 @@ type s1 struct {
 
 // The tag strings define the protocol buffer field numbers.
 type s2 struct {
-	microsec  uint32 "field 1"
-	serverIP6 uint32 "field 2"
+	microsec  uint64 "field 1"
+	serverIP6 uint64 "field 2"
 	process   string "field 3"
 }
 

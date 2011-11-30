@@ -1,7 +1,7 @@
 package test
 
 var a int
-var b, c, d float32
+var b, c, d float64
 var e = 0
 var f, g float32 = -1, -2
 var (
@@ -22,10 +22,10 @@ var (
 	a1 = new([32]byte)
 	a2 = new([2][4]uint)
 	//a3 = [2*N] struct { x, y int32 }
-	a4 = [1000]*float32{}
+	a4 = [1000]*float64{}
 	a5 = [4]byte{}
 	a6 = [3][5]int{}
-	a7 = [2][2][2]float32{} // same as [2]([2]([2]float32))
+	a7 = [2][2][2]float64{} // same as [2]([2]([2]float64))
 
 	b1 = [32]byte{1, 2, 3, 4}
 	b2 = [4]byte{1, _, _, 4}

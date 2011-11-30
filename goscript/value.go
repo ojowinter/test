@@ -26,7 +26,8 @@ import (
 
 // Represents a value.
 type value struct {
-	ident   string // variable's identifier
+	name   string // variable's name
+	type_  string // explicit type
 	useIota bool
 	isNegative bool
 	len     int      // store length of array, to use in case of ellipsis (...)
@@ -38,6 +39,7 @@ type value struct {
 func newValue(identifier string) *value {
 	return &value{
 		identifier,
+		"",
 		false,
 		false,
 		0,
@@ -67,11 +69,6 @@ func (v *value) getValue(iface interface{}) error {
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
 	//  Elt    Expr      // element type
 	case *ast.ArrayType:
-		// Checking
-		if err := checkType(typ.Elt); err != nil {
-			return err
-		}
-
 		if typ.Len == nil { // slice
 			break
 		}
@@ -91,7 +88,7 @@ func (v *value) getValue(iface interface{}) error {
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
 			v.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
-				vArray, vArray, v.lit[iArray], vArray, v.ident, v.printArray()))
+				vArray, vArray, v.lit[iArray], vArray, v.name, v.printArray()))
 			v.getValue(typ.Len)
 			v.WriteString(")")
 		}
@@ -108,11 +105,11 @@ func (v *value) getValue(iface interface{}) error {
 	case *ast.BasicLit:
 		// Check after calculating the mathematical expressions. ToDo
 		// Checking
-		/*if typ.Kind == token.INT {
-			if err := checkInt(typ.Value, v.isNegative, typ.Pos()); err != nil {
+		if typ.Kind == token.INT {
+			if err := checkInt(typ.Value, v.type_, v.isNegative, typ.Pos()); err != nil {
 				return err
 			}
-		}*/
+		}
 
 		v.WriteString(typ.Value)
 		v.lit = append(v.lit, typ.Value)
@@ -143,11 +140,6 @@ func (v *value) getValue(iface interface{}) error {
 
 			// For slice
 			case *ast.ArrayType:
-				// Checking
-				if err := checkType(argType.Elt); err != nil {
-					return err
-				}
-
 				v.WriteString("new Array(")
 				v.getValue(typ.Args[len(typ.Args)-1]) // capacity
 				v.WriteString(")")
@@ -155,16 +147,7 @@ func (v *value) getValue(iface interface{}) error {
 			// The second argument (in Args), if any, is the capacity which
 			// is not useful in JS since it is dynamic.
 			case *ast.MapType:
-				// Checking
-				if err := checkType(argType.Key, argType.Value); err != nil {
-					return err
-				}
-
 				v.WriteString("{};") // or "new Object()"
-
-			case *ast.ChanType:
-				return fmt.Errorf("Channel type: line %v",
-					typ.Args[0].(*ast.ChanType).Pos())
 			}
 
 		case "new":
@@ -173,11 +156,6 @@ func (v *value) getValue(iface interface{}) error {
 				panic(fmt.Sprintf("[getValue] call of 'new' unimplemented: %T", argType))
 
 			case *ast.ArrayType:
-				// Checking
-				if err := checkType(argType.Elt); err != nil {
-					return err
-				}
-
 				for _, arg := range typ.Args {
 					v.getValue(arg)
 				}
@@ -193,11 +171,6 @@ func (v *value) getValue(iface interface{}) error {
 			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", litType))
 
 		case *ast.ArrayType:
-			// Checking
-			if err := checkType(litType.Elt); err != nil {
-				return err
-			}
-
 			v.len = len(typ.Elts) // for ellipsis
 			v.getValue(typ.Type)
 
@@ -206,7 +179,7 @@ func (v *value) getValue(iface interface{}) error {
 				if litType.Len == nil {
 					v.WriteString("[")
 				} else {
-					v.WriteString(fmt.Sprintf("; %s = [", v.ident))
+					v.WriteString(fmt.Sprintf("; %s = [", v.name))
 				}
 
 				for i, el := range typ.Elts {
@@ -222,11 +195,6 @@ func (v *value) getValue(iface interface{}) error {
 		//  Key   Expr
 		//  Value Expr
 		case *ast.MapType:
-			// Checking
-			if err := checkType(litType.Key, litType.Value); err != nil {
-				return err
-			}
-
 			lenElts := len(typ.Elts) - 1
 			v.WriteString("{")
 
@@ -245,6 +213,7 @@ func (v *value) getValue(iface interface{}) error {
 	//case *ast.Ellipsis:
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+	//  Name    string    // identifier name
 	case *ast.Ident:
 		if typ.Name == "iota" {
 			v.WriteString("%d")
@@ -280,8 +249,6 @@ func (v *value) getValue(iface interface{}) error {
 		switch typ.Op {
 		case token.SUB:
 			v.isNegative = true
-		case token.ARROW: // channel
-			return fmt.Errorf("Channel operator: line %d", typ.OpPos)
 		}
 
 		v.WriteString(typ.Op.String())
