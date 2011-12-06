@@ -24,14 +24,8 @@ func TestConst(t *testing.T)  { compile("const.go", t) }
 func TestVar(t *testing.T)    { compile("var.go", t) }
 func TestStruct(t *testing.T) { compile("struct.go", t) }
 
-func TestError(t *testing.T) {
-	err := Compile("../test/error.go")
-	if err == nil {
-		t.Fatal("expected error")
-	}
-
-	fmt.Println(err.Error())
-}
+func TestErrorType(t *testing.T) { compileErr("error_type.go", t) }
+func TestErrorInt(t *testing.T)  { compileErr("error_int.go", t) }
 
 // * * *
 
@@ -39,4 +33,13 @@ func compile(filename string, t *testing.T) {
 	if err := Compile("../test/" + filename); err != nil {
 		t.Fatalf("expected parse file, got\n%s", err)
 	}
+}
+
+func compileErr(filename string, t *testing.T) {
+	err := Compile("../test/" + filename)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+
+	fmt.Println(err.Error())
 }

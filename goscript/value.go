@@ -26,20 +26,20 @@ import (
 
 // Represents a value.
 type value struct {
-	name   string // variable's name
-	type_  string // explicit type
+	name    string // variable's name
 	useIota bool
 	isNegative bool
-	len     int      // store length of array, to use in case of ellipsis (...)
+
+	eltsLen int      // store length of array, to use in case of ellipsis (...)
 	lit     []string // store the last literals (for array)
-	*bytes.Buffer
+
+	*bytes.Buffer // sintaxis translated
 }
 
 // Initializes a new type of "value".
 func newValue(identifier string) *value {
 	return &value{
 		identifier,
-		"",
 		false,
 		false,
 		0,
@@ -61,7 +61,7 @@ func (v *value) printArray() string {
 
 // Gets the value.
 // It throws a panic message for types no added.
-func (v *value) getValue(iface interface{}) error {
+func (v *value) getValue(iface interface{}) {
 	// type Expr
 	switch typ := iface.(type) {
 
@@ -76,8 +76,8 @@ func (v *value) getValue(iface interface{}) error {
 		if len(v.lit) == 0 {
 			v.WriteString("new Array(")
 
-			if v.len != 0 { // ellipsis
-				v.WriteString(strconv.Itoa(v.len))
+			if v.eltsLen != 0 { // ellipsis
+				v.WriteString(strconv.Itoa(v.eltsLen))
 			} else {
 				v.getValue(typ.Len)
 			}
@@ -103,16 +103,15 @@ func (v *value) getValue(iface interface{}) error {
 	//  Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
 	//  Value    string      // literal string
 	case *ast.BasicLit:
-		// Check after calculating the mathematical expressions. ToDo
-		// Checking
-		if typ.Kind == token.INT {
-			if err := checkInt(typ.Value, v.type_, v.isNegative, typ.Pos()); err != nil {
-				return err
-			}
-		}
-
 		v.WriteString(typ.Value)
-		v.lit = append(v.lit, typ.Value)
+
+		// === Add the value
+		sign := ""
+
+		if v.isNegative {
+			sign = "-"
+		}
+		v.lit = append(v.lit, sign + typ.Value)
 
 	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
 	//  X     Expr        // left operand
@@ -166,17 +165,17 @@ func (v *value) getValue(iface interface{}) error {
 	//  Type   Expr      // literal type; or nil
 	//  Elts   []Expr    // list of composite elements; or nil
 	case *ast.CompositeLit:
-		switch litType := typ.Type.(type) {
+		switch compoType := typ.Type.(type) {
 		default:
-			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", litType))
+			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", compoType))
 
 		case *ast.ArrayType:
-			v.len = len(typ.Elts) // for ellipsis
+			v.eltsLen = len(typ.Elts) // for ellipsis
 			v.getValue(typ.Type)
 
 			// For arrays initialized
 			if len(typ.Elts) != 0 {
-				if litType.Len == nil {
+				if compoType.Len == nil {
 					v.WriteString("[")
 				} else {
 					v.WriteString(fmt.Sprintf("; %s = [", v.name))
@@ -196,6 +195,7 @@ func (v *value) getValue(iface interface{}) error {
 		//  Value Expr
 		case *ast.MapType:
 			lenElts := len(typ.Elts) - 1
+
 			v.WriteString("{")
 
 			for i, el := range typ.Elts {
@@ -210,7 +210,7 @@ func (v *value) getValue(iface interface{}) error {
 
 	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
 	//  Elt      Expr      // ellipsis element type (parameter lists only); or nil
-	//case *ast.Ellipsis:
+//	case *ast.Ellipsis:
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name
@@ -242,6 +242,11 @@ func (v *value) getValue(iface interface{}) error {
 	//  Incomplete bool       // true if (source) fields are missing in the Fields list
 	/*case *ast.StructType:*/
 
+	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
+	//  X    Expr      // operand
+	case *ast.StarExpr:
+		v.getValue(typ.X)
+
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
 	//  Op    token.Token // operator
 	//  X     Expr        // operand
@@ -258,6 +263,4 @@ func (v *value) getValue(iface interface{}) error {
 		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",
 			iface, iface))
 	}
-
-	return nil
 }

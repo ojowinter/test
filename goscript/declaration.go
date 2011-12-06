@@ -42,8 +42,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		if len(vSpec.Values) > MAX_EXPRESSION {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
 		}
+
 		// Checking
-		if err := checkType(vSpec.Type); err != nil {
+		if err := newCheck().Type(vSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -58,17 +59,15 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		if len(vSpec.Values) != 0 {
 			for i, v := range vSpec.Values {
 				var expr string
-				val := newValue(names[i])
 
-				/*if err := checkType(v); err != nil {
-					tr.err = append(tr.err, err)
-					continue
-				}*/
-
-				if err := val.getValue(v); err != nil {
+				// Checking
+				if err := newCheck().Type(v); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}
+
+				val := newValue(names[i])
+				val.getValue(v)
 
 				if val.useIota {
 					expr = fmt.Sprintf(val.String(), iotas[i])
@@ -133,7 +132,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := checkType(vSpec.Type); err != nil {
+		if err := newCheck().Type(vSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -145,11 +144,11 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		values := make([]string, 0)
 
 		for i, v := range vSpec.Values {
-			// Checking
-			if err := checkType(v); err != nil {
-				tr.err = append(tr.err, err)
-				continue
-			}
+				// Checking
+				if err := newCheck().Type(v); err != nil {
+					tr.err = append(tr.err, err)
+					continue
+				}
 
 			// Skip when it is not a function
 			if skipName[i] {
@@ -159,11 +158,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			}
 
 			val := newValue(names[i])
-
-			if err := val.getValue(v); err != nil {
-				tr.err = append(tr.err, err)
-				continue
-			}
+			val.getValue(v)
 
 			if !skipName[i] {
 				values = append(values, val.String())
@@ -263,7 +258,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 				//  Tag     *BasicLit     // field tag; or nil
 
 				// Checking
-				if err := checkType(field.Type); err != nil {
+				if err := newCheck().Type(field.Type); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}

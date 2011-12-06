@@ -28,7 +28,7 @@ const (
 	MAX_INT_JS  = 1<<52 - 1
 )
 
-var types = []string{
+/*var types = []string{
 	"bool", "string",
 
 	// Numeric types
@@ -51,115 +51,124 @@ func isType(tok token.Token, lit string) bool {
 		}
 	}
 	return false
+}*/
+
+type check struct {
+	isCallExpr, isCompositeLit bool
+	isInt64, isUint64 bool
+	isNegative bool
+	isImplicit bool // type not indicated
 }
 
-// Gets both type name and position.
-// If returns an empty literal, then it has not been indicated.
-func getType(expr ...ast.Expr) (name []string, pos []token.Pos, err error) {
-	for _, e := range expr {
-		switch typ := e.(type) {
-		default:
-			panic(fmt.Sprintf("[checkType] unimplemented: %T", typ))
-
-		// The type has not been indicated
-		case nil:
-			//return "", 0//, typ.Pos()
-
-		// 
-		case *ast.BasicLit:
-			//return "", 0//
-
-		// Get the type data
-		case *ast.Ident:
-			name = append(name, typ.Name)
-			pos = append(pos, typ.Pos())
-
-		// * * *
-
-		case *ast.ArrayType:
-			return getType(typ.Elt)
-
-		case *ast.BinaryExpr:
-			return getType(typ.X, typ.Y)
-
-		case *ast.CallExpr:
-			switch typ.Fun.(*ast.Ident).Name {
-			case "make", "new":
-				return getType(typ.Args[0])
-			}
-
-		case *ast.ChanType:
-			err = fmt.Errorf("%d: channel type", typ.Pos())
-
-		case *ast.CompositeLit:
-			return getType(typ.Type)
-
-		case *ast.InterfaceType: // ToDo: review
-
-		case *ast.MapType:
-			return getType(typ.Key, typ.Value)
-
-		// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
-		//  X    Expr      // operand
-		case *ast.StarExpr:
-			return getType(typ.X)
-
-		case *ast.UnaryExpr:
-			// Channel
-			if typ.Op == token.ARROW {
-				err = fmt.Errorf("%d: channel operator", typ.Pos())
-				break
-			}
-			return getType(typ.X)
-		}
+// Initializes a new type of "check".
+func newCheck() *check {
+	return &check{
+		false, false,
+		false, false,
+		false,
+		false,
 	}
-
-	return
 }
-
-// * * *
 
 // Checks if it has a valid type for JavaScript.
-func checkType(expr ast.Expr) error {
-	name, pos, err := getType(expr)
-	if err != nil {
-		return err
-	}
+func (c *check) Type(expr ast.Expr) error {
+	switch typ := expr.(type) {
+	default:
+		panic(fmt.Sprintf("[Type] unimplemented: %T", typ))
 
-	for i, v := range name {
-		if v == "complex64" || v == "complex128" { // || v == "uintptr"
-			return fmt.Errorf("%d: %s type", pos[i], v)
+	case *ast.ArrayType:
+		return c.Type(typ.Elt)
+
+	case *ast.BasicLit:
+	// Check after calculating the mathematical expressions. ToDo
+
+	// Integer checking
+	if typ.Kind == token.INT {
+		// An integer type is "int", by default
+		if c.isImplicit && !c.isInt64 && !c.isUint64 {
+			c.isInt64 = true
+		}
+
+		if !c.isCallExpr {
+			/*if err := c.checkInt(typ); err != nil {
+				return err
+			}*/
 		}
 	}
+
+	case *ast.BinaryExpr:
+		if err := c.Type(typ.X); err != nil {
+			return err
+		}
+		if err := c.Type(typ.Y); err != nil {
+			return err
+		}
+
+	case *ast.CallExpr:
+		c.isCallExpr = true
+
+		switch typ.Fun.(*ast.Ident).Name {
+		case "make", "new":
+			return c.Type(typ.Args[0])
+		}
+
+	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
+	case *ast.ChanType:
+		return fmt.Errorf("%d: channel type", typ.Pos())
+
+	case *ast.CompositeLit:
+		return c.Type(typ.Type)
+
+	case *ast.Ident:
+		switch typ.Name {
+		// Unsupported types
+		case "complex64", "complex128": // "uintptr"
+			return fmt.Errorf("%d: %s type", typ.Pos(), typ.Name)
+
+		// To check if the number fills into a JS number
+		case "int", "int64":
+			c.isInt64 = true
+		case "uint", "uint64":
+			c.isUint64 = true
+		}
+
+	case *ast.InterfaceType: // ToDo: review
+
+	case *ast.MapType:
+		if err := c.Type(typ.Key); err != nil {
+			return err
+		}
+		if err := c.Type(typ.Value); err != nil {
+			return err
+		}
+
+	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
+	//  X    Expr      // operand
+	case *ast.StarExpr:
+		return c.Type(typ.X)
+
+	case *ast.UnaryExpr:
+		// Channel
+		if typ.Op == token.ARROW {
+			return fmt.Errorf("%d: channel operator", typ.Pos())
+		}
+
+		return c.Type(typ.X)
+
+	// The type has not been indicated
+	case nil:
+		c.isImplicit = true
+	}
+
 	return nil
 }
 
 // Checks the maximum size of an integer for JavaScript.
-func checkInt(value, type_ string, isNegative bool, pos token.Pos) error {
-	var errConv, errMax, isInt bool
-	intString := "integer" // to print
+func (c *check) maxInt(number *ast.BasicLit) error {
+	var errConv, errMax bool
 
-//println(type_)
-
-	// Check overflow
-	if isNegative {
-		switch type_ {
-		case "uint", "uint8", "uint16", "uint32", "uint64":
-			return fmt.Errorf("%d: -%s overflows %s", pos, value, type_)
-		}
-	}
-
-	switch type_ {
-	case "int", "int64", "": // an integer type is "int", by default
-		isInt = true
-	case "uint", "uint64":
-		intString = "unsigned " + intString
-	default:
-		return nil
-	}
-
-	if isInt {
-		n, err := strconv.Atoi64(value)
+	if c.isInt64 {
+		n, err := strconv.Atoi64(number.Value)
 		if err != nil {
 			errConv = true
 		}
@@ -167,8 +176,9 @@ func checkInt(value, type_ string, isNegative bool, pos token.Pos) error {
 		if n > MAX_INT_JS {
 			errMax = true
 		}
-	} else {
-		n, err := strconv.Atoui64(value)
+	}
+	if c.isUint64 {
+		n, err := strconv.Atoui64(number.Value)
 		if err != nil {
 			errConv = true
 		}
@@ -182,16 +192,23 @@ func checkInt(value, type_ string, isNegative bool, pos token.Pos) error {
 		return nil
 	}
 
-	// To print the sign
-	if isNegative {
-		value = "-" + value
+	// === To print
+	intString := "integer"
+	if c.isUint64 {
+		intString = "unsigned " + intString
 	}
+
+	num := number.Value
+	if c.isNegative {
+		num = "-" + num
+	}
+	// ===
 
 	if errMax {
 		return fmt.Errorf("%d: %s does not safely fit in a JS number",
-			pos, value)
+			number.Pos(), num)
 	}
 	// if errConv {
 	return fmt.Errorf("%d: %s could not be converted to %s",
-		pos, value, intString)
+		number.Pos(), num, intString)
 }

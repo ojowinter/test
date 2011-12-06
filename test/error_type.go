@@ -1,20 +1,12 @@
-// Not supported in JavaScript
+// Types not supported in JavaScript
 
 package test
-
-/*const (
-	badInt = MAX_INT_JS + 1
-	badUint = MAX_UINT_JS + 1
-)*/
 
 var (
 	a complex128
 	b, c, d complex128
 	e complex128 = 1
 	f, g complex128 = -1, -2
-
-	h = 4503599627370496 // MAX_INT_JS + 1
-	i uint64 = -9007199254740992 // MAX_UINT_JS + 1
 )
 
 // Array
