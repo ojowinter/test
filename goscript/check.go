@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"os"
 )
 
 /*var types = []string{
@@ -50,21 +49,11 @@ func isType(tok token.Token, lit string) bool {
 type check struct {
 	isCallExpr, isCompositeLit bool
 	isNegative bool
-	isImplicit bool // implicit type?
-
-	type_ string
 }
 
 // Initializes a new type of "check".
-func newCheck(expr ast.Expr) (*check, error) {
-	chk := new(check)
-
-	switch expr.(type) {
-	case nil:
-		chk.isImplicit = true
-	}
-
-	return chk, chk.Type(expr)
+func newCheck() *check {
+	return &check{}
 }
 
 // Checks if it has a valid type for JavaScript.
@@ -77,18 +66,6 @@ func (c *check) Type(expr ast.Expr) error {
 		return c.Type(typ.Elt)
 
 	case *ast.BasicLit:
-	// Check after calculating the mathematical expressions. ToDo
-
-	// An integer type is "int", by default
-	if c.isImplicit && typ.Kind == token.INT {
-		fmt.Fprintf(os.Stderr, "warning: %d: implicit integer type\n", typ.Pos())
-
-		/*if !c.isCallExpr {
-			if err := c.maxInt(typ); err != nil {
-				return err
-			}
-		}*/
-	}
 
 	case *ast.BinaryExpr:
 		if err := c.Type(typ.X); err != nil {
@@ -120,8 +97,7 @@ func (c *check) Type(expr ast.Expr) error {
 	case *ast.Ident:
 		switch typ.Name {
 		// Unsupported types
-		case "complex64", "complex128",
-		"int64", "uint64", "int", "uint": // "uintptr"
+		case "int64", "uint64", "complex64", "complex128": // "uintptr"
 			return fmt.Errorf("%d: %s type", typ.Pos(), typ.Name)
 		}
 

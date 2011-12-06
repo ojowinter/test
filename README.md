@@ -46,8 +46,7 @@ Status:
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
 the spec) up to 32 bits.  
-By this reason, the integers of 64 bits are unsupported, and there is to use
-explicitly *int32()* or *uint32()*.
+By this reason, the integers of 64 bits are unsupported.
 
 
 ## Installation

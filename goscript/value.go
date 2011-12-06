@@ -128,6 +128,16 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.CallExpr:
 		callIdent := typ.Fun.(*ast.Ident).Name
 
+		// Conversion: []byte()
+		if t, ok := typ.Fun.(*ast.ArrayType); ok {
+			if t.Elt.(*ast.Ident).Name == "byte" {
+				v.getValue(typ.Args[0])
+			} else {
+				panic(fmt.Sprintf("[getValue] call of conversion unimplemented: []%T()", t))
+			}
+			break
+		}
+
 		switch callIdent {
 		default:
 			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
