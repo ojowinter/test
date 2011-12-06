@@ -159,6 +159,12 @@ func (v *value) getValue(iface interface{}) {
 					v.getValue(arg)
 				}
 			}
+
+		// Conversion
+		case "uint8", "uint16", "uint32",
+		"int8", "int16", "int32",
+		"float32", "byte", "rune", "string":
+			v.getValue(typ.Args[0])
 		}
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
@@ -235,6 +241,11 @@ func (v *value) getValue(iface interface{}) {
 		v.getValue(typ.Key)
 		v.WriteString(": ")
 		v.getValue(typ.Value)
+
+	// http://golang.org/pkg/go/ast/#ParenExpr || godoc go/ast ParenExpr
+	//  X      Expr      // parenthesized expression
+	case *ast.ParenExpr:
+		v.getValue(typ.X)
 
 	// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword

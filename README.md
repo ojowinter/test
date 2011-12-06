@@ -23,7 +23,7 @@ lines numbers in the original source file. (ToDo)
 
 Go sintaxis not supported:
 
-+ Complex numbers
++ Complex numbers, and integers of 64 bits
 + Function and interface types excepting the empty interface
 + Channels, goroutines (ToDo)
 + Import declarations from core library (ToDo)
@@ -41,8 +41,13 @@ Status:
 	empty interface		[OK]
 	check channel		[OK]
 	struct				[OK]
-	check big number	[.]
 	pointer				[OK]
+
+**Note:** JavaScript can not actually do meaningful integer arithmetic on anything
+bigger than 2^53. Also bitwise logical operations only have defined results (per
+the spec) up to 32 bits.  
+By this reason, the integers of 64 bits are unsupported, and there is to use
+explicitly *int32()* or *uint32()*.
 
 
 ## Installation

@@ -19,13 +19,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"strconv"
-)
-
-// Maximum size for integers in JavaScript.
-const (
-	MAX_UINT_JS = 1<<53 - 1
-	MAX_INT_JS  = 1<<52 - 1
+	"os"
 )
 
 /*var types = []string{
@@ -55,19 +49,22 @@ func isType(tok token.Token, lit string) bool {
 
 type check struct {
 	isCallExpr, isCompositeLit bool
-	isInt64, isUint64 bool
 	isNegative bool
-	isImplicit bool // type not indicated
+	isImplicit bool // implicit type?
+
+	type_ string
 }
 
 // Initializes a new type of "check".
-func newCheck() *check {
-	return &check{
-		false, false,
-		false, false,
-		false,
-		false,
+func newCheck(expr ast.Expr) (*check, error) {
+	chk := new(check)
+
+	switch expr.(type) {
+	case nil:
+		chk.isImplicit = true
 	}
+
+	return chk, chk.Type(expr)
 }
 
 // Checks if it has a valid type for JavaScript.
@@ -82,18 +79,15 @@ func (c *check) Type(expr ast.Expr) error {
 	case *ast.BasicLit:
 	// Check after calculating the mathematical expressions. ToDo
 
-	// Integer checking
-	if typ.Kind == token.INT {
-		// An integer type is "int", by default
-		if c.isImplicit && !c.isInt64 && !c.isUint64 {
-			c.isInt64 = true
-		}
+	// An integer type is "int", by default
+	if c.isImplicit && typ.Kind == token.INT {
+		fmt.Fprintf(os.Stderr, "warning: %d: implicit integer type\n", typ.Pos())
 
-		if !c.isCallExpr {
-			/*if err := c.checkInt(typ); err != nil {
+		/*if !c.isCallExpr {
+			if err := c.maxInt(typ); err != nil {
 				return err
-			}*/
-		}
+			}
+		}*/
 	}
 
 	case *ast.BinaryExpr:
@@ -106,10 +100,14 @@ func (c *check) Type(expr ast.Expr) error {
 
 	case *ast.CallExpr:
 		c.isCallExpr = true
+		ident := typ.Fun.(*ast.Ident).Name
 
-		switch typ.Fun.(*ast.Ident).Name {
+		switch ident {
 		case "make", "new":
 			return c.Type(typ.Args[0])
+
+		case "int", "uint", "int64", "uint64":
+			return fmt.Errorf("%d: conversion of type %s", typ.Pos(), ident)
 		}
 
 	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
@@ -122,14 +120,9 @@ func (c *check) Type(expr ast.Expr) error {
 	case *ast.Ident:
 		switch typ.Name {
 		// Unsupported types
-		case "complex64", "complex128": // "uintptr"
+		case "complex64", "complex128",
+		"int64", "uint64", "int", "uint": // "uintptr"
 			return fmt.Errorf("%d: %s type", typ.Pos(), typ.Name)
-
-		// To check if the number fills into a JS number
-		case "int", "int64":
-			c.isInt64 = true
-		case "uint", "uint64":
-			c.isUint64 = true
 		}
 
 	case *ast.InterfaceType: // ToDo: review
@@ -142,10 +135,16 @@ func (c *check) Type(expr ast.Expr) error {
 			return err
 		}
 
+	case *ast.ParenExpr:
+		return c.Type(typ.X)
+
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
 	//  X    Expr      // operand
 	case *ast.StarExpr:
 		return c.Type(typ.X)
+
+	case *ast.StructType:
+		
 
 	case *ast.UnaryExpr:
 		// Channel
@@ -157,58 +156,8 @@ func (c *check) Type(expr ast.Expr) error {
 
 	// The type has not been indicated
 	case nil:
-		c.isImplicit = true
+		
 	}
 
 	return nil
-}
-
-// Checks the maximum size of an integer for JavaScript.
-func (c *check) maxInt(number *ast.BasicLit) error {
-	var errConv, errMax bool
-
-	if c.isInt64 {
-		n, err := strconv.Atoi64(number.Value)
-		if err != nil {
-			errConv = true
-		}
-
-		if n > MAX_INT_JS {
-			errMax = true
-		}
-	}
-	if c.isUint64 {
-		n, err := strconv.Atoui64(number.Value)
-		if err != nil {
-			errConv = true
-		}
-
-		if n > MAX_UINT_JS {
-			errMax = true
-		}
-	}
-
-	if !errConv && !errMax {
-		return nil
-	}
-
-	// === To print
-	intString := "integer"
-	if c.isUint64 {
-		intString = "unsigned " + intString
-	}
-
-	num := number.Value
-	if c.isNegative {
-		num = "-" + num
-	}
-	// ===
-
-	if errMax {
-		return fmt.Errorf("%d: %s does not safely fit in a JS number",
-			number.Pos(), num)
-	}
-	// if errConv {
-	return fmt.Errorf("%d: %s could not be converted to %s",
-		number.Pos(), num, intString)
 }

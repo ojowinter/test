@@ -44,7 +44,8 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		}
 
 		// Checking
-		if err := newCheck().Type(vSpec.Type); err != nil {
+		chk, err := newCheck(vSpec.Type)
+		if err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -61,7 +62,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				var expr string
 
 				// Checking
-				if err := newCheck().Type(v); err != nil {
+				if err := chk.Type(v); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}
@@ -132,7 +133,8 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := newCheck().Type(vSpec.Type); err != nil {
+		chk, err := newCheck(vSpec.Type)
+		if err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -145,7 +147,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		for i, v := range vSpec.Values {
 				// Checking
-				if err := newCheck().Type(v); err != nil {
+				if err := chk.Type(v); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}
@@ -225,6 +227,13 @@ func (tr *transform) getType(spec []ast.Spec) {
 		fields := make([]string, 0) // names of fields
 		//!anonField := make([]bool, 0) // anonymous field
 
+		// Checking
+		chk, err := newCheck(tSpec.Type)
+		if err != nil {
+			tr.err = append(tr.err, err)
+			continue
+		}
+
 		switch typ := tSpec.Type.(type) {
 		default:
 			panic(fmt.Sprintf("[getType] unimplemented: %T", typ))
@@ -258,7 +267,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 				//  Tag     *BasicLit     // field tag; or nil
 
 				// Checking
-				if err := newCheck().Type(field.Type); err != nil {
+				if err := chk.Type(field.Type); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}

@@ -4,7 +4,7 @@ const Pi float64 = 3.14159265358979323846
 const Pi2 = Pi
 const zero = 0.0 // untyped floating-point constant
 const (
-	size int64 = 1024
+	size int32 = 1024
 	eof        = -1 // untyped integer constant
 )
 const a, b, c = 3, 4, "foo" // a = 3, b = 4, c = "foo", untyped integer and string constants
