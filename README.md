@@ -66,11 +66,9 @@ Nothing.
 
 ## Copyright and licensing
 
-***Copyright 2011  The "GoScript" Authors***  
-See file AUTHORS and CONTRIBUTORS.
-
-Licensed under **GNU General Public License, version 3 or later**.  
-See file LICENSE.
+*Copyright 2011  The "GoScript" Authors*. See file AUTHORS and CONTRIBUTORS.  
+Unless otherwise noted, the source files are distributed under the
+*GNU General Public License, version 3 or later* found in the LICENSE file.
 
 
 * * *
