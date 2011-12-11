@@ -7,6 +7,7 @@ var (
 	b, c, d complex128
 	e complex128 = 1
 	f, g complex128 = -1, -2
+	h = complex(1, 2)
 )
 
 // Array

@@ -92,6 +92,10 @@ func (c *check) Type(expr ast.Expr) error {
 
 		case "int", "uint", "int64", "uint64":
 			return fmt.Errorf("%s: conversion of type %s", c.Position(typ), ident)
+
+		// $GOROOT/src/pkg/builtin/builtin.go
+		case "complex":
+			return fmt.Errorf("%s: built-in function %s()", c.Position(typ), ident)
 		}
 
 	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
