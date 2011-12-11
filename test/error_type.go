@@ -3,10 +3,11 @@
 package test
 
 var (
-	a complex128
+	a       complex128
 	b, c, d complex128
-	e complex128 = 1
-	f, g complex128 = -1, -2
+	e       complex128 = 1
+	f, g    complex128 = -1, -2
+
 	h = complex(1, 2)
 )
 
@@ -39,7 +40,7 @@ var (
 var (
 	c1 = make(chan int, 10)
 	c2 = make(chan bool)
-	c3 = <- 0
+	c3 = <-0
 )
 
 // === Struct
@@ -49,7 +50,7 @@ type s1 struct {
 	a, b int
 	c    float64
 	_    float32 // padding
-	F func()
+	F    func()
 }
 
 type s2 struct {

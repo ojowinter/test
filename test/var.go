@@ -60,7 +60,7 @@ var (
 // Pointer
 var (
 	p0 *byte
-	p1 *int = 2
+	p1 *int  = 2
 	p2 *bool = true
 )
 
