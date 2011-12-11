@@ -49,11 +49,18 @@ func isType(tok token.Token, lit string) bool {
 type check struct {
 	isCallExpr, isCompositeLit bool
 	isNegative bool
+
+	fset *token.FileSet
 }
 
 // Initializes a new type of "check".
-func newCheck() *check {
-	return &check{}
+func newCheck(fset *token.FileSet) *check {
+	return &check{fset: fset}
+}
+
+// Returns a general Position.
+func (c *check) Position(expr ast.Expr) token.Position {
+	return c.fset.Position(expr.Pos())
 }
 
 // Checks if it has a valid type for JavaScript.
@@ -84,12 +91,12 @@ func (c *check) Type(expr ast.Expr) error {
 			return c.Type(typ.Args[0])
 
 		case "int", "uint", "int64", "uint64":
-			return fmt.Errorf("%d: conversion of type %s", typ.Pos(), ident)
+			return fmt.Errorf("%s: conversion of type %s", c.Position(typ), ident)
 		}
 
 	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
 	case *ast.ChanType:
-		return fmt.Errorf("%d: channel type", typ.Pos())
+		return fmt.Errorf("%s: channel type", c.Position(typ))
 
 	case *ast.CompositeLit:
 		return c.Type(typ.Type)
@@ -98,7 +105,7 @@ func (c *check) Type(expr ast.Expr) error {
 		switch typ.Name {
 		// Unsupported types
 		case "int64", "uint64", "complex64", "complex128": // "uintptr"
-			return fmt.Errorf("%d: %s type", typ.Pos(), typ.Name)
+			return fmt.Errorf("%s: %s type", c.Position(typ), typ.Name)
 		}
 
 	case *ast.InterfaceType: // ToDo: review
@@ -125,7 +132,7 @@ func (c *check) Type(expr ast.Expr) error {
 	case *ast.UnaryExpr:
 		// Channel
 		if typ.Op == token.ARROW {
-			return fmt.Errorf("%d: channel operator", typ.Pos())
+			return fmt.Errorf("%s: channel operator", c.Position(typ))
 		}
 
 		return c.Type(typ.X)

@@ -44,7 +44,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		}
 
 		// Checking
-		if err := newCheck().Type(vSpec.Type); err != nil {
+		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -61,7 +61,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				var expr string
 
 				// Checking
-				if err := newCheck().Type(v); err != nil {
+				if err := newCheck(tr.fset).Type(v); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}
@@ -132,7 +132,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := newCheck().Type(vSpec.Type); err != nil {
+		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -145,7 +145,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		for i, v := range vSpec.Values {
 				// Checking
-				if err := newCheck().Type(v); err != nil {
+				if err := newCheck(tr.fset).Type(v); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}
@@ -226,7 +226,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Checking
-		if err := newCheck().Type(tSpec.Type); err != nil {
+		if err := newCheck(tr.fset).Type(tSpec.Type); err != nil {
 			tr.err = append(tr.err, err)
 			continue
 		}
@@ -238,7 +238,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 		case *ast.Ident:
 			//!anonField = append(anonField, true)
 			tr.err = append(tr.err,
-				fmt.Errorf("%d: anonymous field in struct", tSpec.Pos()))
+				fmt.Errorf("%s: anonymous field in struct",
+					tr.fset.Position(tSpec.Pos())))
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 		//  Struct     token.Pos  // position of "struct" keyword
@@ -254,7 +255,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					tr.err = append(tr.err,
-						fmt.Errorf("%d: function type in struct", field.Pos()))
+						fmt.Errorf("%s: function type in struct",
+							tr.fset.Position(field.Pos())))
 					continue
 				}
 
@@ -264,7 +266,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 				//  Tag     *BasicLit     // field tag; or nil
 
 				// Checking
-				if err := newCheck().Type(field.Type); err != nil {
+				if err := newCheck(tr.fset).Type(field.Type); err != nil {
 					tr.err = append(tr.err, err)
 					continue
 				}
