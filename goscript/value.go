@@ -26,8 +26,8 @@ import (
 
 // Represents a value.
 type value struct {
-	name    string // variable's name
-	useIota bool
+	name       string // variable's name
+	useIota    bool
 	isNegative bool
 
 	eltsLen int      // store length of array, to use in case of ellipsis (...)
@@ -111,7 +111,7 @@ func (v *value) getValue(iface interface{}) {
 		if v.isNegative {
 			sign = "-"
 		}
-		v.lit = append(v.lit, sign + typ.Value)
+		v.lit = append(v.lit, sign+typ.Value)
 
 	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
 	//  X     Expr        // left operand
@@ -172,8 +172,8 @@ func (v *value) getValue(iface interface{}) {
 
 		// Conversion
 		case "uint8", "uint16", "uint32",
-		"int8", "int16", "int32",
-		"float32", "byte", "rune", "string":
+			"int8", "int16", "int32",
+			"float32", "byte", "rune", "string":
 			v.getValue(typ.Args[0])
 		}
 
@@ -226,7 +226,7 @@ func (v *value) getValue(iface interface{}) {
 
 	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
 	//  Elt      Expr      // ellipsis element type (parameter lists only); or nil
-//	case *ast.Ellipsis:
+	//case *ast.Ellipsis:
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name

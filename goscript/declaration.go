@@ -144,11 +144,11 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		values := make([]string, 0)
 
 		for i, v := range vSpec.Values {
-				// Checking
-				if err := newCheck(tr.fset).Type(v); err != nil {
-					tr.err = append(tr.err, err)
-					continue
-				}
+			// Checking
+			if err := newCheck(tr.fset).Type(v); err != nil {
+				tr.err = append(tr.err, err)
+				continue
+			}
 
 			// Skip when it is not a function
 			if skipName[i] {
@@ -236,10 +236,6 @@ func (tr *transform) getType(spec []ast.Spec) {
 			panic(fmt.Sprintf("[getType] unimplemented: %T", typ))
 
 		case *ast.Ident:
-			//!anonField = append(anonField, true)
-			tr.err = append(tr.err,
-				fmt.Errorf("%s: anonymous field in struct",
-					tr.fset.Position(tSpec.Pos())))
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 		//  Struct     token.Pos  // position of "struct" keyword
@@ -256,7 +252,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					tr.err = append(tr.err,
 						fmt.Errorf("%s: function type in struct",
-							tr.fset.Position(field.Pos())))
+							tr.fset.Position(field.Pos())),
+					)
 					continue
 				}
 
@@ -268,6 +265,13 @@ func (tr *transform) getType(spec []ast.Spec) {
 				// Checking
 				if err := newCheck(tr.fset).Type(field.Type); err != nil {
 					tr.err = append(tr.err, err)
+					continue
+				}
+				if field.Names == nil {
+					tr.err = append(tr.err,
+						fmt.Errorf("%s: anonymous field in struct",
+							tr.fset.Position(field.Pos())),
+					)
 					continue
 				}
 

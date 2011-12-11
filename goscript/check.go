@@ -47,10 +47,10 @@ func isType(tok token.Token, lit string) bool {
 }*/
 
 type check struct {
-	isCallExpr, isCompositeLit bool
-	isNegative bool
-
-	fset *token.FileSet
+	isCallExpr     bool
+	isCompositeLit bool
+	isNegative     bool
+	fset           *token.FileSet
 }
 
 // Initializes a new type of "check".
@@ -127,7 +127,6 @@ func (c *check) Type(expr ast.Expr) error {
 		return c.Type(typ.X)
 
 	case *ast.StructType:
-		
 
 	case *ast.UnaryExpr:
 		// Channel
@@ -139,7 +138,6 @@ func (c *check) Type(expr ast.Expr) error {
 
 	// The type has not been indicated
 	case nil:
-		
 	}
 
 	return nil
