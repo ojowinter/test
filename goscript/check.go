@@ -90,10 +90,10 @@ func (c *check) Type(expr ast.Expr) error {
 		case "make", "new":
 			return c.Type(typ.Args[0])
 
-		case "int", "uint", "int64", "uint64":
+		case "int64", "uint64":
 			return fmt.Errorf("%s: conversion of type %s", c.Position(typ), ident)
 
-		// $GOROOT/src/pkg/builtin/builtin.go
+		// golang.org/pkg/builtin/
 		case "complex":
 			return fmt.Errorf("%s: built-in function %s()", c.Position(typ), ident)
 		}

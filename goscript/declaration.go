@@ -16,6 +16,7 @@
 package goscript
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 )
@@ -38,6 +39,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 	//  Values  []Expr        // initial values; or nil
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
+		buf := new(bytes.Buffer)
 
 		if len(vSpec.Values) > MAX_EXPRESSION {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
@@ -104,9 +106,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				tr.bConst.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
+				buf.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
 			} else {
-				tr.bConst.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
+				buf.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
 			}
 		}
 
@@ -115,7 +117,8 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			continue
 		}
 
-		tr.bConst.WriteString(";\n")
+		buf.WriteString(";\n")
+		tr.text[tr.Line(vSpec)] = buf.String()
 	}
 }
 
@@ -130,6 +133,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
+		buf := new(bytes.Buffer)
 
 		// Checking
 		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
@@ -179,23 +183,25 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				tr.bVar.WriteString("var " + n)
+				buf.WriteString("var " + n)
 			} else {
-				tr.bVar.WriteString(", " + n)
+				buf.WriteString(", " + n)
 			}
 
 			if len(values) != 0 {
-				tr.bVar.WriteString(" = " + values[i])
+				buf.WriteString(" = " + values[i])
 			}
 		}
 
-		last := tr.bVar.Bytes()[tr.bVar.Len()-1] // last character
+		last := buf.Bytes()[buf.Len()-1] // last character
 
 		if last != '}' && last != ';' {
-			tr.bVar.WriteString(";\n")
+			buf.WriteString(";\n")
 		} else {
-			tr.bVar.WriteString("\n")
+			buf.WriteString("\n")
 		}
+
+		tr.text[tr.Line(vSpec)] = buf.String()
 	}
 }
 
@@ -223,6 +229,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
 		fields := make([]string, 0) // names of fields
+		buf := new(bytes.Buffer)
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Checking
@@ -296,14 +303,16 @@ func (tr *transform) getType(spec []ast.Spec) {
 		name := tSpec.Name.Name
 		args, allFields := format(fields)
 
-		tr.bType.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
+		buf.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
 
 		if len(allFields) != 0 {
-			tr.bType.WriteString(allFields)
-			tr.bType.WriteString("\n}\n")
+			buf.WriteString(allFields)
+			buf.WriteString("\n}\n")
 		} else {
-			tr.bType.WriteString("}\n") //! empty struct
+			buf.WriteString("}\n") //! empty struct
 		}
+
+		tr.text[tr.Line(tSpec)] = buf.String()
 	}
 }
 

@@ -9,7 +9,7 @@ type s1 struct {
 	f    float32
 	_    float32 // padding
 	A    *[]int
-	//F func()
+	//F    func()
 }
 
 // The tag strings define the protocol buffer field numbers.

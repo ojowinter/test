@@ -30,8 +30,9 @@ type value struct {
 	useIota    bool
 	isNegative bool
 
-	eltsLen int      // store length of array, to use in case of ellipsis (...)
-	lit     []string // store the last literals (for array)
+	eltsLen int       // store length of array, to use in case of ellipsis (...)
+	lit     []string  // store the last literals (for array)
+	//pos     token.Pos // for statements in composite types
 
 	*bytes.Buffer // sintaxis translated
 }
@@ -171,9 +172,9 @@ func (v *value) getValue(iface interface{}) {
 			}
 
 		// Conversion
-		case "uint8", "uint16", "uint32",
-			"int8", "int16", "int32",
-			"float32", "byte", "rune", "string":
+		case "uint", "uint8", "uint16", "uint32",
+			"int", "int8", "int16", "int32",
+			"float32", "float64", "byte", "rune", "string":
 			v.getValue(typ.Args[0])
 		}
 
