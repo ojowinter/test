@@ -1,3 +1,5 @@
+// http://golang.org/doc/go_spec.html#Type_declarations
+
 package test
 
 // An empty struct.
@@ -23,7 +25,7 @@ type s2 struct {
 
 type (
 	Point struct { x, y float64 }
-	Polar Point
+	//Polar Point
 )
 
 func main() {}

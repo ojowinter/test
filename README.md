@@ -26,7 +26,7 @@ Go sintaxis not supported:
 + Complex numbers, and integers of 64 bits
 + Function type, interface type excepting the empty interface
 + Channels, goroutines (ToDo)
-+ Import declarations from core library (ToDo)
++ Import declarations from core library
 
 Status:
 

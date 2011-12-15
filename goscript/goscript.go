@@ -98,6 +98,8 @@ func Compile(filename string) error {
 			genDecl := decl.(*ast.GenDecl)
 
 			switch genDecl.Tok {
+			case token.IMPORT:
+				trans.getImport(genDecl.Specs)
 			case token.CONST:
 				trans.getConst(genDecl.Specs)
 			case token.TYPE:

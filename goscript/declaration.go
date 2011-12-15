@@ -18,11 +18,32 @@ package goscript
 import (
 	"fmt"
 	"go/ast"
+	"strings"
 )
 
 // Maximum number of expressions to get.
 // The expressions are the values after of "=".
 const MAX_EXPRESSION = 10
+
+// Imports
+func (tr *transform) getImport(spec []ast.Spec) {
+
+	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
+	//  Name    *Ident        // local package name (including "."); or nil
+	//  Path    *BasicLit     // import path
+	for _, v := range spec {
+		iSpec := v.(*ast.ImportSpec)
+		path := iSpec.Path.Value
+		pathDir := strings.SplitN(path, "/", 2)[0]
+
+		if !strings.Contains(pathDir, ".") {
+			tr.err = append(tr.err, fmt.Errorf("%s: import from core library", path))
+			continue
+		}
+
+		//fmt.Println(iSpec.Name, pathDir)
+	}
+}
 
 // Constants
 //
