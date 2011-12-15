@@ -30,9 +30,8 @@ type value struct {
 	useIota    bool
 	isNegative bool
 
-	eltsLen int       // store length of array, to use in case of ellipsis (...)
-	lit     []string  // store the last literals (for array)
-	//pos     token.Pos // for statements in composite types
+	eltsLen int      // store length of array, to use in case of ellipsis (...)
+	lit     []string // store the last literals (for array)
 
 	*bytes.Buffer // sintaxis translated
 }
@@ -60,11 +59,13 @@ func (v *value) printArray() string {
 	return a
 }
 
+// * * *
+
 // Gets the value.
 // It throws a panic message for types no added.
-func (v *value) getValue(iface interface{}) {
+func (tr *transform) getValue(expr ast.Expr) {
 	// type Expr
-	switch typ := iface.(type) {
+	switch typ := expr.(type) {
 
 	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
@@ -74,54 +75,54 @@ func (v *value) getValue(iface interface{}) {
 			break
 		}
 
-		if len(v.lit) == 0 {
-			v.WriteString("new Array(")
+		if len(tr.src.lit) == 0 {
+			tr.src.WriteString("new Array(")
 
-			if v.eltsLen != 0 { // ellipsis
-				v.WriteString(strconv.Itoa(v.eltsLen))
+			if tr.src.eltsLen != 0 { // ellipsis
+				tr.src.WriteString(strconv.Itoa(tr.src.eltsLen))
 			} else {
-				v.getValue(typ.Len)
+				tr.getValue(typ.Len)
 			}
 
-			v.WriteString(")")
+			tr.src.WriteString(")")
 		} else {
-			iArray := len(v.lit) - 1             // index of array
+			iArray := len(tr.src.lit) - 1        // index of array
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
-			v.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
-				vArray, vArray, v.lit[iArray], vArray, v.name, v.printArray()))
-			v.getValue(typ.Len)
-			v.WriteString(")")
+			tr.src.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
+				vArray, vArray, tr.src.lit[iArray], vArray, tr.src.name, tr.src.printArray()))
+			tr.getValue(typ.Len)
+			tr.src.WriteString(")")
 		}
 
 		if _, ok := typ.Elt.(*ast.ArrayType); ok {
-			v.getValue(typ.Elt)
-		} else if len(v.lit) > 1 {
-			v.WriteString("; " + strings.Repeat("}", len(v.lit)-1))
+			tr.getValue(typ.Elt)
+		} else if len(tr.src.lit) > 1 {
+			tr.src.WriteString("; " + strings.Repeat("}", len(tr.src.lit)-1))
 		}
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
 	//  Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
 	//  Value    string      // literal string
 	case *ast.BasicLit:
-		v.WriteString(typ.Value)
+		tr.src.WriteString(typ.Value)
 
 		// === Add the value
 		sign := ""
 
-		if v.isNegative {
+		if tr.src.isNegative {
 			sign = "-"
 		}
-		v.lit = append(v.lit, sign+typ.Value)
+		tr.src.lit = append(tr.src.lit, sign+typ.Value)
 
 	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
 	//  X     Expr        // left operand
 	//  Op    token.Token // operator
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
-		v.getValue(typ.X)
-		v.WriteString(" " + typ.Op.String() + " ")
-		v.getValue(typ.Y)
+		tr.getValue(typ.X)
+		tr.src.WriteString(" " + typ.Op.String() + " ")
+		tr.getValue(typ.Y)
 
 	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
 	//  Fun      Expr      // function expression
@@ -132,7 +133,7 @@ func (v *value) getValue(iface interface{}) {
 		// Conversion: []byte()
 		if t, ok := typ.Fun.(*ast.ArrayType); ok {
 			if t.Elt.(*ast.Ident).Name == "byte" {
-				v.getValue(typ.Args[0])
+				tr.getValue(typ.Args[0])
 			} else {
 				panic(fmt.Sprintf("[getValue] call of conversion unimplemented: []%T()", t))
 			}
@@ -150,14 +151,14 @@ func (v *value) getValue(iface interface{}) {
 
 			// For slice
 			case *ast.ArrayType:
-				v.WriteString("new Array(")
-				v.getValue(typ.Args[len(typ.Args)-1]) // capacity
-				v.WriteString(")")
+				tr.src.WriteString("new Array(")
+				tr.getValue(typ.Args[len(typ.Args)-1]) // capacity
+				tr.src.WriteString(")")
 
 			// The second argument (in Args), if any, is the capacity which
 			// is not useful in JS since it is dynamic.
 			case *ast.MapType:
-				v.WriteString("{};") // or "new Object()"
+				tr.src.WriteString("{};") // or "new Object()"
 			}
 
 		case "new":
@@ -167,7 +168,7 @@ func (v *value) getValue(iface interface{}) {
 
 			case *ast.ArrayType:
 				for _, arg := range typ.Args {
-					v.getValue(arg)
+					tr.getValue(arg)
 				}
 			}
 
@@ -175,7 +176,7 @@ func (v *value) getValue(iface interface{}) {
 		case "uint", "uint8", "uint16", "uint32",
 			"int", "int8", "int16", "int32",
 			"float32", "float64", "byte", "rune", "string":
-			v.getValue(typ.Args[0])
+			tr.getValue(typ.Args[0])
 		}
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
@@ -187,24 +188,25 @@ func (v *value) getValue(iface interface{}) {
 			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", compoType))
 
 		case *ast.ArrayType:
-			v.eltsLen = len(typ.Elts) // for ellipsis
-			v.getValue(typ.Type)
+			tr.src.eltsLen = len(typ.Elts) // for ellipsis
+			tr.getValue(typ.Type)
+			//tr.src.pos = 
 
 			// For arrays initialized
 			if len(typ.Elts) != 0 {
 				if compoType.Len == nil {
-					v.WriteString("[")
+					tr.src.WriteString("[")
 				} else {
-					v.WriteString(fmt.Sprintf("; %s = [", v.name))
+					tr.src.WriteString(fmt.Sprintf("; %s = [", tr.src.name))
 				}
 
 				for i, el := range typ.Elts {
 					if i != 0 {
-						v.WriteString(",")
+						tr.src.WriteString(",")
 					}
-					v.getValue(el)
+					tr.getValue(el)
 				}
-				v.WriteString("]")
+				tr.src.WriteString("]")
 			}
 
 		// http://golang.org/pkg/go/ast/#MapType || godoc go/ast MapType
@@ -212,17 +214,16 @@ func (v *value) getValue(iface interface{}) {
 		//  Value Expr
 		case *ast.MapType:
 			lenElts := len(typ.Elts) - 1
-
-			v.WriteString("{")
+			tr.src.WriteString("{")
 
 			for i, el := range typ.Elts {
-				v.getValue(el)
+				tr.getValue(el)
 
 				if i != lenElts {
-					v.WriteString(",")
+					tr.src.WriteString(", ")
 				}
 			}
-			v.WriteString("\n};")
+			tr.src.WriteString("};")
 		}
 
 	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
@@ -233,30 +234,29 @@ func (v *value) getValue(iface interface{}) {
 	//  Name    string    // identifier name
 	case *ast.Ident:
 		if typ.Name == "iota" {
-			v.WriteString("%d")
-			v.useIota = true
+			tr.src.WriteString("%d")
+			tr.src.useIota = true
 			break
 		}
 		// Undefined value in array / slice
-		if len(v.lit) != 0 && typ.Name == "_" {
+		if len(tr.src.lit) != 0 && typ.Name == "_" {
 			break
 		}
 
-		v.WriteString(typ.Name)
+		tr.src.WriteString(typ.Name)
 
 	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
 	//  Key   Expr
 	//  Value Expr
 	case *ast.KeyValueExpr:
-		v.WriteString("\n\t")
-		v.getValue(typ.Key)
-		v.WriteString(": ")
-		v.getValue(typ.Value)
+		tr.getValue(typ.Key)
+		tr.src.WriteString(":")
+		tr.getValue(typ.Value)
 
 	// http://golang.org/pkg/go/ast/#ParenExpr || godoc go/ast ParenExpr
 	//  X      Expr      // parenthesized expression
 	case *ast.ParenExpr:
-		v.getValue(typ.X)
+		tr.getValue(typ.X)
 
 	// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword
@@ -267,7 +267,7 @@ func (v *value) getValue(iface interface{}) {
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
 	//  X    Expr      // operand
 	case *ast.StarExpr:
-		v.getValue(typ.X)
+		tr.getValue(typ.X)
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
 	//  Op    token.Token // operator
@@ -275,14 +275,14 @@ func (v *value) getValue(iface interface{}) {
 	case *ast.UnaryExpr:
 		switch typ.Op {
 		case token.SUB:
-			v.isNegative = true
+			tr.src.isNegative = true
 		}
 
-		v.WriteString(typ.Op.String())
-		v.getValue(typ.X)
+		tr.src.WriteString(typ.Op.String())
+		tr.getValue(typ.X)
 
 	default:
 		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",
-			iface, iface))
+			expr, expr))
 	}
 }

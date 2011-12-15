@@ -17,7 +17,7 @@ to static typing.
 + The mathematical expressions are calculated at the translation stage. (ToDo)
 
 + The lines numbers in the unminified generated JavaScript match up with the
-lines numbers in the original source file. (ToDo)
+lines numbers in the original source file.
 
 + Generate minimized JavaScript. (ToDo)
 

@@ -19,4 +19,11 @@ type s2 struct {
 	process   string "field 3"
 }
 
+//type IntArray [16]int
+
+type (
+	Point struct { x, y float64 }
+	Polar Point
+)
+
 func main() {}

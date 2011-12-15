@@ -16,7 +16,6 @@
 package goscript
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 )
@@ -39,7 +38,6 @@ func (tr *transform) getConst(spec []ast.Spec) {
 	//  Values  []Expr        // initial values; or nil
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
-		buf := new(bytes.Buffer)
 
 		if len(vSpec.Values) > MAX_EXPRESSION {
 			panic("length of 'iotas' is lesser than 'vSpec.Values'")
@@ -68,19 +66,19 @@ func (tr *transform) getConst(spec []ast.Spec) {
 					continue
 				}
 
-				val := newValue(names[i])
-				val.getValue(v)
+				tr.src = newValue(names[i])
+				tr.getValue(v)
 
-				if val.useIota {
-					expr = fmt.Sprintf(val.String(), iotas[i])
+				if tr.src.useIota {
+					expr = fmt.Sprintf(tr.src.String(), iotas[i])
 					iotas[i]++
 				} else {
-					expr = val.String()
+					expr = tr.src.String()
 				}
 
 				if !skipName[i] {
 					values = append(values, expr)
-					lastValues[i] = val.String()
+					lastValues[i] = tr.src.String()
 				}
 			}
 		} else { // get last value of iota
@@ -98,6 +96,8 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 		// === Write
 		// TODO: calculate expression using "exp/types"
+		tr.addLine(vSpec.Pos())
+
 		isFirst := true
 		for i, v := range names {
 			if skipName[i] {
@@ -106,9 +106,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				buf.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
+				tr.dst.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
 			} else {
-				buf.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
+				tr.dst.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
 			}
 		}
 
@@ -117,8 +117,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			continue
 		}
 
-		buf.WriteString(";\n")
-		tr.text[tr.Line(vSpec)] = buf.String()
+		tr.dst.WriteString(";")
 	}
 }
 
@@ -133,7 +132,6 @@ func (tr *transform) getVar(spec []ast.Spec) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
-		buf := new(bytes.Buffer)
 
 		// Checking
 		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
@@ -161,11 +159,11 @@ func (tr *transform) getVar(spec []ast.Spec) {
 				}
 			}
 
-			val := newValue(names[i])
-			val.getValue(v)
+			tr.src = newValue(names[i])
+			tr.getValue(v)
 
 			if !skipName[i] {
-				values = append(values, val.String())
+				values = append(values, tr.src.String())
 			}
 		}
 
@@ -175,6 +173,9 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		// === Write
 		// TODO: calculate expression using "exp/types"
+
+		tr.addLine(vSpec.Pos())
+
 		isFirst := true
 		for i, n := range names {
 			if skipName[i] {
@@ -183,25 +184,21 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				buf.WriteString("var " + n)
+				tr.dst.WriteString("var " + n)
 			} else {
-				buf.WriteString(", " + n)
+				tr.dst.WriteString(", " + n)
 			}
 
 			if len(values) != 0 {
-				buf.WriteString(" = " + values[i])
+				tr.dst.WriteString(" = " + values[i])
 			}
 		}
 
-		last := buf.Bytes()[buf.Len()-1] // last character
+		last := tr.dst.Bytes()[tr.dst.Len()-1] // last character
 
 		if last != '}' && last != ';' {
-			buf.WriteString(";\n")
-		} else {
-			buf.WriteString("\n")
+			tr.dst.WriteString(";")
 		}
-
-		tr.text[tr.Line(vSpec)] = buf.String()
 	}
 }
 
@@ -215,10 +212,10 @@ func (tr *transform) getType(spec []ast.Spec) {
 			if i == 0 {
 				args = f
 			} else {
-				args += ", " + f
+				args += "," + f
 			}
 
-			allFields += fmt.Sprintf("\n\tthis.%s = %s;", f, f)
+			allFields += fmt.Sprintf("this.%s=%s;", f, f)
 		}
 		return
 	}
@@ -229,7 +226,6 @@ func (tr *transform) getType(spec []ast.Spec) {
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
 		fields := make([]string, 0) // names of fields
-		buf := new(bytes.Buffer)
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Checking
@@ -302,17 +298,16 @@ func (tr *transform) getType(spec []ast.Spec) {
 		// === Write
 		name := tSpec.Name.Name
 		args, allFields := format(fields)
+		tr.addLine(tSpec.Pos())
 
-		buf.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
+		tr.dst.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
 
 		if len(allFields) != 0 {
-			buf.WriteString(allFields)
-			buf.WriteString("\n}\n")
+			tr.dst.WriteString(allFields)
+			tr.dst.WriteString("}")
 		} else {
-			buf.WriteString("}\n") //! empty struct
+			tr.dst.WriteString("}") //! empty struct
 		}
-
-		tr.text[tr.Line(tSpec)] = buf.String()
 	}
 }
 
