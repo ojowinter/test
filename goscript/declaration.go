@@ -42,6 +42,8 @@ func (tr *transform) getImport(spec []ast.Spec) {
 			tr.err = append(tr.err, fmt.Errorf("%s: import from core library", path))
 			continue
 		}
+		
+		//import objectName.*; 
 
 		//fmt.Println(iSpec.Name, pathDir)
 	}
@@ -72,7 +74,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			continue
 		}
 
-		names, skipName := getName(vSpec)
+		names, skipName := tr.getName(vSpec)
 
 		// === Values
 		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
@@ -162,7 +164,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			continue
 		}
 
-		names, skipName := getName(vSpec)
+		names, skipName := tr.getName(vSpec)
 
 		// === Values
 		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
@@ -331,12 +333,17 @@ func (tr *transform) getType(spec []ast.Spec) {
 		} else {
 			tr.dst.WriteString("}") //! empty struct
 		}
+		// ===
+
+		// To export
+		tr.checkPublic(name)
 	}
 }
 
 // Functions
 //
 // http://golang.org/doc/go_spec.html#Function_declarations
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/function
 func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	// http://golang.org/pkg/go/ast/#FuncDecl || godoc go/ast FuncDecl
 	//  Recv *FieldList    // receiver (methods); or nil (functions)
@@ -362,12 +369,15 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Rbrace token.Pos // position of "}"
 	for _, v := range decl.Body.List {
 		tr.addLine(v.Pos())
-		tr.dst.WriteString("\t")
+		tr.dst.WriteString(TAB)
 		tr.getStatement(v)
 	}
 
 	tr.addLine(decl.Body.Rbrace)
 	tr.dst.WriteString("}")
+
+	// To export
+	tr.checkPublic(decl.Name.Name)
 }
 
 //
@@ -377,7 +387,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 //
 // http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 //  Name    string    // identifier name
-func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
+func (tr *transform) getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
 	skipName = make([]bool, len(spec.Names)) // for blank identifiers "_"
 
 	for i, v := range spec.Names {
@@ -386,6 +396,9 @@ func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
 			continue
 		}
 		names = append(names, v.Name)
+
+		// To export
+		tr.checkPublic(v.Name)
 	}
 
 	return
@@ -407,4 +420,13 @@ func getParams(f *ast.FuncType) string {
 	}
 
 	return s
+}
+
+// Appends public declaration names to be exported.
+func (tr *transform) checkPublic(s string) {
+	first := string(s[0])
+
+	if strings.ToUpper(first) == first {
+		tr.public = append(tr.public, s)
+	}
 }
