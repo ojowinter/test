@@ -26,6 +26,8 @@ import (
 const MAX_EXPRESSION = 10
 
 // Imports
+//
+// http://golang.org/doc/go_spec.html#Import_declarations
 func (tr *transform) getImport(spec []ast.Spec) {
 
 	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
@@ -330,6 +332,48 @@ func (tr *transform) getType(spec []ast.Spec) {
 			tr.dst.WriteString("}") //! empty struct
 		}
 	}
+}
+
+// Functions
+//
+// http://golang.org/doc/go_spec.html#Function_declarations
+func (tr *transform) getFunc(decl *ast.FuncDecl) {
+	// http://golang.org/pkg/go/ast/#FuncDecl || godoc go/ast FuncDecl
+	//  Recv *FieldList    // receiver (methods); or nil (functions)
+	//  Name *Ident        // function/method name
+	//  Type *FuncType     // position of Func keyword, parameters and results
+	//  Body *BlockStmt    // function body; or nil (forward declaration)
+
+	// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+	//  Params  *FieldList // (incoming) parameters; or nil
+	//  Results *FieldList // (outgoing) results; or nil
+	//
+	// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
+	//  List    []*Field  // field list; or nil
+	//
+	// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
+	//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
+	//  Type    Expr          // field/method/parameter type
+	//  Tag     *BasicLit     // field tag; or nil
+
+	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
+	//  List   []Stmt
+
+	getParams := func() string {
+		s := ""
+		for i, v := range decl.Type.Params.List {
+			if i != 0 {
+				s += ","
+			}
+			s += v.Names[0].Name
+		}
+		return s
+	}
+
+	tr.addLine(decl.Pos())
+	tr.dst.WriteString(fmt.Sprintf(
+		"function %s(%s) {", decl.Name, getParams()))
+
 }
 
 //

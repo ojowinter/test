@@ -90,6 +90,8 @@ func Compile(filename string) error {
 		//fmt.Printf("%T : %v\n", decl,decl) //! TODO: to delete when it's finished
 
 		switch decl.(type) {
+		case *ast.FuncDecl:
+			trans.getFunc(decl.(*ast.FuncDecl))
 
 		// http://golang.org/pkg/go/ast/#GenDecl || godoc go/ast GenDecl
 		//  Tok    token.Token   // IMPORT, CONST, TYPE, VAR

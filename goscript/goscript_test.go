@@ -20,9 +20,10 @@ import (
 	"testing"
 )
 
-func TestConst(t *testing.T)  { compile("const.go", t) }
-func TestVar(t *testing.T)    { compile("var.go", t) }
-func TestStruct(t *testing.T) { compile("struct.go", t) }
+func TestConst(t *testing.T) { compile("const.go", t) }
+func TestVar(t *testing.T)   { compile("var.go", t) }
+func TestType(t *testing.T)  { compile("type.go", t) }
+func TestFunc(t *testing.T)  { compile("func.go", t) }
 
 func TestErrorType(t *testing.T)   { compileErr("error_type.go", t) }
 func TestErrorImport(t *testing.T) { compileErr("error_import.go", t) }
