@@ -356,9 +356,6 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Type    Expr          // field/method/parameter type
 	//  Tag     *BasicLit     // field tag; or nil
 
-	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
-	//  List   []Stmt
-
 	getParams := func() string {
 		s := ""
 		for i, v := range decl.Type.Params.List {
@@ -374,6 +371,16 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.dst.WriteString(fmt.Sprintf(
 		"function %s(%s) {", decl.Name, getParams()))
 
+	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
+	//  Lbrace token.Pos // position of "{"
+	//  List   []Stmt
+	//  Rbrace token.Pos // position of "}"
+	for _, v := range decl.Body.List {
+		tr.getStatement(v)
+	}
+
+	tr.addLine(decl.Body.Rbrace)
+	tr.dst.WriteString("}")
 }
 
 //
