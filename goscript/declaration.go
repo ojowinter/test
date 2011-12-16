@@ -344,10 +344,6 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Type *FuncType     // position of Func keyword, parameters and results
 	//  Body *BlockStmt    // function body; or nil (forward declaration)
 
-	// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
-	//  Params  *FieldList // (incoming) parameters; or nil
-	//  Results *FieldList // (outgoing) results; or nil
-	//
 	// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
 	//  List    []*Field  // field list; or nil
 	//
@@ -356,26 +352,17 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Type    Expr          // field/method/parameter type
 	//  Tag     *BasicLit     // field tag; or nil
 
-	getParams := func() string {
-		s := ""
-		for i, v := range decl.Type.Params.List {
-			if i != 0 {
-				s += ","
-			}
-			s += v.Names[0].Name
-		}
-		return s
-	}
-
 	tr.addLine(decl.Pos())
 	tr.dst.WriteString(fmt.Sprintf(
-		"function %s(%s) {", decl.Name, getParams()))
+		"function %s(%s) {", decl.Name, getParams(decl.Type)))
 
 	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
 	//  Lbrace token.Pos // position of "{"
 	//  List   []Stmt
 	//  Rbrace token.Pos // position of "}"
 	for _, v := range decl.Body.List {
+		tr.addLine(v.Pos())
+		tr.dst.WriteString("\t")
 		tr.getStatement(v)
 	}
 
@@ -402,4 +389,22 @@ func getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
 	}
 
 	return
+}
+
+// Gets the parameters.
+//
+// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+//  Params  *FieldList // (incoming) parameters; or nil
+//  Results *FieldList // (outgoing) results; or nil
+func getParams(f *ast.FuncType) string {
+	s := ""
+
+	for i, v := range f.Params.List {
+		if i != 0 {
+			s += ","
+		}
+		s += v.Names[0].Name
+	}
+
+	return s
 }

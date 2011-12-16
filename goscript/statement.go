@@ -18,10 +18,11 @@ package goscript
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 )
 
 func (tr *transform) getStatement(stmt ast.Stmt) {
-	switch stmt.(type) {
+	switch typ := stmt.(type) {
 	default:
 		panic(fmt.Sprintf("[getStatement] unimplemented: %T", stmt))
 
@@ -31,7 +32,33 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // assignment token, DEFINE
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
-		
+		switch typ.Tok {
+		case token.DEFINE, token.ASSIGN:
+		default:
+			panic(fmt.Sprintf("[getStatement:AssignStmt] unimplemented: %T", typ.Tok))
+		}
+
+		isFirst := true
+		tr.dst.WriteString("var ")
+
+		for i, v := range typ.Lhs {
+			lIdent := v.(*ast.Ident).Name
+
+			if lIdent == "_" {
+				continue
+			}
+
+			rIdent := typ.Rhs[i].(*ast.BasicLit).Value
+
+			if isFirst {
+				isFirst = false
+			} else {
+				tr.dst.WriteString(", ")
+			}
+
+			tr.dst.WriteString(lIdent + "=" + rIdent)
+		}
+		tr.dst.WriteString(";")
 
 	// http://golang.org/pkg/go/ast/#IfStmt || godoc go/ast IfStmt
 	//  If   token.Pos // position of "if" keyword
@@ -49,3 +76,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		
 	}
 }
+
+//
+// === Utility
+
+

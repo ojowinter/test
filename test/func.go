@@ -8,8 +8,8 @@ func min(x int, y int) int {
 }
 
 func main() {
-	x := 3
-	max := 5
+	x, y := 3, 5
+	max := 7
 
 	if x > max {
 		x = max
