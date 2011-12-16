@@ -39,26 +39,26 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		isFirst := true
-		tr.dst.WriteString("var ")
+		tr.WriteString("var ")
 
 		for i, v := range typ.Lhs {
-			lIdent := v.(*ast.Ident).Name
+			lIdent := getExpression("", v)
 
 			if lIdent == "_" {
 				continue
 			}
 
-			rIdent := typ.Rhs[i].(*ast.BasicLit).Value
+			rIdent := getExpression("", typ.Rhs[i])
 
 			if isFirst {
 				isFirst = false
 			} else {
-				tr.dst.WriteString(", ")
+				tr.WriteString(", ")
 			}
 
-			tr.dst.WriteString(lIdent + "=" + rIdent)
+			tr.WriteString(lIdent + "=" + rIdent)
 		}
-		tr.dst.WriteString(";")
+		tr.WriteString(";")
 
 	// http://golang.org/pkg/go/ast/#IfStmt || godoc go/ast IfStmt
 	//  If   token.Pos // position of "if" keyword
@@ -67,17 +67,14 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Body *BlockStmt
 	//  Else Stmt // else branch; or nil
 	case *ast.IfStmt:
-		
 
 	// http://golang.org/pkg/go/ast/#ReturnStmt || godoc go/ast ReturnStmt
 	//  Return  token.Pos // position of "return" keyword
 	//  Results []Expr    // result expressions; or nil
 	case *ast.ReturnStmt:
-		
+
 	}
 }
 
 //
 // === Utility
-
-

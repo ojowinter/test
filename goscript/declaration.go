@@ -42,7 +42,7 @@ func (tr *transform) getImport(spec []ast.Spec) {
 			tr.err = append(tr.err, fmt.Errorf("%s: import from core library", path))
 			continue
 		}
-		
+
 		//import objectName.*; 
 
 		//fmt.Println(iSpec.Name, pathDir)
@@ -83,7 +83,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 		if len(vSpec.Values) != 0 {
 			for i, v := range vSpec.Values {
-				var expr string
+				var dst string
 
 				// Checking
 				if err := newCheck(tr.fset).Type(v); err != nil {
@@ -91,25 +91,25 @@ func (tr *transform) getConst(spec []ast.Spec) {
 					continue
 				}
 
-				tr.src = newValue(names[i])
-				tr.getValue(v)
+				src := newExpression(names[i])
+				src.transform(v)
 
-				if tr.src.useIota {
-					expr = fmt.Sprintf(tr.src.String(), iotas[i])
+				if src.useIota {
+					dst = fmt.Sprintf(src.String(), iotas[i])
 					iotas[i]++
 				} else {
-					expr = tr.src.String()
+					dst = src.String()
 				}
 
 				if !skipName[i] {
-					values = append(values, expr)
-					lastValues[i] = tr.src.String()
+					values = append(values, dst)
+					lastValues[i] = src.String()
 				}
 			}
 		} else { // get last value of iota
 			for i := 0; i < len(names); i++ {
-				expr := fmt.Sprintf(lastValues[i], iotas[0])
-				values = append(values, expr)
+				dst := fmt.Sprintf(lastValues[i], iotas[0])
+				values = append(values, dst)
 			}
 			iotas[0]++
 		}
@@ -131,9 +131,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				tr.dst.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
+				tr.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
 			} else {
-				tr.dst.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
+				tr.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
 			}
 		}
 
@@ -142,7 +142,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			continue
 		}
 
-		tr.dst.WriteString(";")
+		tr.WriteString(";")
 	}
 }
 
@@ -184,11 +184,11 @@ func (tr *transform) getVar(spec []ast.Spec) {
 				}
 			}
 
-			tr.src = newValue(names[i])
-			tr.getValue(v)
-
 			if !skipName[i] {
-				values = append(values, tr.src.String())
+				src := newExpression(names[i])
+				src.transform(v)
+
+				values = append(values, src.String())
 			}
 		}
 
@@ -209,20 +209,20 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				tr.dst.WriteString("var " + n)
+				tr.WriteString("var " + n)
 			} else {
-				tr.dst.WriteString(", " + n)
+				tr.WriteString(", " + n)
 			}
 
 			if len(values) != 0 {
-				tr.dst.WriteString(" = " + values[i])
+				tr.WriteString(" = " + values[i])
 			}
 		}
 
-		last := tr.dst.Bytes()[tr.dst.Len()-1] // last character
+		last := tr.Bytes()[tr.Len()-1] // last character
 
 		if last != '}' && last != ';' {
-			tr.dst.WriteString(";")
+			tr.WriteString(";")
 		}
 	}
 }
@@ -325,13 +325,13 @@ func (tr *transform) getType(spec []ast.Spec) {
 		args, allFields := format(fields)
 		tr.addLine(tSpec.Pos())
 
-		tr.dst.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
+		tr.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
 
 		if len(allFields) != 0 {
-			tr.dst.WriteString(allFields)
-			tr.dst.WriteString("}")
+			tr.WriteString(allFields)
+			tr.WriteString("}")
 		} else {
-			tr.dst.WriteString("}") //! empty struct
+			tr.WriteString("}") //! empty struct
 		}
 		// ===
 
@@ -360,7 +360,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Tag     *BasicLit     // field tag; or nil
 
 	tr.addLine(decl.Pos())
-	tr.dst.WriteString(fmt.Sprintf(
+	tr.WriteString(fmt.Sprintf(
 		"function %s(%s) {", decl.Name, getParams(decl.Type)))
 
 	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
@@ -369,12 +369,12 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Rbrace token.Pos // position of "}"
 	for _, v := range decl.Body.List {
 		tr.addLine(v.Pos())
-		tr.dst.WriteString(TAB)
+		tr.WriteString(TAB)
 		tr.getStatement(v)
 	}
 
 	tr.addLine(decl.Body.Rbrace)
-	tr.dst.WriteString("}")
+	tr.WriteString("}")
 
 	// To export
 	tr.checkPublic(decl.Name.Name)
@@ -424,9 +424,7 @@ func getParams(f *ast.FuncType) string {
 
 // Appends public declaration names to be exported.
 func (tr *transform) checkPublic(s string) {
-	first := string(s[0])
-
-	if strings.ToUpper(first) == first {
+	if ast.IsExported(s) {
 		tr.public = append(tr.public, s)
 	}
 }

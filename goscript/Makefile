@@ -4,8 +4,8 @@ TARG=github.com/kless/GoScript/goscript
 GOFILES=\
 	check.go\
 	declaration.go\
+	expression.go\
 	goscript.go\
 	statement.go\
-	value.go\
 
 include $(GOROOT)/src/Make.pkg
