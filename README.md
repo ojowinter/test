@@ -23,9 +23,10 @@ lines numbers in the original source file.
 
 Go sintaxis not supported:
 
-+ Complex numbers, and integers of 64 bits
++ Complex numbers, integers of 64 bits
 + Function type, interface type excepting the empty interface
 + Channels, goroutines (ToDo)
++ Return multiple values
 
 Status:
 
@@ -44,6 +45,7 @@ Status:
 	imports				[OK]
 	functions			[OK]
 	assignments in func	[OK]
+	return				[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per

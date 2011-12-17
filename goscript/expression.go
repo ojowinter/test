@@ -238,17 +238,23 @@ func (e *expression) transform(expr ast.Expr) {
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name
 	case *ast.Ident:
-		if typ.Name == "iota" {
+		name := typ.Name
+
+		if name == "iota" {
 			e.WriteString("%d")
 			e.useIota = true
 			break
 		}
 		// Undefined value in array / slice
-		if len(e.lit) != 0 && typ.Name == "_" {
+		if len(e.lit) != 0 && name == "_" {
 			break
 		}
+		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined
+		if name == "nil" {
+			name = "undefined"
+		}
 
-		e.WriteString(typ.Name)
+		e.WriteString(name)
 
 	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
 	//  Key   Expr

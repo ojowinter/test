@@ -25,8 +25,8 @@ func TestVar(t *testing.T)   { compile("var.go", t) }
 func TestType(t *testing.T)  { compile("type.go", t) }
 func TestFunc(t *testing.T)  { compile("func.go", t) }
 
-func TestErrorType(t *testing.T)   { compileErr("error_type.go", t) }
-func TestErrorImport(t *testing.T) { compileErr("error_import.go", t) }
+func TestErrorDecl(t *testing.T)  { compileErr("error_decl.go", t) }
+func TestErrorState(t *testing.T) { compileErr("error_state.go", t) }
 
 // * * *
 

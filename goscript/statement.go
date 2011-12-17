@@ -68,11 +68,25 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Else Stmt // else branch; or nil
 	case *ast.IfStmt:
 
+	// http://golang.org/doc/go_spec.html#Return_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return
+	//
 	// http://golang.org/pkg/go/ast/#ReturnStmt || godoc go/ast ReturnStmt
 	//  Return  token.Pos // position of "return" keyword
 	//  Results []Expr    // result expressions; or nil
 	case *ast.ReturnStmt:
+		ret := "return"
 
+		if typ.Results == nil {
+			tr.WriteString(ret)
+			break
+		}
+		if len(typ.Results) != 1 {
+			tr.addError("%s: return multiple values", tr.fset.Position(typ.Return))
+			break
+		}
+
+		tr.WriteString(ret + " " + getExpression("", typ.Results[0]))
 	}
 }
 

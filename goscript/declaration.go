@@ -40,7 +40,7 @@ func (tr *transform) getImport(spec []ast.Spec) {
 		pathDir := strings.SplitN(path, "/", 2)[0]
 
 		if !strings.Contains(pathDir, ".") {
-			tr.err = append(tr.err, fmt.Errorf("%s: import from core library", path))
+			tr.addError("%s: import from core library", path)
 			continue
 		}
 
@@ -276,10 +276,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 			//  List    []*Field  // field list; or nil
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
-					tr.err = append(tr.err,
-						fmt.Errorf("%s: function type in struct",
-							tr.fset.Position(field.Pos())),
-					)
+					tr.addError("%s: function type in struct",
+						tr.fset.Position(field.Pos()))
 					continue
 				}
 
@@ -294,10 +292,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 					continue
 				}
 				if field.Names == nil {
-					tr.err = append(tr.err,
-						fmt.Errorf("%s: anonymous field in struct",
-							tr.fset.Position(field.Pos())),
-					)
+					tr.addError("%s: anonymous field in struct",
+						tr.fset.Position(field.Pos()))
 					continue
 				}
 

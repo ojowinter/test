@@ -1,6 +1,12 @@
-// Types not supported in JavaScript
+// Declarations not supported
 
 package test
+
+import fmt "fmt" // Package implementing formatted I/O.
+import (
+	"os"
+	"github.com/kless/GotoSQL/gotosql"
+)
 
 var (
 	a       complex128
