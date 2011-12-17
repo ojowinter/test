@@ -164,7 +164,7 @@ func (tr *transform) getLine(pos token.Pos) int {
 	return tr.fset.Position(pos).Line - 1
 }
 
-// Adds new lines according to the position.
+// Appends new lines according to the position.
 func (tr *transform) addLine(pos token.Pos) {
 	var s string
 
@@ -179,7 +179,7 @@ func (tr *transform) addLine(pos token.Pos) {
 	tr.line = new
 }
 
-// Adds an error.
+// Appends an error.
 func (tr *transform) addError(format string, a ...interface{}) {
 	tr.err = append(tr.err, fmt.Errorf(format, a...))
 }

@@ -7,7 +7,7 @@ func min(x int, y int) int {
 	return y
 }
 
-func main() {
+func testIf() int {
 	x, y := 3, 5
 	max := 7
 
@@ -15,13 +15,11 @@ func main() {
 		x = max
 	}
 
-
-	/*if x := f(); x < y {
+	if z := 2; x < y {
 		return x
 	} else if x > z {
 		return z
 	} else {
 		return y
-	}*/
+	}
 }
-

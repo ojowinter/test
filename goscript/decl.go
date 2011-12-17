@@ -345,11 +345,6 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Type *FuncType     // position of Func keyword, parameters and results
 	//  Body *BlockStmt    // function body; or nil (forward declaration)
 
-	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
-	//  Lbrace token.Pos // position of "{"
-	//  List   []Stmt
-	//  Rbrace token.Pos // position of "}"
-
 	// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
 	//  List    []*Field  // field list; or nil
 	//
@@ -364,24 +359,21 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	}
 
 	tr.addLine(decl.Pos())
-	tr.WriteString(fmt.Sprintf(
-		"function %s(%s)%s{", decl.Name, getParams(decl.Type), SP))
-
-	for _, v := range decl.Body.List {
-		tr.addLine(v.Pos())
-		tr.WriteString(TAB)
-		tr.getStatement(v)
-	}
-
-	tr.addLine(decl.Body.Rbrace)
-	tr.WriteString("}")
-
-	// To export
-	tr.checkPublic(decl.Name.Name)
+	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
+		decl.Name, getParams(decl.Type), SP))
+	tr.getStatement(decl.Body)
+	tr.checkPublic(decl.Name.Name) // to export
 }
 
 //
 // === Utility
+
+// Appends public declaration names to be exported.
+func (tr *transform) checkPublic(s string) {
+	if ast.IsExported(s) {
+		tr.public = append(tr.public, s)
+	}
+}
 
 // Gets the identifiers.
 //
@@ -420,11 +412,4 @@ func getParams(f *ast.FuncType) string {
 	}
 
 	return s
-}
-
-// Appends public declaration names to be exported.
-func (tr *transform) checkPublic(s string) {
-	if ast.IsExported(s) {
-		tr.public = append(tr.public, s)
-	}
 }

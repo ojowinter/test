@@ -16,15 +16,36 @@
 package goscript
 
 import (
+	//"bytes"
 	"fmt"
 	"go/ast"
 	"go/token"
 )
 
+/*// Represents a statement.
+type statement struct {
+	*bytes.Buffer // sintaxis translated
+}
+
+// Initializes a new type of "statement".
+func newStatement() *statement {
+	return &statement{
+		new(bytes.Buffer),
+	}
+}
+
+// Returns the Go statement in JavaScript.
+func getStatement(stmt ast.Stmt) string {
+	s := newStatement()
+
+	s.transform(stmt)
+	return s.String()
+}
+
+// Transforms the Go statement.
+func (s *statement) transform(stmt ast.Stmt) {*/
 func (tr *transform) getStatement(stmt ast.Stmt) {
 	switch typ := stmt.(type) {
-	default:
-		panic(fmt.Sprintf("[getStatement] unimplemented: %T", stmt))
 
 	// http://golang.org/pkg/go/ast/#AssignStmt || godoc go/ast AssignStmt
 	//  Lhs    []Expr
@@ -32,15 +53,22 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // assignment token, DEFINE
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
+		var isNew bool
+
 		switch typ.Tok {
-		case token.DEFINE, token.ASSIGN:
+		case token.DEFINE:
+			isNew = true
+		case token.ASSIGN:
 		default:
-			panic(fmt.Sprintf("[getStatement:AssignStmt] unimplemented: %T", typ.Tok))
+			panic(fmt.Sprintf("[statement.transform] AssignStmt unimplemented: %T",
+				typ.Tok))
+		}
+
+		if isNew {
+			tr.WriteString("var ")
 		}
 
 		isFirst := true
-		tr.WriteString("var ")
-
 		for i, v := range typ.Lhs {
 			lIdent := getExpression("", v)
 
@@ -60,6 +88,25 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 		tr.WriteString(";")
 
+	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
+	//  Lbrace token.Pos // position of "{"
+	//  List   []Stmt
+	//  Rbrace token.Pos // position of "}"
+	case *ast.BlockStmt:
+		tr.WriteString("{")
+
+		for _, v := range typ.List {
+			tr.addLine(v.Pos())
+			tr.WriteString(TAB)
+			tr.getStatement(v)
+		}
+
+		tr.addLine(typ.Rbrace)
+		tr.WriteString("}")
+
+	// http://golang.org/doc/go_spec.html#If_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/if...else
+	//
 	// http://golang.org/pkg/go/ast/#IfStmt || godoc go/ast IfStmt
 	//  If   token.Pos // position of "if" keyword
 	//  Init Stmt      // initialization statement; or nil
@@ -67,6 +114,20 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Body *BlockStmt
 	//  Else Stmt // else branch; or nil
 	case *ast.IfStmt:
+		tr.addLine(typ.If)
+
+		if typ.Init != nil {
+			tr.getStatement(typ.Init)
+			tr.WriteString(SP)
+		}
+
+		tr.WriteString(fmt.Sprintf("if%s(%s)%s", SP, getExpression("", typ.Cond), SP))
+		tr.getStatement(typ.Body)
+
+		if typ.Else != nil {
+			tr.WriteString(SP + "else ")
+			tr.getStatement(typ.Else)
+		}
 
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return
@@ -87,6 +148,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		tr.WriteString(ret + " " + getExpression("", typ.Results[0]) + ";")
+
+	default:
+		panic(fmt.Sprintf("[getStatement] unimplemented: %T", stmt))
 	}
 }
 

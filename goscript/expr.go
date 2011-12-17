@@ -68,7 +68,6 @@ func (e *expression) printArray() string {
 }
 
 // Transforms the Go expression.
-// It throws a panic message for types no added.
 func (e *expression) transform(expr ast.Expr) {
 	switch typ := expr.(type) {
 
@@ -293,7 +292,6 @@ func (e *expression) transform(expr ast.Expr) {
 		e.transform(typ.X)
 
 	default:
-		panic(fmt.Sprintf("[getValue] unimplemented: %T, value: %v",
-			expr, expr))
+		panic(fmt.Sprintf("[expression.transform] unimplemented: %T", expr))
 	}
 }
