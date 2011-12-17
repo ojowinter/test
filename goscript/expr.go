@@ -139,19 +139,19 @@ func (e *expression) transform(expr ast.Expr) {
 			if t.Elt.(*ast.Ident).Name == "byte" {
 				e.transform(typ.Args[0])
 			} else {
-				panic(fmt.Sprintf("[getValue] call of conversion unimplemented: []%T()", t))
+				panic(fmt.Sprintf("call of conversion unimplemented: []%T()", t))
 			}
 			break
 		}
 
 		switch callIdent {
 		default:
-			panic(fmt.Sprintf("[getValue] call unimplemented: %s", callIdent))
+			panic(fmt.Sprintf("call unimplemented: %s", callIdent))
 
 		case "make":
 			switch argType := typ.Args[0].(type) {
 			default:
-				panic(fmt.Sprintf("[getValue] call of 'make' unimplemented: %T", argType))
+				panic(fmt.Sprintf("call of 'make' unimplemented: %T", argType))
 
 			// For slice
 			case *ast.ArrayType:
@@ -168,7 +168,7 @@ func (e *expression) transform(expr ast.Expr) {
 		case "new":
 			switch argType := typ.Args[0].(type) {
 			default:
-				panic(fmt.Sprintf("[getValue] call of 'new' unimplemented: %T", argType))
+				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
 
 			case *ast.ArrayType:
 				for _, arg := range typ.Args {
@@ -189,7 +189,7 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
 		default:
-			panic(fmt.Sprintf("[getValue] 'CompositeLit' unimplemented: %s", compoType))
+			panic(fmt.Sprintf("'CompositeLit' unimplemented: %s", compoType))
 
 		case *ast.ArrayType:
 			e.eltsLen = len(typ.Elts) // for ellipsis
@@ -292,6 +292,6 @@ func (e *expression) transform(expr ast.Expr) {
 		e.transform(typ.X)
 
 	default:
-		panic(fmt.Sprintf("[expression.transform] unimplemented: %T", expr))
+		panic(fmt.Sprintf("unimplemented: %T", expr))
 	}
 }

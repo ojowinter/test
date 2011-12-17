@@ -60,8 +60,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			isNew = true
 		case token.ASSIGN:
 		default:
-			panic(fmt.Sprintf("[statement.transform] AssignStmt unimplemented: %T",
-				typ.Tok))
+			panic(fmt.Sprintf("token unimplemented: %T", typ.Tok))
 		}
 
 		if isNew {
@@ -150,7 +149,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.WriteString(ret + " " + getExpression("", typ.Results[0]) + ";")
 
 	default:
-		panic(fmt.Sprintf("[getStatement] unimplemented: %T", stmt))
+		panic(fmt.Sprintf("unimplemented: %T", stmt))
 	}
 }
 

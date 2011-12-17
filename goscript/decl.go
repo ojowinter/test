@@ -259,7 +259,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 
 		switch typ := tSpec.Type.(type) {
 		default:
-			panic(fmt.Sprintf("[getType] unimplemented: %T", typ))
+			panic(fmt.Sprintf("unimplemented: %T", typ))
 
 		case *ast.Ident:
 
@@ -269,7 +269,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 		//  Incomplete bool       // true if (source) fields are missing in the Fields list
 		case *ast.StructType:
 			if typ.Incomplete {
-				panic("[getType:StructType] list of fields incomplete ???")
+				panic("list of fields incomplete ???")
 			}
 
 			// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList

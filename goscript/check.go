@@ -67,7 +67,7 @@ func (c *check) Position(expr ast.Expr) token.Position {
 func (c *check) Type(expr ast.Expr) error {
 	switch typ := expr.(type) {
 	default:
-		panic(fmt.Sprintf("[Type] unimplemented: %T", typ))
+		panic(fmt.Sprintf("unimplemented: %T", typ))
 
 	case *ast.ArrayType:
 		return c.Type(typ.Elt)

@@ -101,7 +101,7 @@ func Compile(filename string) error {
 			}
 
 		default:
-			panic(fmt.Sprintf("[Compile] unimplemented: %T", decl))
+			panic(fmt.Sprintf("unimplemented: %T", decl))
 		}
 	}
 
