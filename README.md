@@ -11,22 +11,21 @@ Advantages:
 
 + Using one only language for all development. A great advantage for a company.
 
-+ It allows many type errors to be caught early in the development cycle, due
-to static typing.
++ Allows many type errors to be caught early in the development cycle, due to
+static typing. (ToDo: compile to checking errors at time of compiling)
 
 + The mathematical expressions are calculated at the translation stage. (ToDo)
 
 + The lines numbers in the unminified generated JavaScript match up with the
 lines numbers in the original source file.
 
-+ Generate minimized JavaScript.
++ Generates minimized JavaScript.
 
 Go sintaxis not supported:
 
 + Complex numbers, and integers of 64 bits
 + Function type, interface type excepting the empty interface
 + Channels, goroutines (ToDo)
-+ Import declarations from core library
 
 Status:
 
@@ -42,6 +41,9 @@ Status:
 	check channel		[OK]
 	struct				[OK]
 	pointer				[OK]
+	imports				[OK]
+	functions			[OK]
+	assignments in func	[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
