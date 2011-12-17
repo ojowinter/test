@@ -19,7 +19,7 @@ to static typing.
 + The lines numbers in the unminified generated JavaScript match up with the
 lines numbers in the original source file.
 
-+ Generate minimized JavaScript. (ToDo)
++ Generate minimized JavaScript.
 
 Go sintaxis not supported:
 
