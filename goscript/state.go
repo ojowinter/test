@@ -103,6 +103,12 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.addLine(typ.Rbrace)
 		tr.WriteString("}")
 
+	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
+	//  Go   token.Pos // position of "go" keyword
+	//  Call *CallExpr
+	case *ast.GoStmt:
+		tr.addError("%s: goroutine", tr.fset.Position(typ.Go))
+
 	// http://golang.org/doc/go_spec.html#If_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/if...else
 	//
@@ -152,6 +158,3 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		panic(fmt.Sprintf("unimplemented: %T", stmt))
 	}
 }
-
-//
-// === Utility

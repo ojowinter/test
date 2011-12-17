@@ -25,7 +25,7 @@ Go sintaxis not supported:
 
 + Complex numbers, integers of 64 bits
 + Function type, interface type excepting the empty interface
-+ Channels, goroutines (ToDo)
++ Channels, goroutines
 + Return multiple values
 
 Status:
@@ -46,6 +46,8 @@ Status:
 	functions			[OK]
 	assignments in func	[OK]
 	return				[OK]
+	if					[OK]
+	error for goroutine	[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
