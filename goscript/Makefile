@@ -3,9 +3,9 @@ include $(GOROOT)/src/Make.inc
 TARG=github.com/kless/GoScript/goscript
 GOFILES=\
 	check.go\
-	declaration.go\
-	expression.go\
+	decl.go\
+	expr.go\
 	goscript.go\
-	statement.go\
+	state.go\
 
 include $(GOROOT)/src/Make.pkg

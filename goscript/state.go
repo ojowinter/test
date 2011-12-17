@@ -78,7 +78,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		ret := "return"
 
 		if typ.Results == nil {
-			tr.WriteString(ret)
+			tr.WriteString(ret + ";")
 			break
 		}
 		if len(typ.Results) != 1 {
@@ -86,7 +86,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			break
 		}
 
-		tr.WriteString(ret + " " + getExpression("", typ.Results[0]))
+		tr.WriteString(ret + " " + getExpression("", typ.Results[0]) + ";")
 	}
 }
 
