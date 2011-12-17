@@ -22,13 +22,13 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	//"io/ioutil"
+	"io/ioutil"
 	"os"
-	//"path"
-	//"strings"
+	"path"
+	"strings"
 )
 
-// Reading for minimize code
+// Ready for minimize code
 var (
 	SP  = " "
 	NL  = "\n"
@@ -69,7 +69,7 @@ func (tr *transform) addLine(pos token.Pos) {
 	dif := new - tr.line
 
 	for i := 0; i < dif; i++ {
-		s += "\n"
+		s += NL
 	}
 
 	tr.WriteString(s)
@@ -131,7 +131,7 @@ func Compile(filename string) error {
 		return errors.New("Error: not supported in JavaScript")
 	}
 
-	// Export
+	// Export declarations in packages
 	//
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/export
 	if getExpression("", node.Name) != "main" && len(trans.public) != 0 {
@@ -149,7 +149,7 @@ func Compile(filename string) error {
 	// === Write
 	fmt.Print(trans.String()) // TODO: delete*/
 
-	//jsFile := strings.Replace(filename, path.Ext(filename), ".js", 1)
-	//return ioutil.WriteFile(jsFile, trans.Bytes(), 0664)
+	jsFile := strings.Replace(filename, path.Ext(filename), ".js", 1)
+	return ioutil.WriteFile(jsFile, trans.Bytes(), 0664)
 	return nil
 }

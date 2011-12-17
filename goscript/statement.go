@@ -53,10 +53,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			if isFirst {
 				isFirst = false
 			} else {
-				tr.WriteString(", ")
+				tr.WriteString("," + SP)
 			}
 
-			tr.WriteString(lIdent + "=" + rIdent)
+			tr.WriteString(lIdent + SP + "=" + SP + rIdent)
 		}
 		tr.WriteString(";")
 

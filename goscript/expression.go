@@ -103,7 +103,7 @@ func (e *expression) transform(expr ast.Expr) {
 		if _, ok := typ.Elt.(*ast.ArrayType); ok {
 			e.transform(typ.Elt)
 		} else if len(e.lit) > 1 {
-			e.WriteString("; " + strings.Repeat("}", len(e.lit)-1))
+			e.WriteString(";" + SP + strings.Repeat("}", len(e.lit)-1))
 		}
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
@@ -126,7 +126,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
 		e.transform(typ.X)
-		e.WriteString(" " + typ.Op.String() + " ")
+		e.WriteString(SP + typ.Op.String() + SP)
 		e.transform(typ.Y)
 
 	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
@@ -202,7 +202,7 @@ func (e *expression) transform(expr ast.Expr) {
 				if compoType.Len == nil {
 					e.WriteString("[")
 				} else {
-					e.WriteString(fmt.Sprintf("; %s = [", e.ident))
+					e.WriteString(fmt.Sprintf(";%s%s%s=%s[", SP, e.ident, SP, SP))
 				}
 
 				for i, el := range typ.Elts {
@@ -225,7 +225,7 @@ func (e *expression) transform(expr ast.Expr) {
 				e.transform(el)
 
 				if i != lenElts {
-					e.WriteString(", ")
+					e.WriteString("," + SP)
 				}
 			}
 			e.WriteString("};")

@@ -28,6 +28,7 @@ const MAX_EXPRESSION = 10
 // Imports
 //
 // http://golang.org/doc/go_spec.html#Import_declarations
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/import
 func (tr *transform) getImport(spec []ast.Spec) {
 
 	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
@@ -44,7 +45,6 @@ func (tr *transform) getImport(spec []ast.Spec) {
 		}
 
 		//import objectName.*; 
-
 		//fmt.Println(iSpec.Name, pathDir)
 	}
 }
@@ -131,9 +131,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 			if isFirst {
 				isFirst = false
-				tr.WriteString(fmt.Sprintf("const %s = %s", v, values[i]))
+				tr.WriteString(fmt.Sprintf("const %s%s=%s%s", v, SP, SP, values[i]))
 			} else {
-				tr.WriteString(fmt.Sprintf(", %s = %s", v, values[i]))
+				tr.WriteString(fmt.Sprintf(",%s%s%s=%s%s", SP, v, SP, SP, values[i]))
 			}
 		}
 
@@ -185,10 +185,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			}
 
 			if !skipName[i] {
-				src := newExpression(names[i])
-				src.transform(v)
-
-				values = append(values, src.String())
+				values = append(values, getExpression(names[i], v))
 			}
 		}
 
@@ -211,11 +208,11 @@ func (tr *transform) getVar(spec []ast.Spec) {
 				isFirst = false
 				tr.WriteString("var " + n)
 			} else {
-				tr.WriteString(", " + n)
+				tr.WriteString("," + SP + n)
 			}
 
 			if len(values) != 0 {
-				tr.WriteString(" = " + values[i])
+				tr.WriteString(SP + "=" + SP + values[i])
 			}
 		}
 
@@ -237,7 +234,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 			if i == 0 {
 				args = f
 			} else {
-				args += "," + f
+				args += "," + SP + f
+				allFields += SP
 			}
 
 			allFields += fmt.Sprintf("this.%s=%s;", f, f)
@@ -325,7 +323,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 		args, allFields := format(fields)
 		tr.addLine(tSpec.Pos())
 
-		tr.WriteString(fmt.Sprintf("function %s(%s) {", name, args))
+		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", name, args, SP))
 
 		if len(allFields) != 0 {
 			tr.WriteString(allFields)
@@ -351,6 +349,11 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Type *FuncType     // position of Func keyword, parameters and results
 	//  Body *BlockStmt    // function body; or nil (forward declaration)
 
+	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
+	//  Lbrace token.Pos // position of "{"
+	//  List   []Stmt
+	//  Rbrace token.Pos // position of "}"
+
 	// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
 	//  List    []*Field  // field list; or nil
 	//
@@ -359,14 +362,15 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	//  Type    Expr          // field/method/parameter type
 	//  Tag     *BasicLit     // field tag; or nil
 
+	// Check empty functions
+	if len(decl.Body.List) == 0 {
+		return
+	}
+
 	tr.addLine(decl.Pos())
 	tr.WriteString(fmt.Sprintf(
-		"function %s(%s) {", decl.Name, getParams(decl.Type)))
+		"function %s(%s)%s{", decl.Name, getParams(decl.Type), SP))
 
-	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
-	//  Lbrace token.Pos // position of "{"
-	//  List   []Stmt
-	//  Rbrace token.Pos // position of "}"
 	for _, v := range decl.Body.List {
 		tr.addLine(v.Pos())
 		tr.WriteString(TAB)
@@ -414,7 +418,7 @@ func getParams(f *ast.FuncType) string {
 
 	for i, v := range f.Params.List {
 		if i != 0 {
-			s += ","
+			s += "," + SP
 		}
 		s += v.Names[0].Name
 	}

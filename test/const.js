@@ -47,7 +47,4 @@ const bit1 = 1 << 1, mask1 = 1 << 1 - 1;
 
 const bit3 = 1 << 3, mask3 = 1 << 3 - 1;
 
-
-function main() {}
-
 export Pi, Pi2, Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Partyday;
