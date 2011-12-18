@@ -1,6 +1,6 @@
 ###### Notice
 
-*This file documents the changes in **GoScript** versions that are listed below.*
+*This file documents the changes in **GoJscript** versions that are listed below.*
 
 *Items should be added to this file as:*
 
