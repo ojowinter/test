@@ -49,8 +49,8 @@ func newExpression(identifier string) *expression {
 }
 
 // Returns the Go expression in JavaScript.
-func getExpression(ident string, expr ast.Expr) string {
-	e := newExpression(ident)
+func getExpression(expr ast.Expr) string {
+	e := newExpression("")
 
 	e.transform(expr)
 	return e.String()

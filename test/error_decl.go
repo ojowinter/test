@@ -5,7 +5,7 @@ package test
 import fmt "fmt" // Package implementing formatted I/O.
 import (
 	"os"
-	"github.com/kless/GotoSQL/gotosql"
+	"github.com/kless/GoScript/goscript"
 )
 
 var (

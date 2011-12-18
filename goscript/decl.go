@@ -185,7 +185,10 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			}
 
 			if !skipName[i] {
-				values = append(values, getExpression(names[i], v))
+				src := newExpression(names[i])
+				src.transform(v)
+
+				values = append(values, src.String())
 			}
 		}
 
@@ -367,13 +370,6 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 //
 // === Utility
-
-// Appends public declaration names to be exported.
-func (tr *transform) checkPublic(s string) {
-	if ast.IsExported(s) {
-		tr.public = append(tr.public, s)
-	}
-}
 
 // Gets the identifiers.
 //

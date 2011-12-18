@@ -69,13 +69,13 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		isFirst := true
 		for i, v := range typ.Lhs {
-			lIdent := getExpression("", v)
+			lIdent := getExpression(v)
 
 			if lIdent == "_" {
 				continue
 			}
 
-			rIdent := getExpression("", typ.Rhs[i])
+			rIdent := getExpression(typ.Rhs[i])
 
 			if isFirst {
 				isFirst = false
@@ -126,7 +126,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(SP)
 		}
 
-		tr.WriteString(fmt.Sprintf("if%s(%s)%s", SP, getExpression("", typ.Cond), SP))
+		tr.WriteString(fmt.Sprintf("if%s(%s)%s", SP, getExpression(typ.Cond), SP))
 		tr.getStatement(typ.Body)
 
 		if typ.Else != nil {
@@ -152,7 +152,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			break
 		}
 
-		tr.WriteString(ret + " " + getExpression("", typ.Results[0]) + ";")
+		tr.WriteString(ret + " " + getExpression(typ.Results[0]) + ";")
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", stmt))

@@ -58,6 +58,39 @@ func newTransform() *transform {
 	}
 }
 
+// Returns the line number.
+func (tr *transform) getLine(pos token.Pos) int {
+	// -1 because it was inserted a line (the header)
+	return tr.fset.Position(pos).Line - 1
+}
+
+// Appends new lines according to the position.
+func (tr *transform) addLine(pos token.Pos) {
+	var s string
+
+	new := tr.getLine(pos)
+	dif := new - tr.line
+
+	for i := 0; i < dif; i++ {
+		s += NL
+	}
+
+	tr.WriteString(s)
+	tr.line = new
+}
+
+// Appends an error.
+func (tr *transform) addError(format string, a ...interface{}) {
+	tr.err = append(tr.err, fmt.Errorf(format, a...))
+}
+
+// Appends public declaration names to be exported.
+func (tr *transform) checkPublic(s string) {
+	if ast.IsExported(s) {
+		tr.public = append(tr.public, s)
+	}
+}
+
 // * * *
 
 // Compiles a Go source file into JavaScript.
@@ -116,7 +149,7 @@ func Compile(filename string) error {
 	// Export declarations in packages
 	//
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/export
-	if getExpression("", node.Name) != "main" && len(trans.public) != 0 {
+	if getExpression(node.Name) != "main" && len(trans.public) != 0 {
 		for i, v := range trans.public {
 			if i == 0 {
 				trans.WriteString(NL + NL + "export " + v)
@@ -153,33 +186,4 @@ func Compile(filename string) error {
 
 	fmt.Print(deb) // TODO: delete*/
 	return nil
-}
-
-//
-// === Utility
-
-// Returns the line number.
-func (tr *transform) getLine(pos token.Pos) int {
-	// -1 because it was inserted a line (the header)
-	return tr.fset.Position(pos).Line - 1
-}
-
-// Appends new lines according to the position.
-func (tr *transform) addLine(pos token.Pos) {
-	var s string
-
-	new := tr.getLine(pos)
-	dif := new - tr.line
-
-	for i := 0; i < dif; i++ {
-		s += NL
-	}
-
-	tr.WriteString(s)
-	tr.line = new
-}
-
-// Appends an error.
-func (tr *transform) addError(format string, a ...interface{}) {
-	tr.err = append(tr.err, fmt.Errorf(format, a...))
 }
