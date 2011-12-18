@@ -25,6 +25,8 @@ import (
 // Represents data for a statement.
 type dataStmt struct {
 	tabLevel int  // tabulation level
+	lenCase  int  // number of "case" statements
+	iCase    int  // index in "case" statements
 	isReturn bool // last statement was "return"?
 }
 
@@ -96,6 +98,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Colon token.Pos // position of ":"
 	//  Body  []Stmt    // statement list; or nil
 	case *ast.CaseClause:
+		tr.iCase++
 		tr.addLine(typ.Case)
 
 		if typ.List != nil {
@@ -122,7 +125,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			}
 		}
 
-		if !tr.isReturn {
+		if !tr.isReturn && tr.iCase != tr.lenCase {
 			tr.WriteString(SP + "break;")
 		}
 
@@ -190,6 +193,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Body   *BlockStmt // CaseClauses only
 	case *ast.SwitchStmt:
 		tag := ""
+		tr.lenCase = len(typ.Body.List)
+		tr.iCase = 0
 
 		if typ.Init != nil {
 			tr.getStatement(typ.Init)

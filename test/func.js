@@ -38,7 +38,7 @@ function testSwitch(tag) {
 		case x < 0:
 			str = "negative"; break;
 		default:
-			str = "positive"; break;
+			str = "positive";
 	}
 
 

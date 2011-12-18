@@ -49,6 +49,7 @@ Status:
 	return				[OK]
 	if					[OK]
 	error for goroutine	[OK]
+	switch				[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
