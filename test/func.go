@@ -23,3 +23,27 @@ func testIf() int {
 		return y
 	}
 }
+
+func testSwitch(tag int) string {
+	//var str string
+	str := ""
+
+	switch tag {
+	default: return "zero"
+	case 1, 3, 5, 7, 9: return "odd"
+	case 2, 4, 6, 8: return "even"
+	}
+
+	switch x := tag; {
+	case x < 0:
+		str = "negative"
+	default:
+		str = "positive"
+	}
+
+/*	switch {
+	case x < y: f1()
+	case x < z: f2()
+	case x == 4: f3()
+	}*/
+}

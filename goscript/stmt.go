@@ -22,6 +22,12 @@ import (
 	"strings"
 )
 
+// Represents data for a statement.
+type dataStmt struct {
+	tabLevel int  // tabulation level
+	isReturn bool // last statement was "return"?
+}
+
 // Transforms the Go statement.
 func (tr *transform) getStatement(stmt ast.Stmt) {
 	switch typ := stmt.(type) {
@@ -84,6 +90,47 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.addLine(typ.Rbrace)
 		tr.WriteString(strings.Repeat(TAB, tr.tabLevel) + "}")
 
+	// http://golang.org/pkg/go/ast/#CaseClause || godoc go/ast CaseClause
+	//  Case  token.Pos // position of "case" or "default" keyword
+	//  List  []Expr    // list of expressions or types; nil means default case
+	//  Colon token.Pos // position of ":"
+	//  Body  []Stmt    // statement list; or nil
+	case *ast.CaseClause:
+		tr.addLine(typ.Case)
+
+		if typ.List != nil {
+			for i, expr := range typ.List {
+				if i != 0 {
+					tr.WriteString(SP)
+				}
+				tr.WriteString(fmt.Sprintf("case %s:", getExpression(expr)))
+			}
+		} else {
+			tr.WriteString("default:")
+		}
+
+		if typ.Body != nil {
+			tr.isReturn = false // to check the last statement
+
+			for _, v := range typ.Body {
+				if ok := tr.addLine(v.Pos()); ok {
+					tr.WriteString(strings.Repeat(TAB, tr.tabLevel+1))
+				} else {
+					tr.WriteString(SP)
+				}
+				tr.getStatement(v)
+			}
+		}
+
+		if !tr.isReturn {
+			tr.WriteString(SP + "break;")
+		}
+
+	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt
+	//  X Expr // expression
+	/*case *ast.ExprStmt:
+		tr.WriteString(getExpression(typ.X))*/
+
 	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword
 	//  Call *CallExpr
@@ -100,8 +147,6 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Body *BlockStmt
 	//  Else Stmt // else branch; or nil
 	case *ast.IfStmt:
-		tr.addLine(typ.If)
-
 		if typ.Init != nil {
 			tr.getStatement(typ.Init)
 			tr.WriteString(SP)
@@ -122,18 +167,42 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Return  token.Pos // position of "return" keyword
 	//  Results []Expr    // result expressions; or nil
 	case *ast.ReturnStmt:
-		ret := "return"
+		tr.isReturn = true
 
 		if typ.Results == nil {
-			tr.WriteString(ret + ";")
+			tr.WriteString("return;")
 			break
 		}
+
 		if len(typ.Results) != 1 {
 			tr.addError("%s: return multiple values", tr.fset.Position(typ.Return))
 			break
 		}
+		tr.WriteString("return " + getExpression(typ.Results[0]) + ";")
 
-		tr.WriteString(ret + " " + getExpression(typ.Results[0]) + ";")
+	// http://golang.org/doc/go_spec.html#Switch_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/switch
+	//
+	// http://golang.org/pkg/go/ast/#SwitchStmt || godoc go/ast SwitchStmt
+	//  Switch token.Pos  // position of "switch" keyword
+	//  Init   Stmt       // initialization statement; or nil
+	//  Tag    Expr       // tag expression; or nil
+	//  Body   *BlockStmt // CaseClauses only
+	case *ast.SwitchStmt:
+		tag := ""
+
+		if typ.Init != nil {
+			tr.getStatement(typ.Init)
+			tr.WriteString(SP)
+		}
+		if typ.Tag != nil {
+			tag = getExpression(typ.Tag)
+		} else {
+			tag = "1" // true
+		}
+
+		tr.WriteString(fmt.Sprintf("switch%s(%s)%s", SP, tag, SP))
+		tr.getStatement(typ.Body)
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", stmt))

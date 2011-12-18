@@ -6,6 +6,6 @@ GOFILES=\
 	decl.go\
 	expr.go\
 	goscript.go\
-	state.go\
+	stmt.go\
 
 include $(GOROOT)/src/Make.pkg
