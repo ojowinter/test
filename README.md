@@ -1,5 +1,5 @@
 GoJscript
-========
+=========
 
 Compiles transforming Go into JavaScript so you can continue using a clean and
 concise sintaxis.  
@@ -76,7 +76,7 @@ Nothing.
 
 *Copyright 2011  The "GoJscript" Authors*. See file AUTHORS and CONTRIBUTORS.  
 Unless otherwise noted, the source files are distributed under the
-*GNU General Public License, version 3 or later* found in the LICENSE file.
+*BSD 2-Clause License* found in the LICENSE file.
 
 
 * * *
