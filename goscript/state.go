@@ -16,34 +16,13 @@
 package goscript
 
 import (
-	//"bytes"
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strings"
 )
 
-/*// Represents a statement.
-type statement struct {
-	*bytes.Buffer // sintaxis translated
-}
-
-// Initializes a new type of "statement".
-func newStatement() *statement {
-	return &statement{
-		new(bytes.Buffer),
-	}
-}
-
-// Returns the Go statement in JavaScript.
-func getStatement(stmt ast.Stmt) string {
-	s := newStatement()
-
-	s.transform(stmt)
-	return s.String()
-}
-
 // Transforms the Go statement.
-func (s *statement) transform(stmt ast.Stmt) {*/
 func (tr *transform) getStatement(stmt ast.Stmt) {
 	switch typ := stmt.(type) {
 
@@ -93,15 +72,17 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Rbrace token.Pos // position of "}"
 	case *ast.BlockStmt:
 		tr.WriteString("{")
+		tr.tabLevel++
 
 		for _, v := range typ.List {
 			tr.addLine(v.Pos())
-			tr.WriteString(TAB)
+			tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 			tr.getStatement(v)
 		}
 
+		tr.tabLevel--
 		tr.addLine(typ.Rbrace)
-		tr.WriteString("}")
+		tr.WriteString(strings.Repeat(TAB, tr.tabLevel) + "}")
 
 	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword

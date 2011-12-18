@@ -25,7 +25,8 @@ Go sintaxis not supported:
 
 + Complex numbers, integers of 64 bits
 + Function type, interface type excepting the empty interface
-+ Channels, goroutines
++ Channels, goroutines (could be transformed to [Web Workers]
+(http://www.html5rocks.com/en/tutorials/workers/basics/))
 + Return multiple values
 
 Status:

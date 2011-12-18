@@ -39,22 +39,24 @@ const (
 
 // Represents the code transformed to JavaScript.
 type transform struct {
-	fset          *token.FileSet
-	*bytes.Buffer     // sintaxis translated to JS
-	line          int // actual line
+	fset     *token.FileSet
+	line     int // actual line
+	tabLevel int // tabulation level
 
 	public []string // declarations to be exported
 	err    []error
 	//pointers []string
+	*bytes.Buffer // sintaxis translated to JS
 }
 
 func newTransform() *transform {
 	return &transform{
 		token.NewFileSet(),
-		new(bytes.Buffer),
+		0,
 		0,
 		make([]string, 0),
 		nil,
+		new(bytes.Buffer),
 	}
 }
 

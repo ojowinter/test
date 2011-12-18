@@ -2,8 +2,8 @@
 
 function min(x, y) {
 	if (x < y) {
-	return x;
-}
+		return x;
+	}
 	return y;
 }
 
@@ -12,14 +12,14 @@ function testIf() {
 	var max = 7;
 
 	if (x > max) {
-	x = max;
-}
+		x = max;
+	}
 
 	var z = 2; if (x < y) {
-	return x;
-} else if (x > z) {
-	return z;
-} else {
-	return y;
-}
+		return x;
+	} else if (x > z) {
+		return z;
+	} else {
+		return y;
+	}
 }
