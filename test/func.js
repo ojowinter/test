@@ -29,23 +29,23 @@ function testSwitch(tag) {
 	var str = "";
 
 	switch (tag) {
-		default: break;
-		case 1: case 3: case 5: case 7: case 9: return "odd";
-		case 2: case 4: case 6: case 8: return "even";
+	default: break;
+	case 1: case 3: case 5: case 7: case 9: return "odd";
+	case 2: case 4: case 6: case 8: return "even";
 	}
 
 	var x = tag; switch (1) {
-		case x < 0:
-			str = "negative"; break;
-		default:
-			str = "positive";
+	case x < 0:
+		str = "negative"; break;
+	default:
+		str = "positive";
 	}
 
 	var y = 100;
 	switch (1) {
-		case x < y: str = "lesser than 100"; break;
-		case x > y: str = "greater than 100"; break;
-		case x === 0: str = "zero";
+	case x < y: str = "lesser than 100"; break;
+	case x > y: str = "greater than 100"; break;
+	case x === 0: str = "zero";
 	}
 
 	return str;

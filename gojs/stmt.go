@@ -7,7 +7,7 @@
 // OR CONDITIONS OF ANY KIND, either express or implied. See the License
 // for more details.
 
-package gojscript
+package gojs
 
 import (
 	"fmt"
@@ -18,10 +18,10 @@ import (
 
 // Represents data for a statement.
 type dataStmt struct {
-	tabLevel int  // tabulation level
-	lenCase  int  // number of "case" statements
-	iCase    int  // index in "case" statements
-	isReturn bool // last statement was "return"?
+	tabLevel  int  // tabulation level
+	lenCase   int  // number of "case" statements
+	iCase     int  // index in "case" statements
+	wasReturn bool // the last statement was "return"?
 }
 
 // Transforms the Go statement.
@@ -74,15 +74,25 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Rbrace token.Pos // position of "}"
 	case *ast.BlockStmt:
 		tr.WriteString("{")
-		tr.tabLevel++
 
 		for _, v := range typ.List {
+			isCase := false
+
+			if _, ok := v.(*ast.CaseClause); ok {
+				isCase = true
+			} else {
+				tr.tabLevel++
+			}
+
 			tr.addLine(v.Pos())
 			tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 			tr.getStatement(v)
+
+			if !isCase {
+				tr.tabLevel--
+			}
 		}
 
-		tr.tabLevel--
 		tr.addLine(typ.Rbrace)
 		tr.WriteString(strings.Repeat(TAB, tr.tabLevel) + "}")
 
@@ -92,7 +102,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Colon token.Pos // position of ":"
 	//  Body  []Stmt    // statement list; or nil
 	case *ast.CaseClause:
-		tr.isReturn = false // to check the last statement
+		tr.wasReturn = false // to check the last statement
 		tr.iCase++
 		tr.addLine(typ.Case)
 
@@ -124,7 +134,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		// Skip last "case" statement
-		if !tr.isReturn && tr.iCase != tr.lenCase {
+		if !tr.wasReturn && tr.iCase != tr.lenCase {
 			tr.WriteString(SP + "break;")
 		}
 
@@ -169,7 +179,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Return  token.Pos // position of "return" keyword
 	//  Results []Expr    // result expressions; or nil
 	case *ast.ReturnStmt:
-		tr.isReturn = true
+		tr.wasReturn = true
 
 		if typ.Results == nil {
 			tr.WriteString("return;")

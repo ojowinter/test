@@ -7,7 +7,7 @@
 // OR CONDITIONS OF ANY KIND, either express or implied. See the License
 // for more details.
 
-package gojscript
+package gojs
 
 import "testing"
 
