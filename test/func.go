@@ -50,3 +50,11 @@ func testSwitch(tag int) string {
 
 	return str
 }
+
+func testFor() int {
+	a, b := 1, 2
+
+	for a < b {
+		a *= 2
+	}
+}

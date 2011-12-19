@@ -34,14 +34,19 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // assignment token, DEFINE
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
+		var assign string
 		var isNew bool
 
 		switch typ.Tok {
 		case token.DEFINE:
+			assign = "="
 			isNew = true
-		case token.ASSIGN:
+		case token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN,
+			token.QUO_ASSIGN, token.REM_ASSIGN:
+			assign = typ.Tok.String()
+
 		default:
-			panic(fmt.Sprintf("token unimplemented: %T", typ.Tok))
+			panic(fmt.Sprintf("token unimplemented: %s", typ.Tok))
 		}
 
 		if isNew {
@@ -66,7 +71,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(lIdent)
 			// Skip empty strings
 			if rIdent != EMPTY {
-				tr.WriteString(SP + "=" + SP + rIdent)
+				tr.WriteString(SP + assign + SP + rIdent)
 			}
 		}
 		tr.WriteString(";")
@@ -153,8 +158,25 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Cond Expr      // condition; or nil
 	//  Post Stmt      // post iteration statement; or nil
 	//  Body *BlockStmt
-	//case *ast.ForStmt:
-		
+	case *ast.ForStmt:
+		tr.WriteString("for" + SP + "(")
+
+		if typ.Init != nil {
+			tr.getStatement(typ.Init)
+		}
+		tr.WriteString(";" + SP)
+
+		if typ.Cond != nil {
+			tr.WriteString(getExpression(typ.Cond))
+		}
+		tr.WriteString(";" + SP)
+
+		if typ.Post != nil {
+			tr.getStatement(typ.Post)
+		}
+
+		tr.WriteString(")" + SP)
+		tr.getStatement(typ.Body)
 
 	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword

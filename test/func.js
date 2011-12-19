@@ -50,3 +50,11 @@ function testSwitch(tag) {
 
 	return str;
 }
+
+function testFor() {
+	var a = 1, b = 2;
+
+	for (; a < b; ) {
+		a *= 2;
+	}
+}
