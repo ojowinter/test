@@ -29,6 +29,8 @@ const (
 	NL  = "{{NL}}" // new line
 	SP  = "{{SP}}" // space
 	TAB = "{{TAB}}"
+
+	EMPTY = "\"\"" // empty string
 )
 
 // Represents the code transformed to JavaScript.

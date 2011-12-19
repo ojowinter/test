@@ -26,7 +26,7 @@ function testIf() {
 
 function testSwitch(tag) {
 
-	var str = "";
+	var str;
 
 	switch (tag) {
 	default: break;

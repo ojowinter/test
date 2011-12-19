@@ -55,7 +55,6 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			if lIdent == "_" {
 				continue
 			}
-
 			rIdent := getExpression(typ.Rhs[i])
 
 			if isFirst {
@@ -64,7 +63,11 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 				tr.WriteString("," + SP)
 			}
 
-			tr.WriteString(lIdent + SP + "=" + SP + rIdent)
+			tr.WriteString(lIdent)
+			// Skip empty strings
+			if rIdent != EMPTY {
+				tr.WriteString(SP + "=" + SP + rIdent)
+			}
 		}
 		tr.WriteString(";")
 
@@ -78,6 +81,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		for _, v := range typ.List {
 			isCase := false
 
+			// Don't insert tabulation in "case" clauses
 			if _, ok := v.(*ast.CaseClause); ok {
 				isCase = true
 			} else {

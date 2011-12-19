@@ -208,7 +208,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 				tr.WriteString("," + SP + n)
 			}
 
-			if len(values) != 0 {
+			if len(values) != 0 && values[i] != EMPTY {
 				tr.WriteString(SP + "=" + SP + values[i])
 			}
 		}
