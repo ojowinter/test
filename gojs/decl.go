@@ -26,8 +26,11 @@ const MAX_EXPRESSION = 10
 func (tr *transform) getImport(spec []ast.Spec) {
 
 	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
+	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Name    *Ident        // local package name (including "."); or nil
 	//  Path    *BasicLit     // import path
+	//  Comment *CommentGroup // line comments; or nil
+	//  EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
 	for _, v := range spec {
 		iSpec := v.(*ast.ImportSpec)
 		path := iSpec.Path.Value
@@ -52,9 +55,11 @@ func (tr *transform) getConst(spec []ast.Spec) {
 	lastValues := make([]string, MAX_EXPRESSION)
 
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
+	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Names   []*Ident      // value names (len(Names) > 0)
 	//  Type    Expr          // value type; or nil
 	//  Values  []Expr        // initial values; or nil
+	//  Comment *CommentGroup // line comments; or nil
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
@@ -71,8 +76,6 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		names, skipName := tr.getName(vSpec)
 
 		// === Values
-		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
-		//  type Expr interface
 		values := make([]string, 0)
 
 		if len(vSpec.Values) != 0 {
@@ -161,7 +164,6 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		names, skipName := tr.getName(vSpec)
 
 		// === Values
-		// http://golang.org/pkg/go/ast/#Expr || godoc go/ast Expr
 		values := make([]string, 0)
 
 		for i, v := range vSpec.Values {
@@ -241,8 +243,10 @@ func (tr *transform) getType(spec []ast.Spec) {
 	}
 
 	// http://golang.org/pkg/go/ast/#TypeSpec || godoc go/ast TypeSpec
+	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Name    *Ident        // type name
 	//  Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
+	//  Comment *CommentGroup // line comments; or nil
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
 		fields := make([]string, 0) // names of fields
@@ -258,6 +262,10 @@ func (tr *transform) getType(spec []ast.Spec) {
 		default:
 			panic(fmt.Sprintf("unimplemented: %T", typ))
 
+		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+		//  NamePos token.Pos // identifier position
+		//  Name    string    // identifier name
+		//  Obj     *Object   // denoted object; or nil
 		case *ast.Ident:
 
 		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
@@ -270,7 +278,9 @@ func (tr *transform) getType(spec []ast.Spec) {
 			}
 
 			// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
+			//  Opening token.Pos // position of opening parenthesis/brace, if any
 			//  List    []*Field  // field list; or nil
+			//  Closing token.Pos // position of closing parenthesis/brace, if any
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					tr.addError("%s: function type in struct",
@@ -279,9 +289,11 @@ func (tr *transform) getType(spec []ast.Spec) {
 				}
 
 				// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
+				//  Doc     *CommentGroup // associated documentation; or nil
 				//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
 				//  Type    Expr          // field/method/parameter type
 				//  Tag     *BasicLit     // field tag; or nil
+				//  Comment *CommentGroup // line comments; or nil
 
 				// Checking
 				if err := newCheck(tr.fset).Type(field.Type); err != nil {
@@ -337,18 +349,11 @@ func (tr *transform) getType(spec []ast.Spec) {
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/function
 func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	// http://golang.org/pkg/go/ast/#FuncDecl || godoc go/ast FuncDecl
+	//  Doc  *CommentGroup // associated documentation; or nil
 	//  Recv *FieldList    // receiver (methods); or nil (functions)
 	//  Name *Ident        // function/method name
 	//  Type *FuncType     // position of Func keyword, parameters and results
 	//  Body *BlockStmt    // function body; or nil (forward declaration)
-
-	// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
-	//  List    []*Field  // field list; or nil
-	//
-	// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
-	//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
-	//  Type    Expr          // field/method/parameter type
-	//  Tag     *BasicLit     // field tag; or nil
 
 	// Check empty functions
 	if len(decl.Body.List) == 0 {
@@ -389,6 +394,7 @@ func (tr *transform) getName(spec *ast.ValueSpec) (names []string, skipName []bo
 // Gets the parameters.
 //
 // http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+//  Func    token.Pos  // position of "func" keyword
 //  Params  *FieldList // (incoming) parameters; or nil
 //  Results *FieldList // (outgoing) results; or nil
 func getParams(f *ast.FuncType) string {

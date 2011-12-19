@@ -147,6 +147,15 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	/*case *ast.ExprStmt:
 	tr.WriteString(getExpression(typ.X))*/
 
+	// http://golang.org/pkg/go/ast/#ForStmt || godoc go/ast ForStmt
+	//  For  token.Pos // position of "for" keyword
+	//  Init Stmt      // initialization statement; or nil
+	//  Cond Expr      // condition; or nil
+	//  Post Stmt      // post iteration statement; or nil
+	//  Body *BlockStmt
+	//case *ast.ForStmt:
+		
+
 	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword
 	//  Call *CallExpr
