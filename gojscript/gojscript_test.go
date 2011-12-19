@@ -9,10 +9,7 @@
 
 package gojscript
 
-import (
-	"fmt"
-	"testing"
-)
+import "testing"
 
 func TestConst(t *testing.T) { compile("const.go", t) }
 func TestVar(t *testing.T)   { compile("var.go", t) }
@@ -35,6 +32,4 @@ func compileErr(filename string, t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-
-	fmt.Println(err.Error())
 }

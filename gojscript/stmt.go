@@ -104,6 +104,11 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			}
 		} else {
 			tr.WriteString("default:")
+
+			if tr.iCase != tr.lenCase {
+				tr.addWarning("%s: 'default' clause above 'case' clause in switch statement",
+					tr.fset.Position(typ.Pos()))
+			}
 		}
 
 		if typ.Body != nil {

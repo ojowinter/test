@@ -64,7 +64,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 		// Checking
 		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
-			tr.err = append(tr.err, err)
+			tr.addError(err)
 			continue
 		}
 
@@ -81,7 +81,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 				// Checking
 				if err := newCheck(tr.fset).Type(v); err != nil {
-					tr.err = append(tr.err, err)
+					tr.addError(err)
 					continue
 				}
 
@@ -109,7 +109,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		}
 
 		// Skip write buffer, if any error
-		if tr.err != nil {
+		if tr.hasError {
 			continue
 		}
 
@@ -154,7 +154,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		// Checking
 		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
-			tr.err = append(tr.err, err)
+			tr.addError(err)
 			continue
 		}
 
@@ -167,7 +167,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		for i, v := range vSpec.Values {
 			// Checking
 			if err := newCheck(tr.fset).Type(v); err != nil {
-				tr.err = append(tr.err, err)
+				tr.addError(err)
 				continue
 			}
 
@@ -186,7 +186,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			}
 		}
 
-		if tr.err != nil {
+		if tr.hasError {
 			continue
 		}
 
@@ -250,7 +250,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 
 		// Checking
 		if err := newCheck(tr.fset).Type(tSpec.Type); err != nil {
-			tr.err = append(tr.err, err)
+			tr.addError(err)
 			continue
 		}
 
@@ -285,7 +285,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 
 				// Checking
 				if err := newCheck(tr.fset).Type(field.Type); err != nil {
-					tr.err = append(tr.err, err)
+					tr.addError(err)
 					continue
 				}
 				if field.Names == nil {
@@ -307,7 +307,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 			}
 		}
 
-		if tr.err != nil {
+		if tr.hasError {
 			continue
 		}
 

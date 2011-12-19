@@ -35,9 +35,11 @@ const (
 type transform struct {
 	fset *token.FileSet
 	line int // actual line
+	hasError   bool
 
 	public []string // declarations to be exported
-	err    []error
+	err    []error  // errors
+	warn   []string // warnings
 	//pointers []string
 	*bytes.Buffer // sintaxis translated to JS
 	*dataStmt     // extra data for a statement
@@ -47,8 +49,11 @@ func newTransform() *transform {
 	return &transform{
 		token.NewFileSet(),
 		0,
+		false,
+
 		make([]string, 0),
-		nil,
+		make([]error, 0, 8),
+		make([]string, 0, 8),
 		new(bytes.Buffer),
 		&dataStmt{},
 	}
@@ -82,8 +87,31 @@ func (tr *transform) addLine(pos token.Pos) bool {
 }
 
 // Appends an error.
-func (tr *transform) addError(format string, a ...interface{}) {
-	tr.err = append(tr.err, fmt.Errorf(format, a...))
+func (tr *transform) addError(value interface{}, a ...interface{}) {
+	if len(tr.err) == cap(tr.err) {
+		return
+	}
+
+	switch typ := value.(type) {
+	case string:
+		tr.err = append(tr.err, fmt.Errorf(typ, a...))
+	case error:
+		tr.err = append(tr.err, typ)
+	default:
+		panic("wrong type")
+	}
+
+	if !tr.hasError {
+		tr.hasError = true
+	}
+}
+
+// Appends a warning message.
+func (tr *transform) addWarning(format string, a ...interface{}) {
+	if len(tr.warn) == cap(tr.warn) {
+		return
+	}
+	tr.warn = append(tr.warn, fmt.Sprintf(format, a...))
 }
 
 // Appends public declaration names to be exported.
@@ -141,11 +169,17 @@ func Compile(filename string) error {
 	}
 
 	// Any error?
-	if trans.err != nil {
+	if trans.hasError {
+		fmt.Fprintln(os.Stderr, " == Errors\n")
+
 		for _, err := range trans.err {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+			fmt.Fprintf(os.Stderr, "%s\n", err)
 		}
-		return errors.New("Error: not supported in JavaScript")
+		if len(trans.err) == cap(trans.err) {
+			fmt.Fprintln(os.Stderr, "\n Too many errors")
+		}
+
+		return errors.New("") // to indicate that there was any error
 	}
 
 	// Export declarations in packages
@@ -187,5 +221,18 @@ func Compile(filename string) error {
 	}*/
 
 	fmt.Print(deb) // TODO: delete*/
+
+	// Print warnings
+	if len(trans.warn) != 0 {
+		fmt.Fprintln(os.Stderr, " == Warnings\n")
+
+		for _, v := range trans.warn {
+			fmt.Fprintln(os.Stderr, v)
+		}
+		if len(trans.warn) == cap(trans.warn) {
+			fmt.Fprintln(os.Stderr, "\n Too many warnings")
+		}
+	}
+
 	return nil
 }
