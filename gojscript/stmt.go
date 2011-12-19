@@ -92,6 +92,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Colon token.Pos // position of ":"
 	//  Body  []Stmt    // statement list; or nil
 	case *ast.CaseClause:
+		tr.isReturn = false // to check the last statement
 		tr.iCase++
 		tr.addLine(typ.Case)
 
@@ -112,8 +113,6 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		if typ.Body != nil {
-			tr.isReturn = false // to check the last statement
-
 			for _, v := range typ.Body {
 				if ok := tr.addLine(v.Pos()); ok {
 					tr.WriteString(strings.Repeat(TAB, tr.tabLevel+1))
@@ -132,7 +131,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt
 	//  X Expr // expression
 	/*case *ast.ExprStmt:
-		tr.WriteString(getExpression(typ.X))*/
+	tr.WriteString(getExpression(typ.X))*/
 
 	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword

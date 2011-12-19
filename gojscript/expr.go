@@ -20,25 +20,24 @@ import (
 
 // Represents an expression.
 type expression struct {
-	ident      string // variable's name
-	useIota    bool
-	isNegative bool
+	*bytes.Buffer        // sintaxis translated
+	ident         string // variable's name
+	useIota       bool
+	isNegative    bool
 
-	eltsLen int      // store length of array, to use in case of ellipsis (...)
-	lit     []string // store the last literals (for array)
-
-	*bytes.Buffer // sintaxis translated
+	lenArray int      // store length of array; to use in case of ellipsis [...]
+	valArray []string // store the last values of an array
 }
 
 // Initializes a new type of "expression".
 func newExpression(identifier string) *expression {
 	return &expression{
+		new(bytes.Buffer),
 		identifier,
 		false,
 		false,
 		0,
 		make([]string, 0),
-		new(bytes.Buffer),
 	}
 }
 
@@ -54,7 +53,7 @@ func getExpression(expr ast.Expr) string {
 func (e *expression) printArray() string {
 	a := ""
 
-	for i := 0; i < len(e.lit); i++ {
+	for i := 0; i < len(e.valArray); i++ {
 		vArray := "i" + strconv.Itoa(i)
 		a = fmt.Sprintf("%s[%s]", a, vArray)
 	}
@@ -73,30 +72,30 @@ func (e *expression) transform(expr ast.Expr) {
 			break
 		}
 
-		if len(e.lit) == 0 {
+		if len(e.valArray) == 0 {
 			e.WriteString("new Array(")
 
-			if e.eltsLen != 0 { // ellipsis
-				e.WriteString(strconv.Itoa(e.eltsLen))
+			if e.lenArray != 0 { // ellipsis
+				e.WriteString(strconv.Itoa(e.lenArray))
 			} else {
 				e.transform(typ.Len)
 			}
 
 			e.WriteString(")")
 		} else {
-			iArray := len(e.lit) - 1             // index of array
+			iArray := len(e.valArray) - 1        // index of array
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
-			e.WriteString(fmt.Sprintf("; for (var %s=0; %s<%s; %s++){ %s%s=new Array(",
-				vArray, vArray, e.lit[iArray], vArray, e.ident, e.printArray()))
+			e.WriteString(fmt.Sprintf(";%sfor%s(var %s=0;%s%s<%s;%s%s++){%s%s%s=new Array(",
+				SP, SP, vArray, SP, vArray, e.valArray[iArray], SP, vArray, SP, e.ident, e.printArray()))
 			e.transform(typ.Len)
 			e.WriteString(")")
 		}
 
 		if _, ok := typ.Elt.(*ast.ArrayType); ok {
 			e.transform(typ.Elt)
-		} else if len(e.lit) > 1 {
-			e.WriteString(";" + SP + strings.Repeat("}", len(e.lit)-1))
+		} else if len(e.valArray) > 1 {
+			e.WriteString(";" + SP + strings.Repeat("}", len(e.valArray)-1))
 		}
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
@@ -111,15 +110,25 @@ func (e *expression) transform(expr ast.Expr) {
 		if e.isNegative {
 			sign = "-"
 		}
-		e.lit = append(e.lit, sign+typ.Value)
+		e.valArray = append(e.valArray, sign+typ.Value)
 
+	// http://golang.org/doc/go_spec.html#Comparison_operators
+	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Comparison_Operators
+	//
 	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
 	//  X     Expr        // left operand
 	//  Op    token.Token // operator
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
+		op := typ.Op.String()
+
+		switch typ.Op {
+		case token.EQL:
+			op += "="
+		}
+
 		e.transform(typ.X)
-		e.WriteString(SP + typ.Op.String() + SP)
+		e.WriteString(SP + op + SP)
 		e.transform(typ.Y)
 
 	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
@@ -186,7 +195,7 @@ func (e *expression) transform(expr ast.Expr) {
 			panic(fmt.Sprintf("'CompositeLit' unimplemented: %s", compoType))
 
 		case *ast.ArrayType:
-			e.eltsLen = len(typ.Elts) // for ellipsis
+			e.lenArray = len(typ.Elts) // for ellipsis
 			e.transform(typ.Type)
 			//e.pos = 
 
@@ -239,7 +248,7 @@ func (e *expression) transform(expr ast.Expr) {
 			break
 		}
 		// Undefined value in array / slice
-		if len(e.lit) != 0 && name == "_" {
+		if len(e.valArray) != 0 && name == "_" {
 			break
 		}
 		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined

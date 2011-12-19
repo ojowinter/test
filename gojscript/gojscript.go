@@ -33,29 +33,30 @@ const (
 
 // Represents the code transformed to JavaScript.
 type transform struct {
-	fset *token.FileSet
-	line int // actual line
-	hasError   bool
-
-	public []string // declarations to be exported
-	err    []error  // errors
-	warn   []string // warnings
-	//pointers []string
+	fset          *token.FileSet
 	*bytes.Buffer // sintaxis translated to JS
 	*dataStmt     // extra data for a statement
+
+	err      []error  // errors
+	warn     []string // warnings
+	public   []string // declarations to be exported
+	//pointers []string
+
+	line     int // actual line
+	hasError bool
 }
 
 func newTransform() *transform {
 	return &transform{
 		token.NewFileSet(),
-		0,
-		false,
-
-		make([]string, 0),
-		make([]error, 0, 8),
-		make([]string, 0, 8),
 		new(bytes.Buffer),
 		&dataStmt{},
+
+		make([]error, 0, 8),
+		make([]string, 0, 8),
+		make([]string, 0),
+		0,
+		false,
 	}
 }
 

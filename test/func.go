@@ -29,7 +29,7 @@ func testSwitch(tag int) string {
 	str := ""
 
 	switch tag {
-	default: return "zero"
+	default:
 	case 1, 3, 5, 7, 9: return "odd"
 	case 2, 4, 6, 8: return "even"
 	}
@@ -41,9 +41,12 @@ func testSwitch(tag int) string {
 		str = "positive"
 	}
 
-/*	switch {
-	case x < y: f1()
-	case x < z: f2()
-	case x == 4: f3()
-	}*/
+	y := 100
+	switch {
+	case x < y: str = "lesser than 100"
+	case x > y: str = "greater than 100"
+	case x == 0: str = "zero"
+	}
+
+	return str
 }
