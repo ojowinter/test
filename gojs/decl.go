@@ -12,12 +12,9 @@ package gojs
 import (
 	"fmt"
 	"go/ast"
+	"strconv"
 	"strings"
 )
-
-// Maximum number of expressions to get.
-// The expressions are the values after of "=".
-const MAX_EXPRESSION = 10
 
 // Imports
 //
@@ -51,8 +48,7 @@ func (tr *transform) getImport(spec []ast.Spec) {
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
 func (tr *transform) getConst(spec []ast.Spec) {
-	iotas := make([]int, MAX_EXPRESSION)
-	lastValues := make([]string, MAX_EXPRESSION)
+	iotaExpr := make([]string, 0) // iota expressions
 
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
@@ -63,24 +59,25 @@ func (tr *transform) getConst(spec []ast.Spec) {
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
-		if len(vSpec.Values) > MAX_EXPRESSION {
-			panic("length of 'iotas' is lesser than 'vSpec.Values'")
-		}
-
 		// Checking
 		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
 			tr.addError(err)
 			continue
 		}
 
-		names, skipName := tr.getName(vSpec)
+		tr.addLine(vSpec.Pos())
+		isFirst := true
 
-		// === Values
-		values := make([]string, 0)
+		for i, ident := range vSpec.Names {
+			if ident.Name == "_" {
+				iotaExpr = append(iotaExpr, "")
+				continue
+			}
 
-		if len(vSpec.Values) != 0 {
-			for i, v := range vSpec.Values {
-				var dst string
+			value := strconv.Itoa(ident.Obj.Data.(int)) // possible value of iota
+
+			if vSpec.Values != nil {
+				v := vSpec.Values[i]
 
 				// Checking
 				if err := newCheck(tr.fset).Type(v); err != nil {
@@ -88,58 +85,43 @@ func (tr *transform) getConst(spec []ast.Spec) {
 					continue
 				}
 
-				src := newExpression(names[i])
-				src.transform(v)
+				expr := newExpression("")
+				expr.transform(v)
+				exprStr := expr.String()
 
-				if src.useIota {
-					dst = fmt.Sprintf(src.String(), iotas[i])
-					iotas[i]++
+				if expr.useIota {
+					value = strings.Replace(exprStr, IOTA, value, -1)
+					iotaExpr = append(iotaExpr, exprStr)
 				} else {
-					dst = src.String()
+					value = exprStr
 				}
-
-				if !skipName[i] {
-					values = append(values, dst)
-					lastValues[i] = src.String()
-				}
+			} else {
+				value = strings.Replace(iotaExpr[i], IOTA, value, -1)
 			}
-		} else { // get last value of iota
-			for i := 0; i < len(names); i++ {
-				dst := fmt.Sprintf(lastValues[i], iotas[0])
-				values = append(values, dst)
-			}
-			iotas[0]++
-		}
 
-		// Skip write buffer, if any error
-		if tr.hasError {
-			continue
-		}
-
-		// === Write
-		// TODO: calculate expression using "exp/types"
-		tr.addLine(vSpec.Pos())
-
-		isFirst := true
-		for i, v := range names {
-			if skipName[i] {
+			// Skip write buffer, if any error
+			if tr.hasError {
 				continue
 			}
 
+			// To export
+			tr.checkPublic(ident.Name)
+
+			// === Write
 			if isFirst {
 				isFirst = false
-				tr.WriteString(fmt.Sprintf("const %s%s=%s%s", v, SP, SP, values[i]))
+				tr.WriteString(fmt.Sprintf(
+					"const %s%s=%s%s", ident.Name, SP, SP, value))
 			} else {
-				tr.WriteString(fmt.Sprintf(",%s%s%s=%s%s", SP, v, SP, SP, values[i]))
+				tr.WriteString(fmt.Sprintf(
+					",%s%s%s=%s%s", SP, ident.Name, SP, SP, value))
 			}
 		}
 
 		// It is possible that there is only a blank identifier
-		if isFirst {
-			continue
+		if !isFirst {
+			tr.WriteString(";")
 		}
-
-		tr.WriteString(";")
 	}
 }
 

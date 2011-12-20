@@ -28,6 +28,9 @@ type dataStmt struct {
 func (tr *transform) getStatement(stmt ast.Stmt) {
 	switch typ := stmt.(type) {
 
+	// http://golang.org/doc/go_spec.html#Arithmetic_operators
+	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Assignment_Operators
+	//
 	// http://golang.org/pkg/go/ast/#AssignStmt || godoc go/ast AssignStmt
 	//  Lhs    []Expr
 	//  TokPos token.Pos   // position of Tok
@@ -35,15 +38,21 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
 		var assign string
-		var isNew bool
+		var isNew, needChange bool
 
 		switch typ.Tok {
 		case token.DEFINE:
 			assign = "="
 			isNew = true
-		case token.ASSIGN, token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN,
-			token.QUO_ASSIGN, token.REM_ASSIGN:
+		case token.ASSIGN,
+			token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN, token.QUO_ASSIGN,
+			token.REM_ASSIGN,
+			token.AND_ASSIGN, token.OR_ASSIGN, token.XOR_ASSIGN, token.SHL_ASSIGN,
+			token.SHR_ASSIGN:
+
 			assign = typ.Tok.String()
+		case token.AND_NOT_ASSIGN:
+			needChange = true
 
 		default:
 			panic(fmt.Sprintf("token unimplemented: %s", typ.Tok))
@@ -71,7 +80,14 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(lIdent)
 			// Skip empty strings
 			if rIdent != EMPTY {
-				tr.WriteString(SP + assign + SP + rIdent)
+				if !needChange {
+					tr.WriteString(SP + assign + SP + rIdent)
+				} else {
+					if typ.Tok == token.AND_NOT_ASSIGN {
+						tr.WriteString(SP + "=" + SP + lIdent + SP + "&" + SP +
+							rIdent + SP + "^" + SP + lIdent)
+					}
+				}
 			}
 		}
 		tr.WriteString(";")

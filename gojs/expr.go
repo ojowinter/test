@@ -243,7 +243,7 @@ func (e *expression) transform(expr ast.Expr) {
 		name := typ.Name
 
 		if name == "iota" {
-			e.WriteString("%d")
+			e.WriteString(IOTA)
 			e.useIota = true
 			break
 		}

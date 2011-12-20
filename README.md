@@ -51,6 +51,8 @@ Status:
 	error for goroutine	[OK]
 	switch				[OK]
 	Comparison operators[OK]
+	Assignment operators[OK]
+	for					[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
