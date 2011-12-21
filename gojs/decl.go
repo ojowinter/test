@@ -60,7 +60,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := tr.CheckType(vSpec.Type); err != nil {
+		if err := tr.CheckAndAddError(vSpec.Type); err != nil {
 			continue
 		}
 
@@ -79,7 +79,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				v := vSpec.Values[i]
 
 				// Checking
-				if err := tr.CheckType(v); err != nil {
+				if err := tr.CheckAndAddError(v); err != nil {
 					continue
 				}
 
@@ -101,7 +101,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			if tr.hasError {
 				continue
 			}
-			tr.addExported(ident.Name)
+			tr.addIfExported(ident)
 
 			// === Write
 			if isFirst {
@@ -134,7 +134,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := tr.CheckType(vSpec.Type); err != nil {
+		if err := tr.CheckAndAddError(vSpec.Type); err != nil {
 			continue
 		}
 
@@ -145,7 +145,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		for i, v := range vSpec.Values {
 			// Checking
-			if err := tr.CheckType(v); err != nil {
+			if err := tr.CheckAndAddError(v); err != nil {
 				continue
 			}
 
@@ -229,7 +229,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Checking
-		if err := tr.CheckType(tSpec.Type); err != nil {
+		if err := tr.CheckAndAddError(tSpec.Type); err != nil {
 			continue
 		}
 
@@ -271,7 +271,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 				//  Comment *CommentGroup // line comments; or nil
 
 				// Checking
-				if err := tr.CheckType(field.Type); err != nil {
+				if err := tr.CheckAndAddError(field.Type); err != nil {
 					continue
 				}
 				if field.Names == nil {
@@ -298,13 +298,12 @@ func (tr *transform) getType(spec []ast.Spec) {
 		}
 
 		// === Write
-		name := tSpec.Name.Name
 		args, allFields := format(fields)
 
-		tr.addExported(name)
+		tr.addIfExported(tSpec.Name)
 		tr.addLine(tSpec.Pos())
 
-		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", name, args, SP))
+		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", tSpec.Name, args, SP))
 
 		if len(allFields) != 0 {
 			tr.WriteString(allFields)
@@ -336,7 +335,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
 		decl.Name, getParams(decl.Type), SP))
 	tr.getStatement(decl.Body)
-	tr.addExported(decl.Name.Name)
+	tr.addIfExported(decl.Name)
 }
 
 //
@@ -355,7 +354,7 @@ func (tr *transform) getName(spec *ast.ValueSpec) (names []string, skipName []bo
 			continue
 		}
 		names = append(names, v.Name)
-		tr.addExported(v.Name)
+		tr.addIfExported(v)
 	}
 
 	return

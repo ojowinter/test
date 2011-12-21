@@ -121,9 +121,9 @@ func (tr *transform) addWarning(format string, a ...interface{}) {
 }
 
 // Appends public declaration names to be exported.
-func (tr *transform) addExported(s string) {
-	if ast.IsExported(s) {
-		tr.exported = append(tr.exported, s)
+func (tr *transform) addIfExported(ident *ast.Ident) {
+	if ast.IsExported(ident.Name) {
+		tr.exported = append(tr.exported, ident.Name)
 	}
 }
 

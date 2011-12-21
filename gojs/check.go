@@ -48,9 +48,8 @@ type dataCheck struct {
 	fset           *token.FileSet
 }
 
-// Checks if it has a valid type for JavaScript.
-// If there is any error then it is added.
-func (tr *transform) CheckType(expr ast.Expr) error {
+// Checks the expression and adds the error (if any).
+func (tr *transform) CheckAndAddError(expr ast.Expr) error {
 	c := &dataCheck{fset: tr.fset}
 
 	err := c.checkType(expr)
@@ -66,7 +65,7 @@ func (c *dataCheck) position(expr ast.Expr) token.Position {
 	return c.fset.Position(expr.Pos())
 }
 
-// Type checking.
+// Checks if "expr" has a valid type for JavaScript.
 func (c *dataCheck) checkType(expr ast.Expr) error {
 	switch typ := expr.(type) {
 	default:
