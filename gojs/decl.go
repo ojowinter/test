@@ -61,7 +61,6 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 		// Checking
 		if err := tr.CheckType(vSpec.Type); err != nil {
-			tr.addError(err)
 			continue
 		}
 
@@ -81,7 +80,6 @@ func (tr *transform) getConst(spec []ast.Spec) {
 
 				// Checking
 				if err := tr.CheckType(v); err != nil {
-					tr.addError(err)
 					continue
 				}
 
@@ -137,7 +135,6 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		// Checking
 		if err := tr.CheckType(vSpec.Type); err != nil {
-			tr.addError(err)
 			continue
 		}
 
@@ -149,7 +146,6 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		for i, v := range vSpec.Values {
 			// Checking
 			if err := tr.CheckType(v); err != nil {
-				tr.addError(err)
 				continue
 			}
 
@@ -234,7 +230,6 @@ func (tr *transform) getType(spec []ast.Spec) {
 
 		// Checking
 		if err := tr.CheckType(tSpec.Type); err != nil {
-			tr.addError(err)
 			continue
 		}
 
@@ -277,7 +272,6 @@ func (tr *transform) getType(spec []ast.Spec) {
 
 				// Checking
 				if err := tr.CheckType(field.Type); err != nil {
-					tr.addError(err)
 					continue
 				}
 				if field.Names == nil {

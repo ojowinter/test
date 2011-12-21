@@ -49,9 +49,16 @@ type dataCheck struct {
 }
 
 // Checks if it has a valid type for JavaScript.
+// If there is any error then it is added.
 func (tr *transform) CheckType(expr ast.Expr) error {
 	c := &dataCheck{fset: tr.fset}
-	return c.checkType(expr)
+
+	err := c.checkType(expr)
+	if err != nil {
+		tr.addError(err)
+	}
+
+	return err
 }
 
 // Returns a general Position.
