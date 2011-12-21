@@ -30,10 +30,16 @@ type expression struct {
 }
 
 // Initializes a new type of "expression".
-func newExpression(identifier string) *expression {
+func newExpression(ident *ast.Ident) *expression {
+	var id string
+
+	if ident != nil {
+		id = ident.Name
+	}
+
 	return &expression{
 		new(bytes.Buffer),
-		identifier,
+		id,
 		false,
 		false,
 		0,
@@ -43,7 +49,7 @@ func newExpression(identifier string) *expression {
 
 // Returns the Go expression in JavaScript.
 func getExpression(expr ast.Expr) string {
-	e := newExpression("")
+	e := newExpression(nil)
 
 	e.transform(expr)
 	return e.String()
@@ -86,8 +92,10 @@ func (e *expression) transform(expr ast.Expr) {
 			iArray := len(e.valArray) - 1        // index of array
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
-			e.WriteString(fmt.Sprintf(";%sfor%s(var %s=0;%s%s<%s;%s%s++){%s%s%s=new Array(",
-				SP, SP, vArray, SP, vArray, e.valArray[iArray], SP, vArray, SP, e.ident, e.printArray()))
+			e.WriteString(fmt.Sprintf(
+				";%sfor%s(var %s=0;%s%s<%s;%s%s++){%s%s%s=new Array(",
+				SP, SP, vArray, SP, vArray, e.valArray[iArray], SP, vArray,
+				SP, e.ident, e.printArray()))
 			e.transform(typ.Len)
 			e.WriteString(")")
 		}
