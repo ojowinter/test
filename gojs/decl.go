@@ -60,7 +60,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
+		if err := tr.CheckType(vSpec.Type); err != nil {
 			tr.addError(err)
 			continue
 		}
@@ -80,7 +80,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				v := vSpec.Values[i]
 
 				// Checking
-				if err := newCheck(tr.fset).Type(v); err != nil {
+				if err := tr.CheckType(v); err != nil {
 					tr.addError(err)
 					continue
 				}
@@ -103,9 +103,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			if tr.hasError {
 				continue
 			}
-
-			// To export
-			tr.checkPublic(ident.Name)
+			tr.addExported(ident.Name)
 
 			// === Write
 			if isFirst {
@@ -138,7 +136,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := newCheck(tr.fset).Type(vSpec.Type); err != nil {
+		if err := tr.CheckType(vSpec.Type); err != nil {
 			tr.addError(err)
 			continue
 		}
@@ -150,7 +148,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 
 		for i, v := range vSpec.Values {
 			// Checking
-			if err := newCheck(tr.fset).Type(v); err != nil {
+			if err := tr.CheckType(v); err != nil {
 				tr.addError(err)
 				continue
 			}
@@ -235,7 +233,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Checking
-		if err := newCheck(tr.fset).Type(tSpec.Type); err != nil {
+		if err := tr.CheckType(tSpec.Type); err != nil {
 			tr.addError(err)
 			continue
 		}
@@ -278,7 +276,7 @@ func (tr *transform) getType(spec []ast.Spec) {
 				//  Comment *CommentGroup // line comments; or nil
 
 				// Checking
-				if err := newCheck(tr.fset).Type(field.Type); err != nil {
+				if err := tr.CheckType(field.Type); err != nil {
 					tr.addError(err)
 					continue
 				}
@@ -308,6 +306,8 @@ func (tr *transform) getType(spec []ast.Spec) {
 		// === Write
 		name := tSpec.Name.Name
 		args, allFields := format(fields)
+
+		tr.addExported(name)
 		tr.addLine(tSpec.Pos())
 
 		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", name, args, SP))
@@ -318,10 +318,6 @@ func (tr *transform) getType(spec []ast.Spec) {
 		} else {
 			tr.WriteString("}") //! empty struct
 		}
-		// ===
-
-		// To export
-		tr.checkPublic(name)
 	}
 }
 
@@ -346,7 +342,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
 		decl.Name, getParams(decl.Type), SP))
 	tr.getStatement(decl.Body)
-	tr.checkPublic(decl.Name.Name) // to export
+	tr.addExported(decl.Name.Name)
 }
 
 //
@@ -365,9 +361,7 @@ func (tr *transform) getName(spec *ast.ValueSpec) (names []string, skipName []bo
 			continue
 		}
 		names = append(names, v.Name)
-
-		// To export
-		tr.checkPublic(v.Name)
+		tr.addExported(v.Name)
 	}
 
 	return

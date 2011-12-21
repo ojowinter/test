@@ -44,7 +44,7 @@ type transform struct {
 
 	err      []error  // errors
 	warn     []string // warnings
-	public   []string // declarations to be exported
+	exported []string // declarations to be exported
 	//pointers []string
 
 	line     int // actual line
@@ -121,9 +121,9 @@ func (tr *transform) addWarning(format string, a ...interface{}) {
 }
 
 // Appends public declaration names to be exported.
-func (tr *transform) checkPublic(s string) {
+func (tr *transform) addExported(s string) {
 	if ast.IsExported(s) {
-		tr.public = append(tr.public, s)
+		tr.exported = append(tr.exported, s)
 	}
 }
 
@@ -191,8 +191,8 @@ func Compile(filename string) error {
 	// Export declarations in packages
 	//
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/export
-	if getExpression(node.Name) != "main" && len(trans.public) != 0 {
-		for i, v := range trans.public {
+	if getExpression(node.Name) != "main" && len(trans.exported) != 0 {
+		for i, v := range trans.exported {
 			if i == 0 {
 				trans.WriteString(NL + NL + "export " + v)
 			} else {

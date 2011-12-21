@@ -40,39 +40,41 @@ func isType(tok token.Token, lit string) bool {
 	return false
 }*/
 
-type check struct {
+// Represents data for the checking.
+type dataCheck struct {
 	isCallExpr     bool
 	isCompositeLit bool
 	isNegative     bool
 	fset           *token.FileSet
 }
 
-// Initializes a new type of "check".
-func newCheck(fset *token.FileSet) *check {
-	return &check{fset: fset}
+// Checks if it has a valid type for JavaScript.
+func (tr *transform) CheckType(expr ast.Expr) error {
+	c := &dataCheck{fset: tr.fset}
+	return c.checkType(expr)
 }
 
 // Returns a general Position.
-func (c *check) Position(expr ast.Expr) token.Position {
+func (c *dataCheck) position(expr ast.Expr) token.Position {
 	return c.fset.Position(expr.Pos())
 }
 
-// Checks if it has a valid type for JavaScript.
-func (c *check) Type(expr ast.Expr) error {
+// Type checking.
+func (c *dataCheck) checkType(expr ast.Expr) error {
 	switch typ := expr.(type) {
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", typ))
 
 	case *ast.ArrayType:
-		return c.Type(typ.Elt)
+		return c.checkType(typ.Elt)
 
 	case *ast.BasicLit:
 
 	case *ast.BinaryExpr:
-		if err := c.Type(typ.X); err != nil {
+		if err := c.checkType(typ.X); err != nil {
 			return err
 		}
-		if err := c.Type(typ.Y); err != nil {
+		if err := c.checkType(typ.Y); err != nil {
 			return err
 		}
 
@@ -82,57 +84,57 @@ func (c *check) Type(expr ast.Expr) error {
 
 		switch ident {
 		case "make", "new":
-			return c.Type(typ.Args[0])
+			return c.checkType(typ.Args[0])
 
 		case "int64", "uint64":
-			return fmt.Errorf("%s: conversion of type %s", c.Position(typ), ident)
+			return fmt.Errorf("%s: conversion of type %s", c.position(typ), ident)
 
 		// golang.org/pkg/builtin/
 		case "complex":
-			return fmt.Errorf("%s: built-in function %s()", c.Position(typ), ident)
+			return fmt.Errorf("%s: built-in function %s()", c.position(typ), ident)
 		}
 
 	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
 	case *ast.ChanType:
-		return fmt.Errorf("%s: channel type", c.Position(typ))
+		return fmt.Errorf("%s: channel type", c.position(typ))
 
 	case *ast.CompositeLit:
-		return c.Type(typ.Type)
+		return c.checkType(typ.Type)
 
 	case *ast.Ident:
 		switch typ.Name {
 		// Unsupported types
 		case "int64", "uint64", "complex64", "complex128": // "uintptr"
-			return fmt.Errorf("%s: %s type", c.Position(typ), typ.Name)
+			return fmt.Errorf("%s: %s type", c.position(typ), typ.Name)
 		}
 
 	case *ast.InterfaceType: // ToDo: review
 
 	case *ast.MapType:
-		if err := c.Type(typ.Key); err != nil {
+		if err := c.checkType(typ.Key); err != nil {
 			return err
 		}
-		if err := c.Type(typ.Value); err != nil {
+		if err := c.checkType(typ.Value); err != nil {
 			return err
 		}
 
 	case *ast.ParenExpr:
-		return c.Type(typ.X)
+		return c.checkType(typ.X)
 
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
 	//  X    Expr      // operand
 	case *ast.StarExpr:
-		return c.Type(typ.X)
+		return c.checkType(typ.X)
 
 	case *ast.StructType:
 
 	case *ast.UnaryExpr:
 		// Channel
 		if typ.Op == token.ARROW {
-			return fmt.Errorf("%s: channel operator", c.Position(typ))
+			return fmt.Errorf("%s: channel operator", c.position(typ))
 		}
 
-		return c.Type(typ.X)
+		return c.checkType(typ.X)
 
 	// The type has not been indicated
 	case nil:
