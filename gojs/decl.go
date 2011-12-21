@@ -79,7 +79,8 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				v := vSpec.Values[i]
 
 				// Checking
-				if err := tr.CheckAndAddError(v); err != nil {
+				tr.CheckAndAddError(v)
+				if tr.hasError {
 					continue
 				}
 
@@ -94,13 +95,12 @@ func (tr *transform) getConst(spec []ast.Spec) {
 					value = exprStr
 				}
 			} else {
+				if tr.hasError {
+					continue
+				}
 				value = strings.Replace(iotaExpr[i], IOTA, value, -1)
 			}
 
-			// Skip write buffer, if any error
-			if tr.hasError {
-				continue
-			}
 			tr.addIfExported(ident)
 
 			// === Write
@@ -138,56 +138,55 @@ func (tr *transform) getVar(spec []ast.Spec) {
 			continue
 		}
 
-		names, skipName := tr.getName(vSpec)
+		tr.addLine(vSpec.Pos())
+		isFirst := true
 
-		// === Values
-		values := make([]string, 0)
+		for i, ident := range vSpec.Names {
+			var exprStr string
+			var skip bool
 
-		for i, v := range vSpec.Values {
-			// Checking
-			if err := tr.CheckAndAddError(v); err != nil {
-				continue
+			if ident.Name == "_" {
+				skip = true
 			}
 
-			// Skip when it is not a function
-			if skipName[i] {
-				if _, ok := v.(*ast.CallExpr); !ok {
+			if vSpec.Values != nil {
+				value := vSpec.Values[i]
+
+				// Skip when it is not a function because it could return more
+				// than one value.
+				if ident.Name == "_" {
+					if _, ok := value.(*ast.CallExpr); !ok {
+						continue
+					}
+				}
+
+				// Checking
+				tr.CheckAndAddError(value)
+				if tr.hasError {
 					continue
 				}
-			}
 
-			if !skipName[i] {
-				src := newExpression(names[i])
-				src.transform(v)
+				src := newExpression(ident.Name)
+				src.transform(value)
+				exprStr = src.String()  // getExpression(value)
 
-				values = append(values, src.String())
-			}
-		}
-
-		if tr.hasError {
-			continue
-		}
-
-		// === Write
-		// TODO: calculate expression using "exp/types"
-
-		tr.addLine(vSpec.Pos())
-
-		isFirst := true
-		for i, n := range names {
-			if skipName[i] {
+			} else if skip || tr.hasError {
 				continue
 			}
 
+			tr.addIfExported(ident)
+
+			// === Write
+			// TODO: calculate expression using "exp/types"
 			if isFirst {
 				isFirst = false
-				tr.WriteString("var " + n)
+				tr.WriteString("var " + ident.Name)
 			} else {
-				tr.WriteString("," + SP + n)
+				tr.WriteString("," + SP + ident.Name)
 			}
 
-			if len(values) != 0 && values[i] != EMPTY {
-				tr.WriteString(SP + "=" + SP + values[i])
+			if exprStr != "" && exprStr != EMPTY {
+				tr.WriteString(SP + "=" + SP + exprStr)
 			}
 		}
 
@@ -340,25 +339,6 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 //
 // === Utility
-
-// Gets the identifiers.
-//
-// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
-//  Name    string    // identifier name
-func (tr *transform) getName(spec *ast.ValueSpec) (names []string, skipName []bool) {
-	skipName = make([]bool, len(spec.Names)) // for blank identifiers "_"
-
-	for i, v := range spec.Names {
-		if v.Name == "_" {
-			skipName[i] = true
-			continue
-		}
-		names = append(names, v.Name)
-		tr.addIfExported(v)
-	}
-
-	return
-}
 
 // Gets the parameters.
 //
