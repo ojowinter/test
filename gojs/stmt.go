@@ -179,8 +179,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		if typ.Init != nil {
 			tr.getStatement(typ.Init)
+		} else {
+			tr.WriteString(";")
 		}
-		tr.WriteString(";" + SP)
+		tr.WriteString(SP)
 
 		if typ.Cond != nil {
 			tr.WriteString(getExpression(typ.Cond))
@@ -222,6 +224,50 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(SP + "else ")
 			tr.getStatement(typ.Else)
 		}
+
+	// http://golang.org/pkg/go/ast/#IncDecStmt || godoc go/ast IncDecStmt
+	//  X      Expr
+	//  TokPos token.Pos   // position of Tok
+	//  Tok    token.Token // INC or DEC
+	case *ast.IncDecStmt:
+		tr.WriteString(getExpression(typ.X) + typ.Tok.String())
+
+	// http://golang.org/pkg/go/ast/#RangeStmt || godoc go/ast RangeStmt
+	//  For        token.Pos   // position of "for" keyword
+	//  Key, Value Expr        // Value may be nil
+	//  TokPos     token.Pos   // position of Tok
+	//  Tok        token.Token // ASSIGN, DEFINE
+	//  X          Expr        // value to range over
+	//  Body       *BlockStmt
+	/*case *ast.RangeStmt:
+		key := getExpression(typ.Key)
+
+		value := ""
+		if typ.Value != nil {
+			value = getExpression(typ.Value)
+		}
+
+		expr := getExpression(typ.X)
+
+		switch t := typ.X.(type) {
+		case *ast.ArrayType: // string
+			init := key + "SP" + "=" + SP + "0"  // initialization
+
+			if typ.Tok == token.DEFINE {
+				init = "var " + init
+
+				if typ.Value != nil {
+					init += "," + SP + value
+				}
+			}
+
+			tr.WriteString(fmt.Sprintf("for%s(%s;%s;%s%s)", SP, init, SP, SP, expr))
+
+		case *ast.Ident:
+			fmt.Printf("%T : %v\n", t.Obj,t.Obj.Data)
+		default:
+			fmt.Printf("%T\n", t)
+		}*/
 
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return

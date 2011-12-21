@@ -57,4 +57,13 @@ function testFor() {
 	for (; a < b; ) {
 		a *= 2;
 	}
+
+	for (var i = 0; i < 10; i++) {
+		a = i;
+	}
+
+	var s = [2,3,5];
+
+
+
 }

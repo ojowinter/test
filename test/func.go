@@ -57,4 +57,13 @@ func testFor() int {
 	for a < b {
 		a *= 2
 	}
+
+	for i := 0; i < 10; i++ {
+		a = i
+	}
+
+	s := []int{2, 3, 5}
+	/*for i, v := range s {
+		a = s
+	}*/
 }
