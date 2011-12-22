@@ -37,29 +37,25 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // assignment token, DEFINE
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
-		var assign string
-		var isNew, needChange bool
+		var op string
+		var isBitClear bool
 
 		switch typ.Tok {
 		case token.DEFINE:
-			assign = "="
-			isNew = true
+			tr.WriteString("var ")
+			op = "="
 		case token.ASSIGN,
 			token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN, token.QUO_ASSIGN,
 			token.REM_ASSIGN,
 			token.AND_ASSIGN, token.OR_ASSIGN, token.XOR_ASSIGN, token.SHL_ASSIGN,
 			token.SHR_ASSIGN:
 
-			assign = typ.Tok.String()
+			op = typ.Tok.String()
 		case token.AND_NOT_ASSIGN:
-			needChange = true
+			isBitClear = true
 
 		default:
 			panic(fmt.Sprintf("token unimplemented: %s", typ.Tok))
-		}
-
-		if isNew {
-			tr.WriteString("var ")
 		}
 
 		isFirst := true
@@ -78,15 +74,13 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			}
 
 			tr.WriteString(lIdent)
-			// Skip empty strings
+
+			// Skip empty assignments
 			if rIdent != EMPTY {
-				if !needChange {
-					tr.WriteString(SP + assign + SP + rIdent)
+				if !isBitClear {
+					tr.WriteString(SP + op + SP + rIdent)
 				} else {
-					if typ.Tok == token.AND_NOT_ASSIGN {
-						tr.WriteString(SP + "=" + SP + lIdent + SP + "&" + SP +
-							rIdent + SP + "^" + SP + lIdent)
-					}
+					tr.WriteString(SP + "&=" + SP + "~(" + rIdent + ")")
 				}
 			}
 		}

@@ -294,12 +294,17 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Op    token.Token // operator
 	//  X     Expr        // operand
 	case *ast.UnaryExpr:
+		op := typ.Op.String()
+
 		switch typ.Op {
 		case token.SUB:
 			e.isNegative = true
+		// Bitwise complement
+		case token.XOR:
+			op = "~"
 		}
 
-		e.WriteString(typ.Op.String())
+		e.WriteString(op)
 		e.transform(typ.X)
 
 	default:
