@@ -21,7 +21,9 @@ type dataStmt struct {
 	tabLevel  int  // tabulation level
 	lenCase   int  // number of "case" statements
 	iCase     int  // index in "case" statements
-	wasReturn bool // the last statement was "return"?
+
+	wasFallthrough bool // the last statement was "fallthrough"?
+	wasReturn      bool // the last statement was "return"?
 }
 
 // Transforms the Go statement.
@@ -115,6 +117,30 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.addLine(typ.Rbrace)
 		tr.WriteString(strings.Repeat(TAB, tr.tabLevel) + "}")
 
+	// http://golang.org/pkg/go/ast/#BranchStmt || godoc go/ast BranchStmt
+	//  TokPos token.Pos   // position of Tok
+	//  Tok    token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
+	//  Label  *Ident      // label name; or nil
+	case *ast.BranchStmt:
+		label := ";"
+
+		if typ.Label != nil {
+			label = SP + typ.Label.Name + ";"
+		}
+
+		tr.addLine(typ.TokPos)
+
+		switch typ.Tok {
+		case token.BREAK:
+			tr.WriteString("break" + label)
+		case token.CONTINUE:
+			tr.WriteString("continue" + label)
+		case token.GOTO:
+			tr.WriteString("goto" + label)
+		case token.FALLTHROUGH:
+			tr.wasFallthrough = true
+		}
+
 	// http://golang.org/pkg/go/ast/#CaseClause || godoc go/ast CaseClause
 	//  Case  token.Pos // position of "case" or "default" keyword
 	//  List  []Expr    // list of expressions or types; nil means default case
@@ -153,14 +179,21 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		// Skip last "case" statement
-		if !tr.wasReturn && tr.iCase != tr.lenCase {
+		if !tr.wasFallthrough && !tr.wasReturn && tr.iCase != tr.lenCase {
 			tr.WriteString(SP + "break;")
 		}
 
 	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt
 	//  X Expr // expression
-	/*case *ast.ExprStmt:
-	tr.WriteString(getExpression(typ.X))*/
+	case *ast.ExprStmt:
+		expr := newExpression(nil)
+		expr.transform(typ.X)
+
+		if expr.err != nil {
+			tr.addError(expr.err)
+		} else {
+			tr.WriteString(expr.String())
+		}
 
 	// http://golang.org/pkg/go/ast/#ForStmt || godoc go/ast ForStmt
 	//  For  token.Pos // position of "for" keyword

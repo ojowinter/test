@@ -24,6 +24,24 @@ func testIf() int {
 	}
 }
 
+func testBreak() {
+	for i := 10; i > 0; i--{
+		if i < 5{
+			break
+		}
+//		fmt.Println("i")
+	}
+}
+
+func testContinue() {
+	for i := 10; i > 0; i--{
+		if i == 5{
+			continue
+		}
+//		fmt.Println("i")
+	}
+}
+
 func testSwitch(tag int) string {
 	//var str string
 	str := ""
@@ -49,6 +67,32 @@ func testSwitch(tag int) string {
 	}
 
 	return str
+
+}
+
+func testSwitch2() {
+	switch i := 10; {
+	case 1:
+		fmt.Println("i is equal to 1")
+	case 2, 3, 4:
+			fmt.Println("i is equal to 2, 3 or 4")
+	case 10:
+		fmt.Println("i is equal to 10")
+	default:
+		fmt.Println("All I know is that i is an integer")
+	}
+
+	i := 10
+	switch {
+	case i < 10:
+		fmt.Println("i is less than 10")
+	case i > 10, i < 0:
+		fmt.Println("i is either bigger than 10 or less than 0")
+	case i == 10:
+		fmt.Println("i is equal to 10")
+	default:
+		fmt.Println("This won't be printed anyway")
+	}
 }
 
 func testFor() int {

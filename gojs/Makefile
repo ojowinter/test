@@ -5,6 +5,7 @@ GOFILES=\
 	check.go\
 	decl.go\
 	expr.go\
+	func.go\
 	gojs.go\
 	stmt.go\
 

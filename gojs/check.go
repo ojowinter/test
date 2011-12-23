@@ -86,18 +86,18 @@ func (c *dataCheck) checkType(expr ast.Expr) error {
 
 	case *ast.CallExpr:
 		c.isCallExpr = true
-		ident := typ.Fun.(*ast.Ident).Name
+		call := typ.Fun.(*ast.Ident).Name
 
-		switch ident {
+		switch call {
 		case "make", "new":
 			return c.checkType(typ.Args[0])
 
 		case "int64", "uint64":
-			return fmt.Errorf("%s: conversion of type %s", c.position(typ), ident)
+			return fmt.Errorf("%s: conversion of type %s", c.position(typ), call)
 
 		// golang.org/pkg/builtin/
 		case "complex":
-			return fmt.Errorf("%s: built-in function %s()", c.position(typ), ident)
+			return fmt.Errorf("%s: built-in function %s()", c.position(typ), call)
 		}
 
 	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType

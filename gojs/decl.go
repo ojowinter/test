@@ -30,15 +30,17 @@ func (tr *transform) getImport(spec []ast.Spec) {
 	//  EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
 	for _, v := range spec {
 		iSpec := v.(*ast.ImportSpec)
-		path := iSpec.Path.Value
-		pathDir := strings.SplitN(path, "/", 2)[0]
+		path := strings.Replace(iSpec.Path.Value, "\"", "", -1)
 
-		if !strings.Contains(pathDir, ".") {
-			tr.addError("%s: import from core library", path)
-			continue
+		// Core library
+		if !strings.Contains(path, ".") {
+			if _, ok := ImportAndFunc[path]; !ok {
+				tr.addError("%s: import from core library", path)
+				continue
+			}
 		}
 
-		//import objectName.*; 
+		//import objectName.*;
 		//fmt.Println(iSpec.Name, pathDir)
 	}
 }

@@ -24,6 +24,7 @@ type expression struct {
 	ident         string // variable's name
 	useIota       bool
 	isNegative    bool
+	err           error
 
 	lenArray int      // store length of array; to use in case of ellipsis [...]
 	valArray []string // store the last values of an array
@@ -42,6 +43,7 @@ func newExpression(ident *ast.Ident) *expression {
 		id,
 		false,
 		false,
+		nil,
 		0,
 		make([]string, 0),
 	}
@@ -143,21 +145,38 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Fun      Expr      // function expression
 	//  Args     []Expr    // function arguments; or nil
 	case *ast.CallExpr:
-		callIdent := typ.Fun.(*ast.Ident).Name
+		// === From imports
 
-		// Conversion: []byte()
-		if t, ok := typ.Fun.(*ast.ArrayType); ok {
-			if t.Elt.(*ast.Ident).Name == "byte" {
+		// http://golang.org/pkg/go/ast/#SelectorExpr || godoc go/ast SelectorExpr
+		//   X   Expr   // expression
+		//   Sel *Ident // field selector
+		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
+			funcJS, err := getFuncJS(call.X.(*ast.Ident), call.Sel, typ.Args)
+			if err != nil {
+				e.err = err
+				return
+			}
+
+			e.WriteString(funcJS)
+			break
+		}
+
+		// === Conversion: []byte()
+		if call, ok := typ.Fun.(*ast.ArrayType); ok {
+			if call.Elt.(*ast.Ident).Name == "byte" {
 				e.transform(typ.Args[0])
 			} else {
-				panic(fmt.Sprintf("call of conversion unimplemented: []%T()", t))
+				panic(fmt.Sprintf("call of conversion unimplemented: []%T()", call))
 			}
 			break
 		}
 
-		switch callIdent {
+		// === Built-in functions
+		call := typ.Fun.(*ast.Ident).Name
+
+		switch call {
 		default:
-			panic(fmt.Sprintf("call unimplemented: %s", callIdent))
+			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
 
 		case "make":
 			switch argType := typ.Args[0].(type) {
