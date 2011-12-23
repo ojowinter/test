@@ -16,9 +16,9 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	//"io/ioutil"
+	"io/ioutil"
 	"os"
-	//"path"
+	"path"
 	"strings"
 )
 
@@ -205,7 +205,7 @@ func Compile(filename string) error {
 	trans.WriteString(NL)
 
 	// === Write
-	//name := strings.Replace(filename, path.Ext(filename), "", 1)
+	name := strings.Replace(filename, path.Ext(filename), "", 1)
 	str := trans.String()
 
 	// Version to debug
@@ -213,10 +213,10 @@ func Compile(filename string) error {
 	deb = strings.Replace(deb, TAB, "\t", -1)
 	deb = strings.Replace(deb, SP, " ", -1)
 
-	/*if err := ioutil.WriteFile(name+".js", []byte(deb), 0664); err != nil {
+	if err := ioutil.WriteFile(name+".js", []byte(deb), 0664); err != nil {
 		return err
 	}
-
+/*
 	// Minimized version
 	min := strings.Replace(str, NL, "", -1)
 	min = strings.Replace(min, TAB, "", -1)

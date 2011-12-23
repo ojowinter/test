@@ -147,7 +147,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Colon token.Pos // position of ":"
 	//  Body  []Stmt    // statement list; or nil
 	case *ast.CaseClause:
-		tr.wasReturn = false // to check the last statement
+		// To check the last statements
+		tr.wasReturn = false
+		tr.wasFallthrough = false
+
 		tr.iCase++
 		tr.addLine(typ.Case)
 
@@ -209,14 +212,15 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		} else {
 			tr.WriteString(";")
 		}
-		tr.WriteString(SP)
 
 		if typ.Cond != nil {
+			tr.WriteString(SP)
 			tr.WriteString(getExpression(typ.Cond))
 		}
-		tr.WriteString(";" + SP)
+		tr.WriteString(";")
 
 		if typ.Post != nil {
+			tr.WriteString(SP)
 			tr.getStatement(typ.Post)
 		}
 

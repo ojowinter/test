@@ -24,7 +24,7 @@ type s2 struct {
 //type IntArray [16]int
 
 type (
-	Point struct { x, y float64 }
+	Point struct{ x, y float64 }
 	//Polar Point
 )
 
