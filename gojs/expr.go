@@ -151,7 +151,7 @@ func (e *expression) transform(expr ast.Expr) {
 		//   X   Expr   // expression
 		//   Sel *Ident // field selector
 		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
-			funcJS, err := getFuncJS(call.X.(*ast.Ident), call.Sel, typ.Args)
+			funcJS, err := GetFuncJS(call.X.(*ast.Ident), call.Sel, typ.Args)
 			if err != nil {
 				e.err = err
 				return

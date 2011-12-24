@@ -122,7 +122,7 @@ func testFor() {
 		if i < 5 {
 			break
 		}
-		fmt.Println("i")
+		fmt.Println(i)
 	}
 
 	// continue
@@ -130,7 +130,7 @@ func testFor() {
 		if i == 5 {
 			continue
 		}
-		fmt.Println("i")
+		fmt.Println(i)
 	}
 }
 

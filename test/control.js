@@ -96,21 +96,21 @@ function testFor() {
 	for (var i = 0; i < 10; i++) {
 		sum += i;
 	}
-	alert("sum is equal to \n");
+	alert("sum is equal to  " + sum + "\n");
 
 
 	var sum = 1;
 	for (; sum < 1000;) {
 		sum += sum;
 	}
-	alert("sum is equal to \n");
+	alert("sum is equal to  " + sum + "\n");
 
 
 	var sum = 1;
 	for (; sum < 1000;) {
 		sum += sum;
 	}
-	alert("sum is equal to \n");
+	alert("sum is equal to  " + sum + "\n");
 
 
 	for (;;) {
@@ -122,7 +122,7 @@ function testFor() {
 		if (i < 5) {
 			break;
 		}
-		alert("i\n");
+		alert(i + "\n");
 	}
 
 
@@ -130,7 +130,7 @@ function testFor() {
 		if (i === 5) {
 			continue;
 		}
-		alert("i\n");
+		alert(i + "\n");
 	}
 }
 

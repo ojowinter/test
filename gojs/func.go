@@ -12,6 +12,7 @@ package gojs
 import (
 	"fmt"
 	"go/ast"
+	"strings"
 )
 
 // Valid functions to be transformed since they have a similar function in JS.
@@ -27,6 +28,27 @@ var transformFunc = map[string]string {
 	"fmt.Println": "alert",
 }
 
+// Returns the equivalent function in JavaScript.
+func GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr) (string, error) {
+	var jsArgs string
+
+	if !isValidFunc(importPath, funcName) {
+		return "", fmt.Errorf("%s.%s: function from core library", importPath, funcName)
+	}
+
+	switch funcName.Name {
+	case "print", "Print":
+		jsArgs = getPrintArgs(args, false)
+	case "println", "Println":
+		jsArgs = getPrintArgs(args, true)
+	}
+
+	jsFunc := transformFunc[importPath.Name + "." + funcName.Name]
+	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
+}
+
+// * * *
+
 // Checks if the function can be transformed.
 func isValidFunc(importPath, funcName *ast.Ident) bool {
 	for _, f := range ImportAndFunc[importPath.Name] {
@@ -37,19 +59,38 @@ func isValidFunc(importPath, funcName *ast.Ident) bool {
 	return false
 }
 
-// Returns the equivalent function in JavaScript.
-func getFuncJS(importPath, funcName *ast.Ident, args []ast.Expr) (string, error) {
-	if !isValidFunc(importPath, funcName) {
-		return "", fmt.Errorf("%s.%s: function from core library", importPath, funcName)
+// Returns arguments to print.
+func getPrintArgs(args []ast.Expr, addLine bool) string {
+	var jsArgs string
+	lenArgs := len(args) - 1
+
+	// Appends a character.
+	add := func(s, char string) string {
+		if strings.HasSuffix(s, "\"") {
+			s = s[:len(s)-1] + char + "\""
+		} else {
+			s += SP + "+" + SP + "\"" + char + "\""
+		}
+		return s
 	}
 
-	jsFunc := transformFunc[importPath.Name + "." + funcName.Name]
-	arg1 := getExpression(args[0])
+	for i, v := range args {
+		expr := getExpression(v)
 
-	switch funcName.Name {
-	case "println", "Println":
-		arg1 = arg1[:len(arg1)-1] + "\\n\""
+		if i != 0 {
+			jsArgs += SP + "+" + SP + expr
+		} else {
+			jsArgs = expr
+		}
+
+		if addLine {
+			if i == lenArgs {
+				jsArgs = add(jsArgs, "\\n")
+			} else {
+				jsArgs = add(jsArgs, " ")
+			}
+		}
 	}
 
-	return fmt.Sprintf("%s(%s);", jsFunc, arg1), nil
+	return jsArgs
 }
