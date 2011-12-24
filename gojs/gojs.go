@@ -47,7 +47,10 @@ type transform struct {
 	exported []string // declarations to be exported
 	//pointers []string
 
-	line     int // actual line
+	slice map[string]string // for range; key: function name, value: slice name
+
+	function string // actual function
+	line     int    // actual line
 	hasError bool
 }
 
@@ -57,9 +60,11 @@ func newTransform() *transform {
 		new(bytes.Buffer),
 		&dataStmt{},
 
-		make([]error, 0, 8),
-		make([]string, 0, 8),
+		make([]error, 0, 10),
+		make([]string, 0, 10),
 		make([]string, 0),
+		make(map[string]string),
+		"",
 		0,
 		false,
 	}
@@ -125,6 +130,11 @@ func (tr *transform) addIfExported(ident *ast.Ident) {
 	if ast.IsExported(ident.Name) {
 		tr.exported = append(tr.exported, ident.Name)
 	}
+}
+
+// Appends a slice.
+func (tr *transform) addSlice(s string) {
+
 }
 
 // * * *

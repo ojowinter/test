@@ -47,18 +47,6 @@ func (tr *transform) GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr)
 	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
 }
 
-// * * *
-
-// Checks if the function can be transformed.
-func isValidFunc(importPath, funcName *ast.Ident) bool {
-	for _, f := range ImportAndFunc[importPath.Name] {
-		if f == funcName.Name {
-			return true
-		}
-	}
-	return false
-}
-
 // Returns arguments to print.
 func (tr *transform) getPrintArgs(args []ast.Expr, addLine bool) string {
 	var jsArgs string
@@ -93,4 +81,16 @@ func (tr *transform) getPrintArgs(args []ast.Expr, addLine bool) string {
 	}
 
 	return jsArgs
+}
+
+// * * *
+
+// Checks if the function can be transformed.
+func isValidFunc(importPath, funcName *ast.Ident) bool {
+	for _, f := range ImportAndFunc[importPath.Name] {
+		if f == funcName.Name {
+			return true
+		}
+	}
+	return false
 }

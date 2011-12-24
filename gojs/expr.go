@@ -225,7 +225,6 @@ func (e *expression) transform(expr ast.Expr) {
 		case *ast.ArrayType:
 			e.lenArray = len(typ.Elts) // for ellipsis
 			e.transform(typ.Type)
-			//e.pos = 
 
 			// For arrays initialized
 			if len(typ.Elts) != 0 {
@@ -237,7 +236,7 @@ func (e *expression) transform(expr ast.Expr) {
 
 				for i, el := range typ.Elts {
 					if i != 0 {
-						e.WriteString(",")
+						e.WriteString("," + SP)
 					}
 					e.transform(el)
 				}
@@ -291,7 +290,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Value Expr
 	case *ast.KeyValueExpr:
 		e.transform(typ.Key)
-		e.WriteString(":")
+		e.WriteString(":" + SP)
 		e.transform(typ.Value)
 
 	// http://golang.org/pkg/go/ast/#ParenExpr || godoc go/ast ParenExpr

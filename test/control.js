@@ -135,7 +135,7 @@ function testFor() {
 }
 
 function testRange() {
-	var s = [2,3,5];
+	var s = [2, 3, 5];
 
 	
 
