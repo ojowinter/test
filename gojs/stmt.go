@@ -18,9 +18,9 @@ import (
 
 // Represents data for a statement.
 type dataStmt struct {
-	tabLevel  int  // tabulation level
-	lenCase   int  // number of "case" statements
-	iCase     int  // index in "case" statements
+	tabLevel int // tabulation level
+	lenCase  int // number of "case" statements
+	iCase    int // index in "case" statements
 
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
@@ -62,12 +62,12 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		isFirst := true
 		for i, v := range typ.Lhs {
-			lIdent := getExpression(v)
+			lIdent := tr.getExpression(v)
 
 			if lIdent == "_" {
 				continue
 			}
-			rIdent := getExpression(typ.Rhs[i])
+			rIdent := tr.getExpression(typ.Rhs[i])
 
 			if isFirst {
 				isFirst = false
@@ -159,7 +159,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 				if i != 0 {
 					tr.WriteString(SP)
 				}
-				tr.WriteString(fmt.Sprintf("case %s:", getExpression(expr)))
+				tr.WriteString(fmt.Sprintf("case %s:", tr.getExpression(expr)))
 			}
 		} else {
 			tr.WriteString("default:")
@@ -189,14 +189,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt
 	//  X Expr // expression
 	case *ast.ExprStmt:
-		expr := newExpression(nil)
-		expr.transform(typ.X)
-
-		if expr.err != nil {
-			tr.addError(expr.err)
-		} else {
-			tr.WriteString(expr.String())
-		}
+		tr.WriteString(tr.getExpression(typ.X))
 
 	// http://golang.org/pkg/go/ast/#ForStmt || godoc go/ast ForStmt
 	//  For  token.Pos // position of "for" keyword
@@ -215,7 +208,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		if typ.Cond != nil {
 			tr.WriteString(SP)
-			tr.WriteString(getExpression(typ.Cond))
+			tr.WriteString(tr.getExpression(typ.Cond))
 		}
 		tr.WriteString(";")
 
@@ -248,7 +241,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(SP)
 		}
 
-		tr.WriteString(fmt.Sprintf("if%s(%s)%s", SP, getExpression(typ.Cond), SP))
+		tr.WriteString(fmt.Sprintf("if%s(%s)%s", SP, tr.getExpression(typ.Cond), SP))
 		tr.getStatement(typ.Body)
 
 		if typ.Else != nil {
@@ -261,7 +254,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  TokPos token.Pos   // position of Tok
 	//  Tok    token.Token // INC or DEC
 	case *ast.IncDecStmt:
-		tr.WriteString(getExpression(typ.X) + typ.Tok.String())
+		tr.WriteString(tr.getExpression(typ.X) + typ.Tok.String())
 
 	// http://golang.org/pkg/go/ast/#RangeStmt || godoc go/ast RangeStmt
 	//  For        token.Pos   // position of "for" keyword
@@ -270,19 +263,19 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok        token.Token // ASSIGN, DEFINE
 	//  X          Expr        // value to range over
 	//  Body       *BlockStmt
-	/*case *ast.RangeStmt:
-		key := getExpression(typ.Key)
+	case *ast.RangeStmt:
+		key := tr.getExpression(typ.Key)
 
 		value := ""
 		if typ.Value != nil {
-			value = getExpression(typ.Value)
+			value = tr.getExpression(typ.Value)
 		}
 
-		expr := getExpression(typ.X)
+		expr := tr.getExpression(typ.X)
 
 		switch t := typ.X.(type) {
 		case *ast.ArrayType: // string
-			init := key + "SP" + "=" + SP + "0"  // initialization
+			init := key + "SP" + "=" + SP + "0" // initialization
 
 			if typ.Tok == token.DEFINE {
 				init = "var " + init
@@ -295,10 +288,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(fmt.Sprintf("for%s(%s;%s;%s%s)", SP, init, SP, SP, expr))
 
 		case *ast.Ident:
-			fmt.Printf("%T : %v\n", t.Obj,t.Obj.Data)
+			fmt.Printf("%T : %v\n", t.Obj, t.Obj.Data)
 		default:
 			fmt.Printf("%T\n", t)
-		}*/
+		}
 
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return
@@ -318,7 +311,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.addError("%s: return multiple values", tr.fset.Position(typ.Return))
 			break
 		}
-		tr.WriteString("return " + getExpression(typ.Results[0]) + ";")
+		tr.WriteString("return " + tr.getExpression(typ.Results[0]) + ";")
 
 	// http://golang.org/doc/go_spec.html#Switch_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/switch
@@ -338,7 +331,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(SP)
 		}
 		if typ.Tag != nil {
-			tag = getExpression(typ.Tag)
+			tag = tr.getExpression(typ.Tag)
 		} else {
 			tag = "1" // true
 		}

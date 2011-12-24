@@ -20,18 +20,19 @@ import (
 
 // Represents an expression.
 type expression struct {
-	*bytes.Buffer        // sintaxis translated
-	ident         string // variable's name
-	useIota       bool
-	isNegative    bool
-	err           error
+	tr            *transform
+	*bytes.Buffer // sintaxis translated
+
+	ident      string // variable's name
+	useIota    bool
+	isNegative bool
 
 	lenArray int      // store length of array; to use in case of ellipsis [...]
 	valArray []string // store the last values of an array
 }
 
 // Initializes a new type of "expression".
-func newExpression(ident *ast.Ident) *expression {
+func (tr *transform) newExpression(ident *ast.Ident) *expression {
 	var id string
 
 	if ident != nil {
@@ -39,21 +40,21 @@ func newExpression(ident *ast.Ident) *expression {
 	}
 
 	return &expression{
+		tr,
 		new(bytes.Buffer),
 		id,
 		false,
 		false,
-		nil,
 		0,
 		make([]string, 0),
 	}
 }
 
 // Returns the Go expression in JavaScript.
-func getExpression(expr ast.Expr) string {
-	e := newExpression(nil)
-
+func (tr *transform) getExpression(expr ast.Expr) string {
+	e := tr.newExpression(nil)
 	e.transform(expr)
+
 	return e.String()
 }
 
@@ -151,9 +152,9 @@ func (e *expression) transform(expr ast.Expr) {
 		//   X   Expr   // expression
 		//   Sel *Ident // field selector
 		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
-			funcJS, err := GetFuncJS(call.X.(*ast.Ident), call.Sel, typ.Args)
+			funcJS, err := e.tr.GetFuncJS(call.X.(*ast.Ident), call.Sel, typ.Args)
 			if err != nil {
-				e.err = err
+				e.tr.addError(err)
 				return
 			}
 

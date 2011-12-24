@@ -16,12 +16,12 @@ import (
 )
 
 // Valid functions to be transformed since they have a similar function in JS.
-var ImportAndFunc = map[string][]string {
+var ImportAndFunc = map[string][]string{
 	"fmt": []string{"Print", "Println"},
 }
 
 // Similar functions in JavaScript.
-var transformFunc = map[string]string {
+var transformFunc = map[string]string{
 	"print":       "alert",
 	"println":     "alert",
 	"fmt.Print":   "alert",
@@ -29,7 +29,7 @@ var transformFunc = map[string]string {
 }
 
 // Returns the equivalent function in JavaScript.
-func GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr) (string, error) {
+func (tr *transform) GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr) (string, error) {
 	var jsArgs string
 
 	if !isValidFunc(importPath, funcName) {
@@ -38,12 +38,12 @@ func GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr) (string, error)
 
 	switch funcName.Name {
 	case "print", "Print":
-		jsArgs = getPrintArgs(args, false)
+		jsArgs = tr.getPrintArgs(args, false)
 	case "println", "Println":
-		jsArgs = getPrintArgs(args, true)
+		jsArgs = tr.getPrintArgs(args, true)
 	}
 
-	jsFunc := transformFunc[importPath.Name + "." + funcName.Name]
+	jsFunc := transformFunc[importPath.Name+"."+funcName.Name]
 	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
 }
 
@@ -60,7 +60,7 @@ func isValidFunc(importPath, funcName *ast.Ident) bool {
 }
 
 // Returns arguments to print.
-func getPrintArgs(args []ast.Expr, addLine bool) string {
+func (tr *transform) getPrintArgs(args []ast.Expr, addLine bool) string {
 	var jsArgs string
 	lenArgs := len(args) - 1
 
@@ -75,7 +75,7 @@ func getPrintArgs(args []ast.Expr, addLine bool) string {
 	}
 
 	for i, v := range args {
-		expr := getExpression(v)
+		expr := tr.getExpression(v)
 
 		if i != 0 {
 			jsArgs += SP + "+" + SP + expr

@@ -191,7 +191,7 @@ func Compile(filename string) error {
 	// Export declarations in packages
 	//
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/export
-	if getExpression(node.Name) != "main" && len(trans.exported) != 0 {
+	if trans.getExpression(node.Name) != "main" && len(trans.exported) != 0 {
 		for i, v := range trans.exported {
 			if i == 0 {
 				trans.WriteString(NL + NL + "export " + v)

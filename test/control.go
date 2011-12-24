@@ -137,7 +137,7 @@ func testFor() {
 func testRange() {
 	s := []int{2, 3, 5}
 
-	/*for i, v := range s {
-		a = s
-	}*/
+	for i, v := range s {
+		fmt.Println(i, v)
+	}
 }

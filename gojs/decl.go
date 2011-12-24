@@ -86,7 +86,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 					continue
 				}
 
-				expr := newExpression(ident)
+				expr := tr.newExpression(ident)
 				expr.transform(v)
 				exprStr := expr.String()
 
@@ -168,7 +168,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 					continue
 				}
 
-				src := newExpression(ident)
+				src := tr.newExpression(ident)
 				src.transform(value)
 				exprStr = src.String()
 
