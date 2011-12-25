@@ -141,3 +141,12 @@ function testRange() {
 		alert(i + " " + v + "\n");
 	}
 }
+
+function testGoto() {
+	goto skipPoint;
+	alert("This part was skipped");
+
+skipPoint:
+	alert("Code skipped");
+	alert(" using goto\n");
+}

@@ -99,12 +99,13 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		for _, v := range typ.List {
-			isCase := false
+			skipTab := false
 
-			// Don't insert tabulation in "case" clauses
-			if _, ok := v.(*ast.CaseClause); ok {
-				isCase = true
-			} else {
+			// Don't insert tabulation in both "case", "label" clauses
+			switch v.(type) {
+			case *ast.CaseClause, *ast.LabeledStmt:
+				skipTab = true
+			default:
 				tr.tabLevel++
 			}
 
@@ -112,7 +113,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 			tr.getStatement(v)
 
-			if !isCase {
+			if !skipTab {
 				tr.tabLevel--
 			}
 		}
@@ -258,6 +259,16 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // INC or DEC
 	case *ast.IncDecStmt:
 		tr.WriteString(tr.getExpression(typ.X) + typ.Tok.String())
+
+	// http://golang.org/pkg/go/ast/#LabeledStmt || godoc go/ast LabeledStmt
+	//  Label *Ident
+	//  Colon token.Pos // position of ":"
+	//  Stmt  Stmt
+	case *ast.LabeledStmt:
+		tr.WriteString(tr.getExpression(typ.Label) + ":")
+		tr.addLine(typ.Stmt.Pos()) // Stmt should not exist
+		tr.WriteString(strings.Repeat(TAB, tr.tabLevel+1))
+		tr.getStatement(typ.Stmt)
 
 	// http://golang.org/pkg/go/ast/#RangeStmt || godoc go/ast RangeStmt
 	//  For        token.Pos   // position of "for" keyword

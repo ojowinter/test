@@ -212,6 +212,15 @@ func (e *expression) transform(expr ast.Expr) {
 			"int", "int8", "int16", "int32",
 			"float32", "float64", "byte", "rune", "string":
 			e.transform(typ.Args[0])
+
+		case "print", "println":
+			funcJS, err := e.tr.GetFuncJS(nil, typ.Fun.(*ast.Ident), typ.Args)
+			if err != nil {
+				e.tr.addError(err)
+				return
+			}
+
+			e.WriteString(funcJS)
 		}
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit

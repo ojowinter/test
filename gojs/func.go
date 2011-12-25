@@ -29,11 +29,15 @@ var transformFunc = map[string]string{
 }
 
 // Returns the equivalent function in JavaScript.
-func (tr *transform) GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr) (string, error) {
-	var jsArgs string
+func (tr *transform) GetFuncJS(importName, funcName *ast.Ident, args []ast.Expr) (string, error) {
+	var jsArgs, importStr string
 
-	if !isValidFunc(importPath, funcName) {
-		return "", fmt.Errorf("%s.%s: function from core library", importPath, funcName)
+	if importName != nil {
+		importStr = importName.Name + "."
+
+		if !isValidFunc(importName, funcName) {
+			return "", fmt.Errorf("%s.%s: function from core library", importName, funcName)
+		}
 	}
 
 	switch funcName.Name {
@@ -43,7 +47,7 @@ func (tr *transform) GetFuncJS(importPath, funcName *ast.Ident, args []ast.Expr)
 		jsArgs = tr.getPrintArgs(args, true)
 	}
 
-	jsFunc := transformFunc[importPath.Name+"."+funcName.Name]
+	jsFunc := transformFunc[importStr+funcName.Name]
 	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
 }
 
@@ -86,8 +90,8 @@ func (tr *transform) getPrintArgs(args []ast.Expr, addLine bool) string {
 // * * *
 
 // Checks if the function can be transformed.
-func isValidFunc(importPath, funcName *ast.Ident) bool {
-	for _, f := range ImportAndFunc[importPath.Name] {
+func isValidFunc(importName, funcName *ast.Ident) bool {
+	for _, f := range ImportAndFunc[importName.Name] {
 		if f == funcName.Name {
 			return true
 		}

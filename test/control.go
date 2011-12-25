@@ -141,3 +141,12 @@ func testRange() {
 		fmt.Println(i, v)
 	}
 }
+
+func testGoto() {
+	goto skipPoint
+	print("This part was skipped")
+
+skipPoint:
+	print("Code skipped")
+	println(" using goto")
+}
