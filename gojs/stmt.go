@@ -349,6 +349,14 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.WriteString(fmt.Sprintf("switch%s(%s)%s", SP, tag, SP))
 		tr.getStatement(typ.Body)
 
+	// === Not supported
+
+	// http://golang.org/pkg/go/ast/#DeferStmt || godoc go/ast DeferStmt
+	//  Defer token.Pos // position of "defer" keyword
+	//  Call  *CallExpr
+	case *ast.DeferStmt:
+		tr.addError("%s: defer statement", tr.fset.Position(typ.Defer))
+
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", stmt))
 	}

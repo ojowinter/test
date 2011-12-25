@@ -27,6 +27,8 @@ Go sintaxis not supported:
 + Function type, interface type excepting the empty interface
 + Channels, goroutines (could be transformed to [Web Workers]
 (http://www.html5rocks.com/en/tutorials/workers/basics/))
++ Built-in functions panic, recover
++ Defer statement
 + Return multiple values
 
 Status:

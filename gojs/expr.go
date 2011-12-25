@@ -221,6 +221,11 @@ func (e *expression) transform(expr ast.Expr) {
 			}
 
 			e.WriteString(funcJS)
+
+		// === Not supported
+		case "panic", "recover":
+			e.tr.addError("%s: built-in function %s()",
+				e.tr.fset.Position(typ.Fun.Pos()), call)
 		}
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit

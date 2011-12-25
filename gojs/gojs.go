@@ -60,7 +60,7 @@ func newTransform() *transform {
 		new(bytes.Buffer),
 		&dataStmt{},
 
-		make([]error, 0, 10),
+		make([]error, 0, 100),
 		make([]string, 0, 10),
 		make([]string, 0),
 		make(map[string]string),
@@ -75,6 +75,11 @@ func (tr *transform) getLine(pos token.Pos) int {
 	// -1 because it was inserted a line (the header)
 	return tr.fset.Position(pos).Line - 1
 }
+
+// Returns a general Position.
+/*func (tr *transform) position(pos token.Pos) token.Position {
+	return tr.fset.Position(pos)
+}*/
 
 // Appends new lines according to the position.
 // Returns a boolean to indicate if have been added.
