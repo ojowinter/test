@@ -24,6 +24,7 @@ type dataStmt struct {
 
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
+	skipLbrace     bool // left brace
 }
 
 // Transforms the Go statement.
@@ -93,7 +94,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  List   []Stmt
 	//  Rbrace token.Pos // position of "}"
 	case *ast.BlockStmt:
-		tr.WriteString("{")
+		if !tr.skipLbrace {
+			tr.WriteString("{")
+		}
 
 		for _, v := range typ.List {
 			isCase := false
@@ -280,9 +283,14 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		if typ.Value != nil {
 			tr.WriteString(fmt.Sprintf("{%s=%s[%s];", SP+value+SP, SP+expr, key))
+			tr.skipLbrace = true
 		}
 
 		tr.getStatement(typ.Body)
+
+		if tr.skipLbrace {
+			tr.skipLbrace = false
+		}
 
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return

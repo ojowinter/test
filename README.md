@@ -53,6 +53,7 @@ Status:
 	Comparison operators[OK]
 	Assignment operators[OK]
 	for					[OK]
+	range				[OK]
 	break, continue		[OK]
 	goto, fallthrough	[OK]
 	JS functions		[OK]
