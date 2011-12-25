@@ -30,6 +30,8 @@ func compile(filename string, t *testing.T) {
 }
 
 func compileErr(filename string, t *testing.T) {
+	MaxMessage = 100 // to show all errors
+
 	err := Compile("../test/" + filename)
 	if err == nil {
 		t.Fatal("expected error")

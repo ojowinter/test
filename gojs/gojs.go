@@ -36,6 +36,8 @@ const (
 	IOTA = "{{iota}}"
 )
 
+var MaxMessage = 10 // maximum number of errors and warnings to show
+
 // Represents the code transformed to JavaScript.
 type transform struct {
 	fset          *token.FileSet
@@ -47,9 +49,9 @@ type transform struct {
 	exported []string // declarations to be exported
 	//pointers []string
 
-	slice map[string]string // for range; key: function name, value: slice name
+	//slice map[string]string // for range; key: function name, value: slice name
 
-	function string // actual function
+	//function string // actual function
 	line     int    // actual line
 	hasError bool
 }
@@ -60,11 +62,11 @@ func newTransform() *transform {
 		new(bytes.Buffer),
 		&dataStmt{},
 
-		make([]error, 0, 100),
-		make([]string, 0, 10),
+		make([]error, 0, MaxMessage),
+		make([]string, 0, MaxMessage),
 		make([]string, 0),
-		make(map[string]string),
-		"",
+		//make(map[string]string),
+		//"",
 		0,
 		false,
 	}
@@ -75,11 +77,6 @@ func (tr *transform) getLine(pos token.Pos) int {
 	// -1 because it was inserted a line (the header)
 	return tr.fset.Position(pos).Line - 1
 }
-
-// Returns a general Position.
-/*func (tr *transform) position(pos token.Pos) token.Position {
-	return tr.fset.Position(pos)
-}*/
 
 // Appends new lines according to the position.
 // Returns a boolean to indicate if have been added.
@@ -104,7 +101,7 @@ func (tr *transform) addLine(pos token.Pos) bool {
 
 // Appends an error.
 func (tr *transform) addError(value interface{}, a ...interface{}) {
-	if len(tr.err) == cap(tr.err) {
+	if len(tr.err) == MaxMessage {
 		return
 	}
 
@@ -124,7 +121,7 @@ func (tr *transform) addError(value interface{}, a ...interface{}) {
 
 // Appends a warning message.
 func (tr *transform) addWarning(format string, a ...interface{}) {
-	if len(tr.warn) == cap(tr.warn) {
+	if len(tr.warn) == MaxMessage {
 		return
 	}
 	tr.warn = append(tr.warn, fmt.Sprintf(format, a...))
@@ -196,7 +193,7 @@ func Compile(filename string) error {
 		for _, err := range trans.err {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 		}
-		if len(trans.err) == cap(trans.err) {
+		if len(trans.err) == MaxMessage {
 			fmt.Fprintln(os.Stderr, "\n Too many errors")
 		}
 
@@ -250,7 +247,7 @@ func Compile(filename string) error {
 		for _, v := range trans.warn {
 			fmt.Fprintln(os.Stderr, v)
 		}
-		if len(trans.warn) == cap(trans.warn) {
+		if len(trans.warn) == MaxMessage {
 			fmt.Fprintln(os.Stderr, "\n Too many warnings")
 		}
 	}
