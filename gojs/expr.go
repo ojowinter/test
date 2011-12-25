@@ -96,9 +96,9 @@ func (e *expression) transform(expr ast.Expr) {
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
 			e.WriteString(fmt.Sprintf(
-				";%sfor%s(var %s=0;%s%s<%s;%s%s++){%s%s%s=new Array(",
-				SP, SP, vArray, SP, vArray, e.valArray[iArray], SP, vArray,
-				SP, e.ident, e.printArray()))
+				";%sfor%s(var %s=0;%s<%s;%s++){%s=new Array(",
+				SP, SP, vArray, SP+vArray, e.valArray[iArray], SP+vArray,
+				SP+e.ident+e.printArray()))
 			e.transform(typ.Len)
 			e.WriteString(")")
 		}
@@ -231,7 +231,7 @@ func (e *expression) transform(expr ast.Expr) {
 				if compoType.Len == nil {
 					e.WriteString("[")
 				} else {
-					e.WriteString(fmt.Sprintf(";%s%s%s=%s[", SP, e.ident, SP, SP))
+					e.WriteString(fmt.Sprintf(";%s=%s[", SP+e.ident+SP, SP))
 				}
 
 				for i, el := range typ.Elts {

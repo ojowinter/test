@@ -109,10 +109,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 			if isFirst {
 				isFirst = false
 				tr.WriteString(fmt.Sprintf(
-					"const %s%s=%s%s", ident.Name, SP, SP, value))
+					"const %s=%s", ident.Name+SP, SP+value))
 			} else {
-				tr.WriteString(fmt.Sprintf(
-					",%s%s%s=%s%s", SP, ident.Name, SP, SP, value))
+				tr.WriteString(fmt.Sprintf(",%s=%s", SP+ident.Name+SP, SP+value))
 			}
 		}
 

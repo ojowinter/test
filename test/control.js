@@ -137,7 +137,7 @@ function testFor() {
 function testRange() {
 	var s = [2, 3, 5];
 
-	
-
-
+	var v; for (i in s) { v = s[i];{
+		alert(i + " " + v + "\n");
+	}
 }

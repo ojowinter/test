@@ -264,34 +264,25 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  X          Expr        // value to range over
 	//  Body       *BlockStmt
 	case *ast.RangeStmt:
+		expr := tr.getExpression(typ.X)
 		key := tr.getExpression(typ.Key)
-
 		value := ""
+
 		if typ.Value != nil {
 			value = tr.getExpression(typ.Value)
-		}
-
-		expr := tr.getExpression(typ.X)
-
-		switch t := typ.X.(type) {
-		case *ast.ArrayType: // string
-			init := key + "SP" + "=" + SP + "0" // initialization
 
 			if typ.Tok == token.DEFINE {
-				init = "var " + init
-
-				if typ.Value != nil {
-					init += "," + SP + value
-				}
+				tr.WriteString(fmt.Sprintf("var %s;%s", value, SP))
 			}
-
-			tr.WriteString(fmt.Sprintf("for%s(%s;%s;%s%s)", SP, init, SP, SP, expr))
-
-		case *ast.Ident:
-			fmt.Printf("%T : %v\n", t.Obj, t.Obj.Data)
-		default:
-			fmt.Printf("%T\n", t)
 		}
+
+		tr.WriteString(fmt.Sprintf("for%s(%s in %s)%s", SP, key, expr, SP))
+
+		if typ.Value != nil {
+			tr.WriteString(fmt.Sprintf("{%s=%s[%s];", SP+value+SP, SP+expr, key))
+		}
+
+		tr.getStatement(typ.Body)
 
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return
