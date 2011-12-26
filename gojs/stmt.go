@@ -189,9 +189,27 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			}
 		}
 
-		// Skip last "case" statement
 		if !tr.wasFallthrough && !tr.wasReturn && tr.iCase != tr.lenCase {
 			tr.WriteString(SP + "break;")
+		}
+
+	// http://golang.org/pkg/go/ast/#DeclStmt || godoc go/ast DeclStmt
+	//  Decl Decl
+	case *ast.DeclStmt:
+		switch decl := typ.Decl.(type) {
+		case *ast.GenDecl:
+			switch decl.Tok {
+			case token.VAR:
+				tr.getVar(decl.Specs, false)
+			case token.CONST:
+				tr.getConst(decl.Specs, false)
+			case token.TYPE:
+				tr.getType(decl.Specs, false)
+			default:
+				panic("unreachable")
+			}
+		default:
+			panic(fmt.Sprintf("unimplemented: %T", decl))
 		}
 
 	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt

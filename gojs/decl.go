@@ -49,7 +49,7 @@ func (tr *transform) getImport(spec []ast.Spec) {
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
-func (tr *transform) getConst(spec []ast.Spec) {
+func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 	iotaExpr := make([]string, 0) // iota expressions
 
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
@@ -103,7 +103,9 @@ func (tr *transform) getConst(spec []ast.Spec) {
 				value = strings.Replace(iotaExpr[i], IOTA, value, -1)
 			}
 
-			tr.addIfExported(ident)
+			if isGlobal {
+				tr.addIfExported(ident)
+			}
 
 			// === Write
 			if isFirst {
@@ -129,7 +131,7 @@ func (tr *transform) getConst(spec []ast.Spec) {
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/let
 //
 // TODO: use let for local variables
-func (tr *transform) getVar(spec []ast.Spec) {
+func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
@@ -175,7 +177,9 @@ func (tr *transform) getVar(spec []ast.Spec) {
 				continue
 			}
 
-			tr.addIfExported(ident)
+			if isGlobal {
+				tr.addIfExported(ident)
+			}
 
 			// === Write
 			// TODO: calculate expression using "exp/types"
@@ -202,7 +206,7 @@ func (tr *transform) getVar(spec []ast.Spec) {
 // Types
 //
 // http://golang.org/doc/go_spec.html#Type_declarations
-func (tr *transform) getType(spec []ast.Spec) {
+func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 	// Format fields
 	format := func(fields []string) (args, allFields string) {
 		for i, f := range fields {
@@ -296,13 +300,14 @@ func (tr *transform) getType(spec []ast.Spec) {
 		if tr.hasError {
 			continue
 		}
+		if isGlobal {
+			tr.addIfExported(tSpec.Name)
+		}
 
 		// === Write
 		args, allFields := format(fields)
 
-		tr.addIfExported(tSpec.Name)
 		tr.addLine(tSpec.Pos())
-
 		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", tSpec.Name, args, SP))
 
 		if len(allFields) != 0 {

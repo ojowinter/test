@@ -26,4 +26,12 @@ function s2(microsec, serverIP6, process) {this.microsec=microsec; this.serverIP
 
 function Point(x, y) {this.x=x; this.y=y;}
 
+
+
+function main() {
+	function Fa(a) {this.a=a;}
+
+
+}
+
 export Point;

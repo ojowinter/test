@@ -28,4 +28,8 @@ type (
 	//Polar Point
 )
 
-func main() {}
+func main() {
+	type Fa struct{
+		a int
+	}
+}

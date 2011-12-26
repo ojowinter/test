@@ -48,4 +48,6 @@ const (
 	bit3, mask3                          // bit3 == 8, mask3 == 7
 )
 
-func main() {}
+func main() {
+	const Fa = 10
+}

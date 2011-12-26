@@ -1,6 +1,6 @@
 package test
 
-var a int
+var A int
 var b, c, d float64
 var e = 0
 var f, g float32 = -1, -2
@@ -65,7 +65,9 @@ var (
 )
 
 func main() {
-	a, b := 0, 10
+	Fa, Fb := 0, 10
+	var Fc = "c"
+	var Fd uint = 20
 	/*f := func() int { return 7 }
 	fa, fb := os.Pipe(fd) // os.Pipe() returns two values
 	_, fc, _ := coord(p)  // coord() returns three values; only interested in y coordinate
