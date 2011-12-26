@@ -143,7 +143,7 @@ function testRange() {
 }
 
 function testGoto() {
-	goto _skipPoint;
+	continue _skipPoint;
 	alert("This part was skipped");
 
 _skipPoint:

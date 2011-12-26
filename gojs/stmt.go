@@ -93,6 +93,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 		tr.WriteString(";")
 
+	// http://golang.org/doc/go_spec.html#Blocks
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/block
+	//
 	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
 	//  Lbrace token.Pos // position of "{"
 	//  List   []Stmt
@@ -139,12 +142,16 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.addLine(typ.TokPos)
 
 		switch typ.Tok {
+		// http://golang.org/doc/go_spec.html#Break_statements
+		// https://developer.mozilla.org/en/JavaScript/Reference/Statements/break
 		case token.BREAK:
 			tr.WriteString("break" + label)
-		case token.CONTINUE:
+		// http://golang.org/doc/go_spec.html#Continue_statements
+		// https://developer.mozilla.org/en/JavaScript/Reference/Statements/continue
+		case token.CONTINUE, token.GOTO:
 			tr.WriteString("continue" + label)
-		case token.GOTO:
-			tr.WriteString("goto" + label)
+		// http://golang.org/doc/go_spec.html#Goto_statements
+		// http://golang.org/doc/go_spec.html#Fallthrough_statements
 		case token.FALLTHROUGH:
 			tr.wasFallthrough = true
 		}
@@ -217,6 +224,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	case *ast.ExprStmt:
 		tr.WriteString(tr.getExpression(typ.X))
 
+	// http://golang.org/doc/go_spec.html#For_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for
+	//
 	// http://golang.org/pkg/go/ast/#ForStmt || godoc go/ast ForStmt
 	//  For  token.Pos // position of "for" keyword
 	//  Init Stmt      // initialization statement; or nil
@@ -246,6 +256,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.WriteString(")" + SP)
 		tr.getStatement(typ.Body)
 
+	// http://golang.org/doc/go_spec.html#Go_statements
+	//
 	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword
 	//  Call *CallExpr
@@ -282,6 +294,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	case *ast.IncDecStmt:
 		tr.WriteString(tr.getExpression(typ.X) + typ.Tok.String())
 
+	// http://golang.org/doc/go_spec.html#Labeled_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/label
+	//
 	// http://golang.org/pkg/go/ast/#LabeledStmt || godoc go/ast LabeledStmt
 	//  Label *Ident
 	//  Colon token.Pos // position of ":"
@@ -292,6 +307,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.WriteString(strings.Repeat(TAB, tr.tabLevel+1))
 		tr.getStatement(typ.Stmt)
 
+	// http://golang.org/doc/go_spec.html#For_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for...in
+	//
 	// http://golang.org/pkg/go/ast/#RangeStmt || godoc go/ast RangeStmt
 	//  For        token.Pos   // position of "for" keyword
 	//  Key, Value Expr        // Value may be nil
@@ -373,6 +391,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 	// === Not supported
 
+	// http://golang.org/doc/go_spec.html#Defer_statements
+	//
 	// http://golang.org/pkg/go/ast/#DeferStmt || godoc go/ast DeferStmt
 	//  Defer token.Pos // position of "defer" keyword
 	//  Call  *CallExpr
