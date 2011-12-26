@@ -68,6 +68,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			if lIdent == "_" {
 				continue
 			}
+			// Checking
+			if err := tr.CheckAndAddError(typ.Rhs[i]); err != nil {
+				continue
+			}
 			rIdent := tr.getExpression(typ.Rhs[i])
 
 			if isFirst {

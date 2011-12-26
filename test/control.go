@@ -143,10 +143,10 @@ func testRange() {
 }
 
 func testGoto() {
-	goto skipPoint
+	goto _skipPoint
 	print("This part was skipped")
 
-skipPoint:
+_skipPoint:
 	print("Code skipped")
 	println(" using goto")
 }

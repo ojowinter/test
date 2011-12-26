@@ -3,6 +3,8 @@
 package test
 
 func ret() (byte, byte) {
+	ch := make(chan int)
+
 	go print("hello!")
 	defer println("bye!")
 

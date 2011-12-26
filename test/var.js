@@ -62,3 +62,14 @@ var m4 = {1: "first", 2: 2, 3: 3};
 var p0;
 var p1 = 2;
 var p2 = true;
+
+
+function main() {
+	var a = 0, b = 10;
+
+
+
+
+
+
+}

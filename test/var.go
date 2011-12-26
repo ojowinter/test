@@ -65,9 +65,8 @@ var (
 )
 
 func main() {
-	/*a, b := 0, 10
-	f := func() int { return 7 }
-	ch := make(chan int)
+	a, b := 0, 10
+	/*f := func() int { return 7 }
 	fa, fb := os.Pipe(fd) // os.Pipe() returns two values
 	_, fc, _ := coord(p)  // coord() returns three values; only interested in y coordinate
 
