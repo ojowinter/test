@@ -278,6 +278,23 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Elt      Expr      // ellipsis element type (parameter lists only); or nil
 	//case *ast.Ellipsis:
 
+	// http://golang.org/doc/go_spec.html#Function_literals
+	// https://developer.mozilla.org/en/JavaScript/Reference/Functions_and_function_scope#Function_constructor_vs._function_declaration_vs._function_expression
+	// http://golang.org/pkg/go/ast/#FuncLit || godoc go/ast FuncLit
+	//
+	//  Type *FuncType  // function type
+	//  Body *BlockStmt // function body
+	case *ast.FuncLit:
+		e.transform(typ.Type)
+		e.tr.getStatement(typ.Body)
+
+	// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+	//  Func    token.Pos  // position of "func" keyword
+	//  Params  *FieldList // (incoming) parameters; or nil
+	//  Results *FieldList // (outgoing) results; or nil
+	case *ast.FuncType:
+		e.tr.WriteString(fmt.Sprintf("function(%s)%s", getParams(typ), SP))
+
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name
 	case *ast.Ident:

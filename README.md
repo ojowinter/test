@@ -25,13 +25,13 @@ Go sintaxis not supported:
 
 + Complex numbers, integers of 64 bits.
 + Function type, interface type excepting the empty interface.
-+ Channels, goroutines (could be transformed to [Web Workers]
-(http://www.html5rocks.com/en/tutorials/workers/basics/)).
++ Channels, goroutines (could be transformed to [Web Workers][workers]).
 + Built-in functions panic, recover.
 + Defer statement.
 + Return multiple values.
-+ Labels. (1) It is advised to avoid its use in JavaScript, and (2) it is
-restricted to "for" and "while" JS loops.
++ Labels. (1) It is advised to [avoid its use][label] in JavaScript, and (2)
+ when they are called from "continue" and "break" statements then they are
+ restricted to "for" and "while" JS loops so its use is very limited.
 
 Status:
 
@@ -67,6 +67,9 @@ Status:
 bigger than 2^53. Also bitwise logical operations only have defined results (per
 the spec) up to 32 bits.  
 By this reason, the integers of 64 bits are unsupported.
+
+[workers]: http://www.html5rocks.com/en/tutorials/workers/basics/
+[label]: https://developer.mozilla.org/en/JavaScript/Reference/Statements/label#Avoid_using_labels
 
 
 ## Installation

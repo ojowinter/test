@@ -91,6 +91,8 @@ func (tr *transform) checkType(expr ast.Expr) error {
 	case *ast.CompositeLit:
 		return tr.checkType(typ.Type)
 
+	case *ast.FuncLit: // anonymous function
+
 	case *ast.Ident:
 		switch typ.Name {
 		// Unsupported types

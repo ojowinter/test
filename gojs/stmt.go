@@ -140,11 +140,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
 	//  Label  *Ident      // label name; or nil
 	case *ast.BranchStmt:
-		label := ";"
-
+		/*label := ";"
 		if typ.Label != nil {
 			label = SP + typ.Label.Name + ";"
-		}
+		}*/
 
 		tr.addLine(typ.TokPos)
 
@@ -152,15 +151,16 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		// http://golang.org/doc/go_spec.html#Break_statements
 		// https://developer.mozilla.org/en/JavaScript/Reference/Statements/break
 		case token.BREAK:
-			tr.WriteString("break" + label)
+			tr.WriteString("break;")
 		// http://golang.org/doc/go_spec.html#Continue_statements
 		// https://developer.mozilla.org/en/JavaScript/Reference/Statements/continue
-		case token.CONTINUE, token.GOTO:
-			tr.WriteString("continue" + label)
+		case token.CONTINUE:
+			tr.WriteString("continue;")
 		// http://golang.org/doc/go_spec.html#Goto_statements
 		// http://golang.org/doc/go_spec.html#Fallthrough_statements
 		case token.FALLTHROUGH:
 			tr.wasFallthrough = true
+		//case token.GOTO: // not used since "label" is not transformed
 		}
 
 	// http://golang.org/pkg/go/ast/#CaseClause || godoc go/ast CaseClause
@@ -367,9 +367,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Body   *BlockStmt // CaseClauses only
 	case *ast.SwitchStmt:
 		tag := ""
+		tr.isSwitch = true
 		tr.lenCase = len(typ.Body.List)
 		tr.iCase = 0
-		tr.isSwitch = true
 
 		if typ.Init != nil {
 			tr.getStatement(typ.Init) // use isSwitch
