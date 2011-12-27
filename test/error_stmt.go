@@ -13,3 +13,16 @@ func ret() (byte, byte) {
 
 	return 0, 0
 }
+
+func testGoto() {
+	isFirst := true
+
+_skipPoint:
+	println("Using label")
+
+	if isFirst {
+		isFirst = false
+		goto _skipPoint
+		print("This part is skipped")
+	}
+}

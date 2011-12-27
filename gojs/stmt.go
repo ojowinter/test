@@ -25,6 +25,9 @@ type dataStmt struct {
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
 	skipLbrace     bool // left brace
+
+	isSwitch   bool
+	switchInit string
 }
 
 // Transforms the Go statement.
@@ -89,6 +92,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 				} else {
 					tr.WriteString(SP + "&=" + SP + "~(" + rIdent + ")")
 				}
+			}
+
+			if tr.isSwitch {
+				tr.switchInit = lIdent
 			}
 		}
 		tr.WriteString(";")
@@ -294,19 +301,6 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	case *ast.IncDecStmt:
 		tr.WriteString(tr.getExpression(typ.X) + typ.Tok.String())
 
-	// http://golang.org/doc/go_spec.html#Labeled_statements
-	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/label
-	//
-	// http://golang.org/pkg/go/ast/#LabeledStmt || godoc go/ast LabeledStmt
-	//  Label *Ident
-	//  Colon token.Pos // position of ":"
-	//  Stmt  Stmt
-	case *ast.LabeledStmt:
-		tr.WriteString(tr.getExpression(typ.Label) + ":")
-		tr.addLine(typ.Stmt.Pos()) // Stmt should not exist
-		tr.WriteString(strings.Repeat(TAB, tr.tabLevel+1))
-		tr.getStatement(typ.Stmt)
-
 	// http://golang.org/doc/go_spec.html#For_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for...in
 	//
@@ -375,18 +369,24 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tag := ""
 		tr.lenCase = len(typ.Body.List)
 		tr.iCase = 0
+		tr.isSwitch = true
 
 		if typ.Init != nil {
-			tr.getStatement(typ.Init)
+			tr.getStatement(typ.Init) // use isSwitch
 			tr.WriteString(SP)
 		}
+
 		if typ.Tag != nil {
 			tag = tr.getExpression(typ.Tag)
+		} else if tr.switchInit != "" {
+			tag = tr.switchInit
+			tr.switchInit = ""
 		} else {
-			tag = "1" // true
+			tag = "true"
 		}
 
 		tr.WriteString(fmt.Sprintf("switch%s(%s)%s", SP, tag, SP))
+		tr.isSwitch = false
 		tr.getStatement(typ.Body)
 
 	// === Not supported
@@ -398,6 +398,16 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Call  *CallExpr
 	case *ast.DeferStmt:
 		tr.addError("%s: defer statement", tr.fset.Position(typ.Defer))
+
+	// http://golang.org/doc/go_spec.html#Labeled_statements
+	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/label
+	//
+	// http://golang.org/pkg/go/ast/#LabeledStmt || godoc go/ast LabeledStmt
+	//  Label *Ident
+	//  Colon token.Pos // position of ":"
+	//  Stmt  Stmt
+	case *ast.LabeledStmt:
+		tr.addError("%s: use of label", tr.fset.Position(typ.Pos()))
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", stmt))

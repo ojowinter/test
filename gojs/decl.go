@@ -340,6 +340,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
 		decl.Name, getParams(decl.Type), SP))
 	tr.getStatement(decl.Body)
+
 	tr.addIfExported(decl.Name)
 }
 
@@ -353,13 +354,20 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 //  Params  *FieldList // (incoming) parameters; or nil
 //  Results *FieldList // (outgoing) results; or nil
 func getParams(f *ast.FuncType) string {
+	isFirst := true
 	s := ""
 
-	for i, v := range f.Params.List {
-		if i != 0 {
-			s += "," + SP
+	for _, list := range f.Params.List {
+		for _, id := range list.Names {
+			if !isFirst {
+				s += "," + SP
+			}
+
+			s += id.Name
+			if isFirst {
+				isFirst = false
+			}
 		}
-		s += v.Names[0].Name
 	}
 
 	return s

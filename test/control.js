@@ -45,7 +45,7 @@ function testSwitch() {
 	}
 
 
-	switch (1) {
+	switch (true) {
 	case i < 10:
 		alert("i is less than 10\n"); break;
 	case i > 10: case i < 0:
@@ -57,7 +57,7 @@ function testSwitch() {
 	}
 
 
-	var i = 6; switch (1) {
+	var i = 6; switch (i) {
 	case 4:
 		alert("was <= 4\n");
 		
@@ -140,13 +140,4 @@ function testRange() {
 	var v; for (i in s) { v = s[i];
 		alert(i + " " + v + "\n");
 	}
-}
-
-function testGoto() {
-	continue _skipPoint;
-	alert("This part was skipped");
-
-_skipPoint:
-	alert("Code skipped");
-	alert(" using goto\n");
 }
