@@ -39,7 +39,7 @@ func getParams(f *ast.FuncType) string {
 	return s
 }
 
-// Returns the initialization value.
+// Returns the initialization value in Go.
 func initValue(val *ast.ValueSpec) string {
 	var ident *ast.Ident
 
@@ -60,7 +60,7 @@ func initValue(val *ast.ValueSpec) string {
 	case "uint", "uint8", "uint16", "uint32", "uint64",
 		"int", "int8", "int16", "int32", "int64",
 		"float32", "float64",
-		"byte", "rune":
+		"byte", "rune", "uintptr":
 		return "0"
 	//case "complex64", "complex128":
 		//return "(0+0i)"

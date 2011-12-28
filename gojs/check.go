@@ -41,13 +41,13 @@ func isType(tok token.Token, lit string) bool {
 }*/
 
 // Checks the expression and adds the error (if any).
-func (tr *transform) CheckAndAddError(expr ast.Expr) error {
-	err := tr.checkType(expr)
-	if err != nil {
+// Returns a boolean indicating if the transformation have any error.
+func (tr *transform) CheckAndAddError(expr ast.Expr) bool {
+	if err := tr.checkType(expr); err != nil {
 		tr.addError(err)
 	}
 
-	return err
+	return !tr.hasError
 }
 
 // Checks if "expr" has a valid type for JavaScript.

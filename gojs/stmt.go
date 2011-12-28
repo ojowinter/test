@@ -72,7 +72,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 				continue
 			}
 			// Checking
-			if err := tr.CheckAndAddError(typ.Rhs[i]); err != nil {
+			if ok := tr.CheckAndAddError(typ.Rhs[i]); !ok {
 				continue
 			}
 			rIdent := tr.getExpression(typ.Rhs[i])

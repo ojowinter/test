@@ -49,6 +49,19 @@ http://kishorelive.com/2011/11/22/ecmascript-6-looks-promising/
 + Should be translated empty structs? Or simply ignored?
 
 
+## Initialization
+
+The values must be initialized explicitly, else they will be "undefined".
+
+	// Faills
+	var s1;
+	if (s1 === "") { alert("undefined"); }
+
+	// It's ok
+	var s2 = "";
+	if (s2 === "") { alert("empty string"); }
+
+
 ## Struct
 
 > A struct in an object-oriented environment is a "public class". Classes

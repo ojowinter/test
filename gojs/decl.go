@@ -62,7 +62,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := tr.CheckAndAddError(vSpec.Type); err != nil {
+		if ok := tr.CheckAndAddError(vSpec.Type); !ok {
 			continue
 		}
 
@@ -81,7 +81,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 				v := vSpec.Values[i]
 
 				// Checking
-				if err := tr.CheckAndAddError(v); err != nil {
+				if ok := tr.CheckAndAddError(v); !ok {
 					continue
 				}
 
@@ -136,7 +136,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
-		if err := tr.CheckAndAddError(vSpec.Type); err != nil {
+		if ok := tr.CheckAndAddError(vSpec.Type); !ok {
 			continue
 		}
 
@@ -174,7 +174,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 				}
 
 				// Checking
-				if err := tr.CheckAndAddError(value); err != nil {
+				if ok := tr.CheckAndAddError(value); !ok {
 					continue
 				}
 
@@ -240,7 +240,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Checking
-		if err := tr.CheckAndAddError(tSpec.Type); err != nil {
+		if ok := tr.CheckAndAddError(tSpec.Type); !ok {
 			continue
 		}
 
@@ -282,7 +282,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 				//  Comment *CommentGroup // line comments; or nil
 
 				// Checking
-				if err := tr.CheckAndAddError(field.Type); err != nil {
+				if ok := tr.CheckAndAddError(field.Type); !ok {
 					continue
 				}
 				if field.Names == nil {
