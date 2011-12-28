@@ -58,8 +58,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 			op = typ.Tok.String()
 		case token.AND_NOT_ASSIGN:
+			op = "&="
 			isBitClear = true
-
 		default:
 			panic(fmt.Sprintf("token unimplemented: %s", typ.Tok))
 		}
@@ -75,22 +75,29 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			if ok := tr.CheckAndAddError(typ.Rhs[i]); !ok {
 				continue
 			}
-			rIdent := tr.getExpression(typ.Rhs[i])
 
 			if isFirst {
+				tr.WriteString(lIdent)
 				isFirst = false
 			} else {
-				tr.WriteString("," + SP)
+				tr.WriteString("," + SP + lIdent)
 			}
+			tr.WriteString(SP + op + SP)
 
-			tr.WriteString(lIdent)
+			// Maybe an anonymous func.
+			rIdent := tr.newExpression(nil)
+			rIdent.transform(typ.Rhs[i])
 
-			// Skip empty assignments
-			if rIdent != EMPTY {
-				if !isBitClear {
-					tr.WriteString(SP + op + SP + rIdent)
-				} else {
-					tr.WriteString(SP + "&=" + SP + "~(" + rIdent + ")")
+			if !rIdent.isFunc {
+				rIdentStr := rIdent.String()
+
+				// Skip empty assignments
+				if rIdentStr != EMPTY {
+					if !isBitClear {
+						tr.WriteString(rIdentStr)
+					} else {
+						tr.WriteString("~(" + rIdentStr + ")")
+					}
 				}
 			}
 

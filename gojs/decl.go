@@ -133,6 +133,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
+		var wasFunc bool
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
@@ -189,6 +190,8 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 					if exprStr != "" && exprStr != EMPTY {
 						tr.WriteString(exprStr)
 					}
+				} else {
+					wasFunc = true
 				}
 			} else { // Initialization explicit
 				tr.WriteString(initValue(vSpec))
@@ -204,7 +207,9 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 
 		last := tr.Bytes()[tr.Len()-1] // last character
 
-		if last != '}' && last != ';' {
+		if wasFunc {
+			tr.WriteString(";")
+		} else if last != '}' && last != ';' {
 			tr.WriteString(";")
 		}
 	}

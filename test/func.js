@@ -3,12 +3,12 @@
 
 var Mul = function(x, y) {
 	return x * y;
-}
+};
 
 function main() {
-	var function(x, y) {
+	var Add = function(x, y) {
 		return x + y;
-	}Add = ;
+	};
 }
 
 export Mul;
