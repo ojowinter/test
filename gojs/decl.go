@@ -81,8 +81,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 				v := vSpec.Values[i]
 
 				// Checking
-				tr.CheckAndAddError(v)
-				if tr.hasError {
+				if err := tr.CheckAndAddError(v); err != nil {
 					continue
 				}
 
@@ -145,53 +144,61 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 		isFirst := true
 
 		for i, ident := range vSpec.Names {
-			var exprStr string
-			var skip bool
+			skip := false
 
+			// === Names
 			if ident.Name == "_" {
 				skip = true
+			} else {
+				if isFirst {
+					tr.WriteString("var " + ident.Name)
+					isFirst = false
+				} else {
+					tr.WriteString("," + SP + ident.Name)
+				}
+
+				tr.WriteString(SP + "=" + SP)
 			}
 
+			// === Values
+			// TODO: calculate expression using "exp/types"
 			if vSpec.Values != nil {
 				value := vSpec.Values[i]
 
 				// Skip when it is not a function because it could return more
 				// than one value.
-				if ident.Name == "_" {
+				if skip {
 					if _, ok := value.(*ast.CallExpr); !ok {
 						continue
 					}
 				}
 
 				// Checking
-				tr.CheckAndAddError(value)
-				if tr.hasError {
+				if err := tr.CheckAndAddError(value); err != nil {
 					continue
 				}
 
-				src := tr.newExpression(ident)
-				src.transform(value)
-				exprStr = src.String()
+				// If the expression is an anonymous function, then
+				// it is written in the main buffer.
+				expr := tr.newExpression(ident)
+				expr.transform(value)
 
-			} else if skip || tr.hasError {
+				if !isFunc(value) {
+					exprStr := expr.String()
+
+					if exprStr != "" && exprStr != EMPTY {
+						tr.WriteString(exprStr)
+					}
+				}
+			} else { // Initialization explicit
+				tr.WriteString(initValue(vSpec))
+			}
+
+			if skip || tr.hasError {
 				continue
 			}
-
 			if isGlobal {
 				tr.addIfExported(ident)
-			}
-
-			// === Write
-			// TODO: calculate expression using "exp/types"
-			if isFirst {
-				isFirst = false
-				tr.WriteString("var " + ident.Name)
-			} else {
-				tr.WriteString("," + SP + ident.Name)
-			}
-
-			if exprStr != "" && exprStr != EMPTY {
-				tr.WriteString(SP + "=" + SP + exprStr)
 			}
 		}
 
@@ -342,33 +349,4 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.getStatement(decl.Body)
 
 	tr.addIfExported(decl.Name)
-}
-
-//
-// === Utility
-
-// Gets the parameters.
-//
-// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
-//  Func    token.Pos  // position of "func" keyword
-//  Params  *FieldList // (incoming) parameters; or nil
-//  Results *FieldList // (outgoing) results; or nil
-func getParams(f *ast.FuncType) string {
-	isFirst := true
-	s := ""
-
-	for _, list := range f.Params.List {
-		for _, id := range list.Names {
-			if !isFirst {
-				s += "," + SP
-			}
-
-			s += id.Name
-			if isFirst {
-				isFirst = false
-			}
-		}
-	}
-
-	return s
 }

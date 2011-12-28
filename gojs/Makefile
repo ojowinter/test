@@ -8,5 +8,6 @@ GOFILES=\
 	func.go\
 	gojs.go\
 	stmt.go\
+	util.go\
 
 include $(GOROOT)/src/Make.pkg

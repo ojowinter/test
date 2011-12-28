@@ -29,9 +29,9 @@ Go sintaxis not supported:
 + Built-in functions panic, recover.
 + Defer statement.
 + Return multiple values.
-+ Labels. (1) It is advised to [avoid its use][label] in JavaScript, and (2)
- when they are called from "continue" and "break" statements then they are
- restricted to "for" and "while" JS loops so its use is very limited.
++ Goto, labels. (1) In JavaScript, the labels are restricted to "for" and
+"while" loops when they are called from "continue" and "break" statements so
+its use is very limited, and (2) it is advised to [avoid its use][label].
 
 Status:
 

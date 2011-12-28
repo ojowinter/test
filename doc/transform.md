@@ -26,7 +26,7 @@ still compilable Go but has minimal number of construct).
  - get rid of constructions with duplicated semantic (&([100]int{}) and
 new([100]int), make([]int, 50, 100) and new([100]int)[:50])
 
- - get rid of :=, "x := 1", "var x int = 1", "var x = 1" to be the same
+ - get rid of :=, "x := 1", "var x int = 1", "var x = 1" to be the same [OK]
 
  - desugar multielement assigment ( *a(),*b()=c(),d() ), see Go 1 spec for
 the evaluation order.
@@ -40,7 +40,7 @@ break/continue/fallthrough)
 
  - desugar named returns to local vars with uniq names
 
- - make zero-initialization of vars explicit
+ - make zero-initialization of vars explicit [OK]
 
 + Substitute "var" by "let" for local variables, when browsers use ECMAScript 6
 
@@ -122,4 +122,10 @@ The JavaScript output of the files in directory "test" have been checked using
 	sudo cp Linux_All_*.OBJ/jsl /usr/local/bin/ && cd - && rm -rf jsl-*
 
 	jsl -process test/var.js
+
+
+## HTML5
+
++ [Wrapper to Filesystem API]
+(http://ericbidelman.tumblr.com/post/14866798359/introducing-filer-js)
 

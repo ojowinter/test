@@ -1,6 +1,7 @@
 package test
 
-var A int
+var A string
+var a int
 var b, c, d float64
 var e = 0
 var f, g float32 = -1, -2
