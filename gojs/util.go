@@ -67,9 +67,3 @@ func initValue(val *ast.ValueSpec) string {
 	}
 	panic("unreachable")
 }
-
-// Checks if the expression is an anonymous function.
-func isFunc(expr ast.Expr) bool {
-	_, ok := expr.(*ast.FuncLit)
-	return ok
-}

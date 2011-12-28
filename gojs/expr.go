@@ -26,6 +26,7 @@ type expression struct {
 	ident      string // variable's name
 	useIota    bool
 	isNegative bool
+	isFunc     bool // anonymous function
 
 	lenArray int      // store length of array; to use in case of ellipsis [...]
 	valArray []string // store the last values of an array
@@ -43,6 +44,7 @@ func (tr *transform) newExpression(ident *ast.Ident) *expression {
 		tr,
 		new(bytes.Buffer),
 		id,
+		false,
 		false,
 		false,
 		0,
@@ -285,6 +287,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Type *FuncType  // function type
 	//  Body *BlockStmt // function body
 	case *ast.FuncLit:
+		e.isFunc = true
 		e.transform(typ.Type)
 		e.tr.getStatement(typ.Body)
 

@@ -183,7 +183,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 				expr := tr.newExpression(ident)
 				expr.transform(value)
 
-				if !isFunc(value) {
+				if !expr.isFunc {
 					exprStr := expr.String()
 
 					if exprStr != "" && exprStr != EMPTY {
