@@ -5,10 +5,10 @@ var Mul = function(x, y) {
 	return x * y;
 };
 
+function hello() { alert("Hello world!"); }
+
 function main() {
-	var Add = function(x, y) {
-		return x + y;
-	};
+	var Add = function(x, y) { return x + y; };
 }
 
 export Mul;

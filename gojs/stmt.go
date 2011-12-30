@@ -119,7 +119,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString("{")
 		}
 
-		for _, v := range typ.List {
+		for i, v := range typ.List {
 			skipTab := false
 
 			// Don't insert tabulation in both "case", "label" clauses
@@ -130,8 +130,11 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 				tr.tabLevel++
 			}
 
-			tr.addLine(v.Pos())
-			tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
+			if tr.addLine(v.Pos()) {
+				tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
+			} else if i == 0 {
+				tr.WriteString(SP)
+			}
 			tr.getStatement(v)
 
 			if !skipTab {
@@ -139,8 +142,12 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			}
 		}
 
-		tr.addLine(typ.Rbrace)
-		tr.WriteString(strings.Repeat(TAB, tr.tabLevel) + "}")
+		if tr.addLine(typ.Rbrace) {
+			tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
+		} else {
+			tr.WriteString(SP)
+		}
+		tr.WriteString("}")
 
 	// http://golang.org/pkg/go/ast/#BranchStmt || godoc go/ast BranchStmt
 	//  TokPos token.Pos   // position of Tok
