@@ -62,6 +62,7 @@ Status:
 	fallthrough			[OK]
 	JS functions		[OK]
 	goto, label			[OK]
+	anonymous function	[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per

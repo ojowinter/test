@@ -69,6 +69,7 @@ function main() {
 	var Fa = 0, Fb = 10;
 	var Fc = "c";
 	var Fd = 20;
+	var Fe = 0;
 
 
 

@@ -69,6 +69,7 @@ func main() {
 	Fa, Fb := 0, 10
 	var Fc = "c"
 	var Fd uint = 20
+	var Fe float32
 	/*f := func() int { return 7 }
 	fa, fb := os.Pipe(fd) // os.Pipe() returns two values
 	_, fc, _ := coord(p)  // coord() returns three values; only interested in y coordinate

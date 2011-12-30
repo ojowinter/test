@@ -178,9 +178,6 @@ func (e *expression) transform(expr ast.Expr) {
 		call := typ.Fun.(*ast.Ident).Name
 
 		switch call {
-		default:
-			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
-
 		case "make":
 			switch argType := typ.Args[0].(type) {
 			default:
@@ -224,10 +221,27 @@ func (e *expression) transform(expr ast.Expr) {
 
 			e.WriteString(funcJS)
 
-		// === Not supported
+		// Not supported
 		case "panic", "recover":
 			e.tr.addError("%s: built-in function %s()",
 				e.tr.fset.Position(typ.Fun.Pos()), call)
+
+		// Not implemented - http://golang.org/pkg/builtin/
+		case "append", "cap", "close", "copy", "delete", "len", "uintptr":
+			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
+
+		// Defined functions
+		default:
+			args := ""
+
+			for i, v := range typ.Args {
+				if i != 0 {
+					args += "," + SP
+				}
+				args += e.tr.getExpression(v)
+			}
+
+			e.WriteString(fmt.Sprintf("%s(%s)", call, args))
 		}
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit

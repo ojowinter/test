@@ -5,10 +5,26 @@ var Mul = function(x, y) {
 	return x * y;
 };
 
+
 function hello() { alert("Hello world!"); }
+
+
+function max(a, b) {
+	if (a > b) {
+		return a;
+	}
+	return b;
+}
 
 function main() {
 	var Add = function(x, y) { return x + y; };
+
+	var x = 3;
+	var y = 4;
+	var z = 5;
+
+	var max_xy = max(x, y);
+	var max_xz = max(x, z);
 }
 
 export Mul;
