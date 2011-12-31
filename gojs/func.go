@@ -12,20 +12,20 @@ package gojs
 import (
 	"fmt"
 	"go/ast"
+	"regexp"
 	"strings"
 )
 
-// Valid functions to be transformed since they have a similar function in JS.
-var ImportAndFunc = map[string][]string{
-	"fmt": []string{"Print", "Println"},
-}
-
 // Similar functions in JavaScript.
+// The empty values are to indicate that the package (in the key) have any
+// function to be transformed.
 var transformFunc = map[string]string{
 	"print":       "alert",
 	"println":     "alert",
+	"fmt":         "",
 	"fmt.Print":   "alert",
 	"fmt.Println": "alert",
+	"fmt.Printf":  "alert",
 }
 
 // Returns the equivalent function in JavaScript.
@@ -34,25 +34,27 @@ func (tr *transform) GetFuncJS(importName, funcName *ast.Ident, args []ast.Expr)
 
 	if importName != nil {
 		importStr = importName.Name + "."
+	}
 
-		if !isValidFunc(importName, funcName) {
-			return "", fmt.Errorf("%s.%s: function from core library", importName, funcName)
-		}
+	jsFunc, ok := transformFunc[importStr+funcName.Name]
+	if !ok {
+		return "", fmt.Errorf("%s.%s: function from core library", importName, funcName)
 	}
 
 	switch funcName.Name {
 	case "print", "Print":
-		jsArgs = tr.getPrintArgs(args, false)
+		jsArgs = tr.joinArgsPrint(args, false)
 	case "println", "Println":
-		jsArgs = tr.getPrintArgs(args, true)
+		jsArgs = tr.joinArgsPrint(args, true)
+	case "Printf":
+		jsArgs = tr.joinArgsPrintf(args)
 	}
 
-	jsFunc := transformFunc[importStr+funcName.Name]
 	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
 }
 
-// Returns arguments to print.
-func (tr *transform) getPrintArgs(args []ast.Expr, addLine bool) string {
+// Returns arguments of Print, Println.
+func (tr *transform) joinArgsPrint(args []ast.Expr, addLine bool) string {
 	var jsArgs string
 	lenArgs := len(args) - 1
 
@@ -87,14 +89,28 @@ func (tr *transform) getPrintArgs(args []ast.Expr, addLine bool) string {
 	return jsArgs
 }
 
-// * * *
+// Matches verbs for "fmt.Printf"
+var reVerb = regexp.MustCompile(`%[+\-# 0]?[bcdefgopqstvxEGTUX]`)
 
-// Checks if the function can be transformed.
-func isValidFunc(importName, funcName *ast.Ident) bool {
-	for _, f := range ImportAndFunc[importName.Name] {
-		if f == funcName.Name {
-			return true
+// Returns arguments of Printf.
+// ToDo: handle "%9.3f km", or "%.*s"
+func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
+	value := tr.getExpression(args[0])
+	result := ""
+
+	// http://golang.org/pkg/fmt/
+	value = strings.Replace(value, "%%", "%", -1)
+
+	value = reVerb.ReplaceAllString(value, "{{v}}")
+	values := strings.Split(value, "{{v}}")
+
+	for i, v := range args[1:] {
+		if i != 0 {
+			result += fmt.Sprintf("%s+%s", SP, SP+`"`)
 		}
+		result += fmt.Sprintf("%s+%s", values[i]+`"`+SP, SP+tr.getExpression(v))
 	}
-	return false
+	result += fmt.Sprintf("%s+%s", SP, SP+`"`+values[len(values)-1])
+
+	return result
 }

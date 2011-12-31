@@ -34,7 +34,7 @@ func (tr *transform) getImport(spec []ast.Spec) {
 
 		// Core library
 		if !strings.Contains(path, ".") {
-			if _, ok := ImportAndFunc[path]; !ok {
+			if _, ok := transformFunc[path]; !ok {
 				tr.addError("%s: import from core library", path)
 				continue
 			}
@@ -350,7 +350,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 	tr.addLine(decl.Pos())
 	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
-		decl.Name, getParams(decl.Type), SP))
+		decl.Name, joinParams(decl.Type), SP))
 	tr.getStatement(decl.Body)
 
 	tr.addIfExported(decl.Name)

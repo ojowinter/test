@@ -310,7 +310,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Params  *FieldList // (incoming) parameters; or nil
 	//  Results *FieldList // (outgoing) results; or nil
 	case *ast.FuncType:
-		e.tr.WriteString(fmt.Sprintf("function(%s)%s", getParams(typ), SP))
+		e.tr.WriteString(fmt.Sprintf("function(%s)%s", joinParams(typ), SP))
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name

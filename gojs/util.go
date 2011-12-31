@@ -19,7 +19,7 @@ import (
 //  Func    token.Pos  // position of "func" keyword
 //  Params  *FieldList // (incoming) parameters; or nil
 //  Results *FieldList // (outgoing) results; or nil
-func getParams(f *ast.FuncType) string {
+func joinParams(f *ast.FuncType) string {
 	isFirst := true
 	s := ""
 
