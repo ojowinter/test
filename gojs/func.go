@@ -16,17 +16,19 @@ import (
 	"strings"
 )
 
+var validImport = []string{"fmt", "math", "rand"}
+
 // Functions which can be transformed.
 // The empty values are to indicate that the package (in the key) have any
 // function to be transformed.
 var Function = map[string]string{
-	"print":        "alert",
-	"println":      "alert",
-	"fmt":          "",
-	"fmt.Print":    "alert",
-	"fmt.Println":  "alert",
-	"fmt.Printf":   "alert",
-	"math":         "",
+	"print":   "alert",
+	"println": "alert",
+
+	"fmt.Print":   "alert",
+	"fmt.Println": "alert",
+	"fmt.Printf":  "alert",
+
 	"math.Abs":     "Math.abs",
 	"math.Acos":    "Math.acos",
 	"math.Asin":    "Math.asin",
@@ -42,21 +44,11 @@ var Function = map[string]string{
 	"math.Pow":     "Math.pow",
 	"rand.Float32": "Math.random",
 	"rand.Float64": "Math.random",
-	//"math.":        "Math.round", // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round
-	"math.Sin":  "Math.sin",
-	"math.Sqrt": "Math.sqrt",
-	"math.Tan":  "Math.tan",
-}
-
-// Constants to transform.
-var Constant = map[string]string{
-	"math.E":      "Math.E",
-	"math.Ln2":    "Math.LN2",
-	"math.Log2E":  "Math.LOG2E",
-	"math.Ln10":   "Math.LN10",
-	"math.Log10E": "Math.LOG10E",
-	"math.Pi":     "Math.PI",
-	"math.Sqrt2":  "Math.SQRT2",
+	"math.Sin":     "Math.sin",
+	"math.Sqrt":    "Math.sqrt",
+	"math.Tan":     "Math.tan",
+	// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round
+	//"math.":        "Math.round",
 }
 
 // Returns the equivalent function in JavaScript.
@@ -121,19 +113,31 @@ func (tr *transform) joinArgsPrint(args []ast.Expr, addLine bool) string {
 }
 
 // Matches verbs for "fmt.Printf"
-var reVerb = regexp.MustCompile(`%[+\-# 0]?[bcdefgopqstvxEGTUX]`)
+// http://golang.org/pkg/fmt/
+var (
+	reVerb       = regexp.MustCompile(`%[+\-# 0]?[bcdefgopqstvxEGTUX]`)
+	reVerbNumber = regexp.MustCompile(`%[0-9]+[.]?[0-9]*[bcdefgoqxEGUX]`)
+	reVerbString = regexp.MustCompile(`%[0-9]+[.]?[0-9]*[sqxX]`)
+)
+
+const VERB = "{{v}}"
 
 // Returns arguments of Printf.
-// ToDo: handle "%9.3f km", or "%.*s"
 func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
-	value := tr.getExpression(args[0])
 	result := ""
+	value := tr.getExpression(args[0])
 
-	// http://golang.org/pkg/fmt/
-	value = strings.Replace(value, "%%", "%", -1)
+	value = strings.Replace(value, "%%", "%", -1) // literal percent sign
+	value = reVerb.ReplaceAllString(value, VERB)
 
-	value = reVerb.ReplaceAllString(value, "{{v}}")
-	values := strings.Split(value, "{{v}}")
+	if reVerbNumber.MatchString(value) {
+		value = reVerbNumber.ReplaceAllString(value, VERB)
+	}
+	if reVerbString.MatchString(value) {
+		value = reVerbString.ReplaceAllString(value, VERB)
+	}
+
+	values := strings.Split(value, VERB)
 
 	for i, v := range args[1:] {
 		if i != 0 {

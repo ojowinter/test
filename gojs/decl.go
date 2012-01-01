@@ -16,6 +16,17 @@ import (
 	"strings"
 )
 
+// Constants to transform.
+var Constant = map[string]string{
+	"math.E":      "Math.E",
+	"math.Ln2":    "Math.LN2",
+	"math.Log2E":  "Math.LOG2E",
+	"math.Ln10":   "Math.LN10",
+	"math.Log10E": "Math.LOG10E",
+	"math.Pi":     "Math.PI",
+	"math.Sqrt2":  "Math.SQRT2",
+}
+
 // Imports
 //
 // http://golang.org/doc/go_spec.html#Import_declarations
@@ -34,7 +45,15 @@ func (tr *transform) getImport(spec []ast.Spec) {
 
 		// Core library
 		if !strings.Contains(path, ".") {
-			if _, ok := Function[path]; !ok {
+			found := false
+			for _, v := range validImport {
+				if v == path {
+					found = true
+					break
+				}
+			}
+
+			if !found {
 				tr.addError("%s: import from core library", path)
 				continue
 			}
