@@ -16,16 +16,47 @@ import (
 	"strings"
 )
 
-// Similar functions in JavaScript.
+// Functions which can be transformed.
 // The empty values are to indicate that the package (in the key) have any
 // function to be transformed.
-var transformFunc = map[string]string{
-	"print":       "alert",
-	"println":     "alert",
-	"fmt":         "",
-	"fmt.Print":   "alert",
-	"fmt.Println": "alert",
-	"fmt.Printf":  "alert",
+var Function = map[string]string{
+	"print":        "alert",
+	"println":      "alert",
+	"fmt":          "",
+	"fmt.Print":    "alert",
+	"fmt.Println":  "alert",
+	"fmt.Printf":   "alert",
+	"math":         "",
+	"math.Abs":     "Math.abs",
+	"math.Acos":    "Math.acos",
+	"math.Asin":    "Math.asin",
+	"math.Atan":    "Math.atan",
+	"math.Atan2":   "Math.atan2",
+	"math.Ceil":    "Math.ceil",
+	"math.Cos":     "Math.cos",
+	"math.Exp":     "Math.exp",
+	"math.Floor":   "Math.floor",
+	"math.Log":     "Math.log",
+	"math.Max":     "Math.max",
+	"math.Min":     "Math.min",
+	"math.Pow":     "Math.pow",
+	"rand.Float32": "Math.random",
+	"rand.Float64": "Math.random",
+	//"math.":        "Math.round", // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round
+	"math.Sin":  "Math.sin",
+	"math.Sqrt": "Math.sqrt",
+	"math.Tan":  "Math.tan",
+}
+
+// Constants to transform.
+var Constant = map[string]string{
+	"math.E":      "Math.E",
+	"math.Ln2":    "Math.LN2",
+	"math.Log2E":  "Math.LOG2E",
+	"math.Ln10":   "Math.LN10",
+	"math.Log10E": "Math.LOG10E",
+	"math.Pi":     "Math.PI",
+	"math.Sqrt2":  "Math.SQRT2",
 }
 
 // Returns the equivalent function in JavaScript.
@@ -36,7 +67,7 @@ func (tr *transform) GetFuncJS(importName, funcName *ast.Ident, args []ast.Expr)
 		importStr = importName.Name + "."
 	}
 
-	jsFunc, ok := transformFunc[importStr+funcName.Name]
+	jsFunc, ok := Function[importStr+funcName.Name]
 	if !ok {
 		return "", fmt.Errorf("%s.%s: function from core library", importName, funcName)
 	}

@@ -34,7 +34,7 @@ func (tr *transform) getImport(spec []ast.Spec) {
 
 		// Core library
 		if !strings.Contains(path, ".") {
-			if _, ok := transformFunc[path]; !ok {
+			if _, ok := Function[path]; !ok {
 				tr.addError("%s: import from core library", path)
 				continue
 			}

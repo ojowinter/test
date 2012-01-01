@@ -3,23 +3,19 @@
 
 
 
-var Mul = function(x, y) {
-	return x * y;
-};
+
 
 
 function hello() { alert("Hello world!"); }
 
+function testSimpleFunc() {
 
-function max(a, b) {
-	if (a > b) {
-		return a;
-	}
-	return b;
-}
-
-function main() {
-	var Add = function(x, y) { return x + y; };
+	var max = function(a, b) {
+		if (a > b) {
+			return a;
+		}
+		return b;
+	};
 
 	var x = 3;
 	var y = 4;
@@ -33,4 +29,58 @@ function main() {
 	alert("max(" + y + ", " + z + ") = " + max(y, z) + "\n");
 }
 
-export Mul;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function testByValue() {
+
+	var add1 = function(a) {
+		a = a + 1;
+		return a;
+	};
+
+	var x = 3;
+
+	alert("x =  " + x + "\n");
+
+	var x1 = add1(x);
+
+	alert("x+1 =  " + x1 + "\n");
+	alert("x =  " + x + "\n");
+}
+
+function testByReference() {
+
+	var add2 = function(a) {
+		a = a + 1;
+		return a;
+	};
+
+	var x = 3;
+
+	alert("x =  " + x + "\n");
+
+	var x1 = add2(x);
+
+	alert("x+1 =  " + x1 + "\n");
+	alert("x =  " + x + "\n");
+}

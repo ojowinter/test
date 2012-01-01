@@ -369,10 +369,13 @@ func (e *expression) transform(expr ast.Expr) {
 		// Bitwise complement
 		case token.XOR:
 			op = "~"
+		// Address operator
+		case token.AND:
+			e.transform(typ.X)
+		default:
+			e.WriteString(op)
+			e.transform(typ.X)
 		}
-
-		e.WriteString(op)
-		e.transform(typ.X)
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", expr))
