@@ -70,11 +70,8 @@ func (tr *transform) checkType(expr ast.Expr) error {
 		}
 
 	case *ast.CallExpr:
-/*		if _, ok := typ.Fun.(*ast.SelectorExpr); ok {
-			return nil
-		}
-*/
 		call := typ.Fun.(*ast.Ident).Name
+
 		switch call {
 		case "make", "new":
 			return tr.checkType(typ.Args[0])
@@ -115,6 +112,11 @@ func (tr *transform) checkType(expr ast.Expr) error {
 
 	case *ast.ParenExpr:
 		return tr.checkType(typ.X)
+
+	case *ast.SelectorExpr:
+		if _, _, err := tr.checkLib(typ); err != nil {
+			return err
+		}
 
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
 	//  X    Expr      // operand

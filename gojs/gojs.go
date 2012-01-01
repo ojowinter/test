@@ -233,8 +233,6 @@ func Compile(filename string) error {
 		return err
 	}*/
 
-	fmt.Print(deb) // TODO: delete*/
-
 	// Print warnings
 	if len(trans.warn) != 0 {
 		fmt.Fprintln(os.Stderr, " == Warnings\n")

@@ -24,6 +24,7 @@ type expression struct {
 	*bytes.Buffer // sintaxis translated
 
 	ident      string // variable's name
+	funcName   string // function's name
 	useIota    bool
 	isNegative bool
 	isFunc     bool // anonymous function
@@ -44,6 +45,7 @@ func (tr *transform) newExpression(ident *ast.Ident) *expression {
 		tr,
 		new(bytes.Buffer),
 		id,
+		"",
 		false,
 		false,
 		false,
@@ -148,19 +150,10 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Fun      Expr      // function expression
 	//  Args     []Expr    // function arguments; or nil
 	case *ast.CallExpr:
-		// === From imports
-
-		// http://golang.org/pkg/go/ast/#SelectorExpr || godoc go/ast SelectorExpr
-		//   X   Expr   // expression
-		//   Sel *Ident // field selector
+		// === Library
 		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
-			funcJS, err := e.tr.GetFuncJS(call.X.(*ast.Ident), call.Sel, typ.Args)
-			if err != nil {
-				e.tr.addError(err)
-				return
-			}
-
-			e.WriteString(funcJS)
+			e.transform(call)
+			e.WriteString(fmt.Sprintf("(%s);", e.tr.GetArgs(e.funcName, typ.Args)))
 			break
 		}
 
@@ -213,13 +206,8 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(typ.Args[0])
 
 		case "print", "println":
-			funcJS, err := e.tr.GetFuncJS(nil, typ.Fun.(*ast.Ident), typ.Args)
-			if err != nil {
-				e.tr.addError(err)
-				return
-			}
-
-			e.WriteString(funcJS)
+			e.WriteString(fmt.Sprintf("%s(%s);",
+				Function[call], e.tr.GetArgs(call, typ.Args)))
 
 		// Not supported
 		case "panic", "recover":
@@ -345,6 +333,21 @@ func (e *expression) transform(expr ast.Expr) {
 	//  X      Expr      // parenthesized expression
 	case *ast.ParenExpr:
 		e.transform(typ.X)
+
+	// http://golang.org/pkg/go/ast/#SelectorExpr || godoc go/ast SelectorExpr
+	//   X   Expr   // expression
+	//   Sel *Ident // field selector
+	//
+	// 'X' have the import name, and 'Sel' the constant of function name.
+	case *ast.SelectorExpr:
+		goName, jsName, err := e.tr.checkLib(typ)
+		if err != nil {
+			e.tr.addError(err)
+			break
+		}
+
+		e.funcName = goName
+		e.WriteString(jsName)
 
 	// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword

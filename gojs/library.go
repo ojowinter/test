@@ -18,6 +18,17 @@ import (
 
 var validImport = []string{"fmt", "math", "rand"}
 
+// Constants to transform.
+var Constant = map[string]string{
+	"math.E":      "Math.E",
+	"math.Ln2":    "Math.LN2",
+	"math.Log2E":  "Math.LOG2E",
+	"math.Ln10":   "Math.LN10",
+	"math.Log10E": "Math.LOG10E",
+	"math.Pi":     "Math.PI",
+	"math.Sqrt2":  "Math.SQRT2",
+}
+
 // Functions that can be transformed since JavaScript has an equivalent one.
 var Function = map[string]string{
 	"print":   "console.log",
@@ -50,25 +61,16 @@ var Function = map[string]string{
 	"rand.Float64": "Math.random",
 }
 
-// Returns the equivalent function in JavaScript.
-func (tr *transform) GetFuncJS(importName, funcName *ast.Ident, args []ast.Expr) (string, error) {
-	var jsArgs, importStr string
+// Returns the arguments of a Go function, formatted for JS.
+func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
+	var jsArgs string
 
-	if importName != nil {
-		importStr = importName.Name + "."
-	}
-
-	jsFunc, ok := Function[importStr+funcName.Name]
-	if !ok {
-		return "", fmt.Errorf("%s.%s: function from core library", importName, funcName)
-	}
-
-	switch funcName.Name {
-	case "print", "Print":
+	switch funcName {
+	case "print", "fmt.Print":
 		jsArgs = tr.joinArgsPrint(args, false)
-	case "println", "Println":
+	case "println", "fmt.Println":
 		jsArgs = tr.joinArgsPrint(args, true)
-	case "Printf":
+	case "fmt.Printf":
 		jsArgs = tr.joinArgsPrintf(args)
 	default:
 		for i, v := range args {
@@ -79,7 +81,29 @@ func (tr *transform) GetFuncJS(importName, funcName *ast.Ident, args []ast.Expr)
 		}
 	}
 
-	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
+	return jsArgs
+}
+
+//
+// === Utility
+
+func (tr *transform) checkLib(selector *ast.SelectorExpr) (
+goName, jsName string, err error) {
+	var ok bool
+
+	goName = selector.X.(*ast.Ident).Name + "." + selector.Sel.Name
+
+	jsName, ok = Function[goName]
+	if !ok {
+		jsName, ok = Constant[goName]
+	}
+
+	if !ok {
+		return "", "", fmt.Errorf("%s: %q not supported in JS",
+			tr.fset.Position(selector.Sel.Pos()), goName)
+	}
+
+	return goName, jsName, nil
 }
 
 // Returns arguments of Print, Println.

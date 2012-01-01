@@ -73,13 +73,13 @@ By this reason, the integers of 64 bits are unsupported.
 [workers]: http://www.html5rocks.com/en/tutorials/workers/basics/
 [label]: https://developer.mozilla.org/en/JavaScript/Reference/Statements/label#Avoid_using_labels
 
-#### Constants and functions
+#### Library
 
 JavaScript has several built-in functions and constants which can be transformed
 from Go. They are defined in the maps *Constant*, and *Function*.
 
-Since the Go functions *print()* and *println()* are used to debug, then they
-are transformed to [console.log()][console], which only can be used if the
+Since the Go functions *print()* and *println()* are used to debug then they
+are transformed to [*console.log()*][console], which only can be used if the
 JavaScript code is run in Webkit (Chrome, Safari), of Mozilla Firefox with the
 plugin FireBug.
 
