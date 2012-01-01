@@ -63,6 +63,7 @@ Status:
 	JS functions		[OK]
 	goto, label			[OK]
 	anonymous function	[OK]
+	JS constants		[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
@@ -71,6 +72,18 @@ By this reason, the integers of 64 bits are unsupported.
 
 [workers]: http://www.html5rocks.com/en/tutorials/workers/basics/
 [label]: https://developer.mozilla.org/en/JavaScript/Reference/Statements/label#Avoid_using_labels
+
+#### Constants and functions
+
+JavaScript has several built-in functions and constants which can be transformed
+from Go. They are defined in the maps *Constant*, and *Function*.
+
+Since the Go functions *print()* and *println()* are used to debug, then they
+are transformed to [console.log()][console], which only can be used if the
+JavaScript code is run in Webkit (Chrome, Safari), of Mozilla Firefox with the
+plugin FireBug.
+
+[console]: http://v0.joehewitt.com/software/firebug/docs.php
 
 
 ## Installation

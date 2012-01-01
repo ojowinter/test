@@ -6,7 +6,7 @@
 
 
 
-function hello() { alert("Hello world!"); }
+function hello() { console.log("Hello world!"); }
 
 function testSimpleFunc() {
 

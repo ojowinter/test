@@ -361,6 +361,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Op    token.Token // operator
 	//  X     Expr        // operand
 	case *ast.UnaryExpr:
+		writeOp := true
 		op := typ.Op.String()
 
 		switch typ.Op {
@@ -371,11 +372,13 @@ func (e *expression) transform(expr ast.Expr) {
 			op = "~"
 		// Address operator
 		case token.AND:
-			e.transform(typ.X)
-		default:
-			e.WriteString(op)
-			e.transform(typ.X)
+			writeOp = false
 		}
+
+		if writeOp {
+			e.WriteString(op)
+		}
+		e.transform(typ.X)
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", expr))

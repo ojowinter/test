@@ -18,37 +18,36 @@ import (
 
 var validImport = []string{"fmt", "math", "rand"}
 
-// Functions which can be transformed.
-// The empty values are to indicate that the package (in the key) have any
-// function to be transformed.
+// Functions that can be transformed since JavaScript has an equivalent one.
 var Function = map[string]string{
-	"print":   "alert",
-	"println": "alert",
+	"print":   "console.log",
+	"println": "console.log",
 
 	"fmt.Print":   "alert",
 	"fmt.Println": "alert",
 	"fmt.Printf":  "alert",
 
-	"math.Abs":     "Math.abs",
-	"math.Acos":    "Math.acos",
-	"math.Asin":    "Math.asin",
-	"math.Atan":    "Math.atan",
-	"math.Atan2":   "Math.atan2",
-	"math.Ceil":    "Math.ceil",
-	"math.Cos":     "Math.cos",
-	"math.Exp":     "Math.exp",
-	"math.Floor":   "Math.floor",
-	"math.Log":     "Math.log",
-	"math.Max":     "Math.max",
-	"math.Min":     "Math.min",
-	"math.Pow":     "Math.pow",
+	"math.Abs":   "Math.abs",
+	"math.Acos":  "Math.acos",
+	"math.Asin":  "Math.asin",
+	"math.Atan":  "Math.atan",
+	"math.Atan2": "Math.atan2",
+	"math.Ceil":  "Math.ceil",
+	"math.Cos":   "Math.cos",
+	"math.Exp":   "Math.exp",
+	"math.Floor": "Math.floor",
+	"math.Log":   "Math.log",
+	"math.Max":   "Math.max",
+	"math.Min":   "Math.min",
+	"math.Pow":   "Math.pow",
+	"math.Sin":   "Math.sin",
+	"math.Sqrt":  "Math.sqrt",
+	"math.Tan":   "Math.tan",
+	// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round
+	//"math.":      "Math.round",
+
 	"rand.Float32": "Math.random",
 	"rand.Float64": "Math.random",
-	"math.Sin":     "Math.sin",
-	"math.Sqrt":    "Math.sqrt",
-	"math.Tan":     "Math.tan",
-	// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Math/round
-	//"math.":        "Math.round",
 }
 
 // Returns the equivalent function in JavaScript.
@@ -71,6 +70,13 @@ func (tr *transform) GetFuncJS(importName, funcName *ast.Ident, args []ast.Expr)
 		jsArgs = tr.joinArgsPrint(args, true)
 	case "Printf":
 		jsArgs = tr.joinArgsPrintf(args)
+	default:
+		for i, v := range args {
+			if i != 0 {
+				jsArgs += "," + SP
+			}
+			jsArgs += tr.getExpression(v)
+		}
 	}
 
 	return fmt.Sprintf("%s(%s);", jsFunc, jsArgs), nil
@@ -115,9 +121,8 @@ func (tr *transform) joinArgsPrint(args []ast.Expr, addLine bool) string {
 // Matches verbs for "fmt.Printf"
 // http://golang.org/pkg/fmt/
 var (
-	reVerb       = regexp.MustCompile(`%[+\-# 0]?[bcdefgopqstvxEGTUX]`)
-	reVerbNumber = regexp.MustCompile(`%[0-9]+[.]?[0-9]*[bcdefgoqxEGUX]`)
-	reVerbString = regexp.MustCompile(`%[0-9]+[.]?[0-9]*[sqxX]`)
+	reVerb      = regexp.MustCompile(`%[+\-# 0]?[bcdefgopqstvxEGTUX]`)
+	reVerbWidth = regexp.MustCompile(`%[0-9]+[.]?[0-9]*[bcdefgoqxEGUXsqxX]`)
 )
 
 const VERB = "{{v}}"
@@ -130,11 +135,8 @@ func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
 	value = strings.Replace(value, "%%", "%", -1) // literal percent sign
 	value = reVerb.ReplaceAllString(value, VERB)
 
-	if reVerbNumber.MatchString(value) {
-		value = reVerbNumber.ReplaceAllString(value, VERB)
-	}
-	if reVerbString.MatchString(value) {
-		value = reVerbString.ReplaceAllString(value, VERB)
+	if reVerbWidth.MatchString(value) {
+		value = reVerbWidth.ReplaceAllString(value, VERB)
 	}
 
 	values := strings.Split(value, VERB)
