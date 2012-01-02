@@ -63,7 +63,6 @@ function testByValue() {
 
 	var x1 = add(x);
 	alert("x+1 =  " + x1 + "\n");
-
 	alert("x =  " + x + "\n");
 }
 
@@ -78,7 +77,10 @@ function testByReference() {
 
 	var x1 = add(x=[x]);
 	alert("x+1 =  " + x1 + "\n");
+	alert("x =  " + x + "\n");
 
+	x1 = add(x);
+	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }
 
@@ -89,5 +91,8 @@ function testByReference2() {
 	var incr = 1;
 
 	add(value=[value], incr);
+	alert(value + "\n");
+
+	add(value, incr);
 	alert(value + "\n");
 }

@@ -73,6 +73,15 @@ By this reason, the integers of 64 bits are unsupported.
 [workers]: http://www.html5rocks.com/en/tutorials/workers/basics/
 [label]: https://developer.mozilla.org/en/JavaScript/Reference/Statements/label#Avoid_using_labels
 
+#### Pointers
+
+In JavaScript, the array is the only object that can be referenced. So it is
+transformed:
+
+`var x *bool` to `var x = [false];`,  
+`*x` to `x[0]`, and then,  
+`&x` to `x=[x]` (only in the first variable referenced).
+
 #### Library
 
 JavaScript has several built-in functions and constants which can be transformed

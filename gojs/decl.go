@@ -141,12 +141,19 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
-		var wasFunc bool
+		var wasFunc, isPointer bool
 		vSpec := s.(*ast.ValueSpec)
 
 		// Checking
 		if ok := tr.CheckAndAddError(vSpec.Type); !ok {
 			continue
+		}
+
+		// Is a pointer?
+		if vSpec.Type != nil {
+			if _, ok := vSpec.Type.(*ast.StarExpr); ok {
+				isPointer = true
+			}
 		}
 
 		tr.addLine(vSpec.Pos())
@@ -195,14 +202,20 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 				if !expr.isFunc {
 					exprStr := expr.String()
 
-					if exprStr != "" && exprStr != EMPTY {
+					if isPointer {
+						tr.WriteString("[" + exprStr + "]")
+					} else if exprStr != "" && exprStr != EMPTY {
 						tr.WriteString(exprStr)
 					}
 				} else {
 					wasFunc = true
 				}
 			} else { // Initialization explicit
-				tr.WriteString(initValue(vSpec))
+				if isPointer {
+					tr.WriteString("[" + initValue(vSpec) + "]")
+				} else {
+					tr.WriteString(initValue(vSpec))
+				}
 			}
 
 			if skip || tr.hasError {
@@ -356,10 +369,14 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		return
 	}
 
+	tr.isFunc = true
+	tr.funcPointer = make([]string, 0)
 	tr.addLine(decl.Pos())
+	tr.addIfExported(decl.Name)
+
 	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
 		decl.Name, joinParams(decl.Type), SP))
 	tr.getStatement(decl.Body)
 
-	tr.addIfExported(decl.Name)
+	tr.isFunc = false
 }

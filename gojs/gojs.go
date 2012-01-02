@@ -47,13 +47,16 @@ type transform struct {
 	err      []error  // errors
 	warn     []string // warnings
 	exported []string // declarations to be exported
-	//pointers []string
+
+	globPointer []string
+	funcPointer []string
 
 	//slice map[string]string // for range; key: function name, value: slice name
 
 	//function string // actual function
 	line     int    // actual line
 	hasError bool
+	isFunc   bool
 }
 
 func newTransform() *transform {
@@ -65,9 +68,14 @@ func newTransform() *transform {
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
 		make([]string, 0),
+
+		make([]string, 0),
+		make([]string, 0),
+
 		//make(map[string]string),
 		//"",
 		0,
+		false,
 		false,
 	}
 }

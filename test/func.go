@@ -63,7 +63,6 @@ func testByValue() {
 
 	x1 := add(x)
 	fmt.Println("x+1 = ", x1) // "x+1 = 4"
-
 	fmt.Println("x = ", x)    // "x = 3"
 }
 
@@ -78,8 +77,11 @@ func testByReference() {
 
 	x1 := add(&x) // by passing the adress of x to it
 	fmt.Println("x+1 = ", x1) // "x+1 = 4"
-
 	fmt.Println("x = ", x)    // "x = 4"
+
+	x1 = add(&x)
+	fmt.Println("x+1 = ", x1) // "x+1 = 5"
+	fmt.Println("x = ", x)    // "x = 5"
 }
 
 func testByReference2() {
@@ -90,4 +92,7 @@ func testByReference2() {
 
 	add(&value, incr)
 	fmt.Println(value) // 7
+
+	add(&value, incr)
+	fmt.Println(value) // 8
 }

@@ -325,8 +325,28 @@ func (e *expression) transform(expr ast.Expr) {
 		} else if e.isPointer { // `*x` => `x[0]`
 			name += "[0]"
 		} else if e.isAddress { // `&x` => `x=[x]`
-			name += fmt.Sprintf("=[%s]", name)
+			var pointer *[]string
+
+			if e.isFunc {
+				pointer = &e.tr.funcPointer
+			} else {
+				pointer = &e.tr.globPointer
+			}
+
+			found := false
+			for _, v := range *pointer {
+				if v == name {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				*pointer = append(*pointer, name)
+				name = fmt.Sprintf("%s=[%s]", name, name)
+			}
 		}
+
 		e.WriteString(name)
 
 	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
