@@ -53,34 +53,41 @@ function testSimpleFunc() {
 
 function testByValue() {
 
-	var add1 = function(a) {
-		a = a + 1;
-		return a;
+	var add = function(v) {
+		v = v + 1;
+		return v;
 	};
 
 	var x = 3;
-
 	alert("x =  " + x + "\n");
 
-	var x1 = add1(x);
-
+	var x1 = add(x);
 	alert("x+1 =  " + x1 + "\n");
+
 	alert("x =  " + x + "\n");
 }
 
 function testByReference() {
-
-	var add2 = function(a) {
-		a = a + 1;
-		return a;
+	var add = function(v) {
+		v[0] = v[0] + 1;
+		return v[0];
 	};
 
 	var x = 3;
-
 	alert("x =  " + x + "\n");
 
-	var x1 = add2(x);
-
+	var x1 = add(x=[x]);
 	alert("x+1 =  " + x1 + "\n");
+
 	alert("x =  " + x + "\n");
+}
+
+function testByReference2() {
+	var add = function(v, i) { v[0] += i; };
+
+	var value = 6;
+	var incr = 1;
+
+	add(value=[value], incr);
+	alert(value + "\n");
 }

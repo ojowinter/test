@@ -27,6 +27,8 @@ type expression struct {
 	funcName   string // function's name
 	useIota    bool
 	isNegative bool
+	isAddress  bool
+	isPointer  bool
 	isFunc     bool // anonymous function
 
 	lenArray int      // store length of array; to use in case of ellipsis [...]
@@ -46,6 +48,8 @@ func (tr *transform) newExpression(ident *ast.Ident) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
+		false,
+		false,
 		false,
 		false,
 		false,
@@ -153,7 +157,7 @@ func (e *expression) transform(expr ast.Expr) {
 		// === Library
 		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
 			e.transform(call)
-			e.WriteString(fmt.Sprintf("(%s);", e.tr.GetArgs(e.funcName, typ.Args)))
+			e.WriteString(fmt.Sprintf("(%s)", e.tr.GetArgs(e.funcName, typ.Args)))
 			break
 		}
 
@@ -206,7 +210,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(typ.Args[0])
 
 		case "print", "println":
-			e.WriteString(fmt.Sprintf("%s(%s);",
+			e.WriteString(fmt.Sprintf("%s(%s)",
 				Function[call], e.tr.GetArgs(call, typ.Args)))
 
 		// Not supported
@@ -311,14 +315,18 @@ func (e *expression) transform(expr ast.Expr) {
 			break
 		}
 		// Undefined value in array / slice
-		if len(e.valArray) != 0 && name == "_" {
+		if name == "_" && len(e.valArray) != 0 {
 			break
 		}
+
 		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined
 		if name == "nil" {
 			name = "undefined"
+		} else if e.isPointer { // `*x` => `x[0]`
+			name += "[0]"
+		} else if e.isAddress { // `&x` => `x=[x]`
+			name += fmt.Sprintf("=[%s]", name)
 		}
-
 		e.WriteString(name)
 
 	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
@@ -358,6 +366,7 @@ func (e *expression) transform(expr ast.Expr) {
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
 	//  X    Expr      // operand
 	case *ast.StarExpr:
+		e.isPointer = true
 		e.transform(typ.X)
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
@@ -375,6 +384,7 @@ func (e *expression) transform(expr ast.Expr) {
 			op = "~"
 		// Address operator
 		case token.AND:
+			e.isAddress = true
 			writeOp = false
 		}
 

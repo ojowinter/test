@@ -87,8 +87,7 @@ func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 //
 // === Utility
 
-func (tr *transform) checkLib(selector *ast.SelectorExpr) (
-goName, jsName string, err error) {
+func (tr *transform) checkLib(selector *ast.SelectorExpr) (goName, jsName string, err error) {
 	var ok bool
 
 	goName = selector.X.(*ast.Ident).Name + "." + selector.Sel.Name

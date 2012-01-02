@@ -52,35 +52,42 @@ func testSimpleFunc() {
 }*/
 
 func testByValue() {
-	// simple function that returns 1 + its input parameter
-	var add1 = func(a int) int {
-		a = a + 1 // we change the value of a, by adding 1 to it
-		return a  //return the new value
+	// Returns 1 plus its input parameter
+	var add = func(v int) int {
+		v = v + 1
+		return v
 	}
 
 	x := 3
+	fmt.Println("x = ", x) // "x = 3"
 
-	fmt.Println("x = ", x) //should print "x = 3"
+	x1 := add(x)
+	fmt.Println("x+1 = ", x1) // "x+1 = 4"
 
-	x1 := add1(x) //calling add1(x)
-
-	fmt.Println("x+1 = ", x1) //should print "x+1 = 4"
-	fmt.Println("x = ", x)    //will print "x = 3"
+	fmt.Println("x = ", x)    // "x = 3"
 }
 
 func testByReference() {
-	//simple function that returns 1 + its input parameter
-	add2 := func(a *int) int { //notice that we give it a pointer to an int!
-		*a = *a + 1 // we dereference and change the value pointed by a
-		return *a   //return the new value
+	add := func(v *int) int { // notice that we give it a pointer to an int
+		*v = *v + 1 // we dereference and change the value pointed by a
+		return *v
 	}
 
 	x := 3
+	fmt.Println("x = ", x) // "x = 3"
 
-	fmt.Println("x = ", x) //should print "x = 3"
+	x1 := add(&x) // by passing the adress of x to it
+	fmt.Println("x+1 = ", x1) // "x+1 = 4"
 
-	x1 := add2(&x) //calling add1(&x) by passing the adress of x to it
+	fmt.Println("x = ", x)    // "x = 4"
+}
 
-	fmt.Println("x+1 = ", x1) //should print "x+1 = 4"
-	fmt.Println("x = ", x)    //will print "x = 4"
+func testByReference2() {
+	add := func(v *int, i int) { *v += i }
+
+	value := 6
+	incr := 1
+
+	add(&value, incr)
+	fmt.Println(value) // 7
 }

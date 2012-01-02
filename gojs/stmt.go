@@ -243,7 +243,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt
 	//  X Expr // expression
 	case *ast.ExprStmt:
-		tr.WriteString(tr.getExpression(typ.X))
+		tr.WriteString(tr.getExpression(typ.X) + ";")
 
 	// http://golang.org/doc/go_spec.html#For_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for
