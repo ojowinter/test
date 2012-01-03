@@ -29,18 +29,16 @@ func testSimpleFunc() {
 	fmt.Printf("max(%d, %d) = %d\n", y, z, max(y, z)) //just call it here
 }
 
-//func testResultVar() {
-// A function that returns a bool that is set to true of Sqrt is possible
-// and false when not. And the actual square root of a float64
-/*	MySqrt := func(f float64) (s float64, ok bool) {
+func testResultVar() {
+	// A function that returns a bool that is set to true of Sqrt is possible
+	// and false when not. And the actual square root of a float64
+	MySqrt := func(f float64) (s float64, ok bool) {
 		if f > 0 {
 			s, ok = math.Sqrt(f), true
-		} else {
-			s, ok = 0, false
 		}
 		return s, ok
 	}
-
+/*
 	for i := -2.0; i <= 10; i++ {
 		possible, sqroot := MySqrt(i)
 		if possible {
@@ -48,8 +46,8 @@ func testSimpleFunc() {
 		} else {
 			fmt.Printf("Sorry, no square root for %f\n", i)
 		}
-	}
-}*/
+	}*/
+}
 
 func testByValue() {
 	// Returns 1 plus its input parameter

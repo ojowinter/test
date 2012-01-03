@@ -29,6 +29,15 @@ function testSimpleFunc() {
 	alert("max(" + y + ", " + z + ") = " + max(y, z) + "\n");
 }
 
+function testResultVar() {
+
+
+	var MySqrt = function(f) { var s = 0, ok = false;
+		if (f > 0) {
+			s = Math.sqrt(f), ok = true;
+		}
+		return [s, ok];
+	};
 
 
 
@@ -38,18 +47,7 @@ function testSimpleFunc() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 function testByValue() {
 

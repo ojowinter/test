@@ -153,16 +153,19 @@ const VERB = "{{v}}"
 // Returns arguments of Printf.
 func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
 	result := ""
-	value := tr.getExpression(args[0])
 
-	value = strings.Replace(value, "%%", "%", -1) // literal percent sign
-	value = reVerb.ReplaceAllString(value, VERB)
+	// === Format
+	format := tr.getExpression(args[0])
 
-	if reVerbWidth.MatchString(value) {
-		value = reVerbWidth.ReplaceAllString(value, VERB)
+	format = strings.Replace(format, "%%", "%", -1) // literal percent sign
+	format = reVerb.ReplaceAllString(format, VERB)
+
+	if reVerbWidth.MatchString(format) {
+		format = reVerbWidth.ReplaceAllString(format, VERB)
 	}
+	// ===
 
-	values := strings.Split(value, VERB)
+	values := strings.Split(format, VERB)
 
 	for i, v := range args[1:] {
 		if i != 0 {

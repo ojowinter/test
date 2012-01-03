@@ -13,37 +13,11 @@ import (
 	"go/ast"
 )
 
-// Gets the parameters.
-//
-// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
-//  Func    token.Pos  // position of "func" keyword
-//  Params  *FieldList // (incoming) parameters; or nil
-//  Results *FieldList // (outgoing) results; or nil
-func joinParams(f *ast.FuncType) string {
-	isFirst := true
-	s := ""
-
-	for _, list := range f.Params.List {
-		for _, id := range list.Names {
-			if !isFirst {
-				s += "," + SP
-			}
-
-			s += id.Name
-			if isFirst {
-				isFirst = false
-			}
-		}
-	}
-
-	return s
-}
-
 // Returns the initialization value in Go.
-func initValue(val *ast.ValueSpec) string {
+func initValue(val interface{}) string {
 	var ident *ast.Ident
 
-	switch typ := val.Type.(type) {
+	switch typ := val.(type) {
 	case *ast.Ident:
 		ident = typ
 	case *ast.StarExpr:

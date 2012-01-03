@@ -117,6 +117,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	case *ast.BlockStmt:
 		if !tr.skipLbrace {
 			tr.WriteString("{")
+		} else {
+			tr.skipLbrace = false
 		}
 
 		for i, v := range typ.List {
@@ -347,10 +349,6 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		tr.getStatement(typ.Body)
 
-		if tr.skipLbrace {
-			tr.skipLbrace = false
-		}
-
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return
 	//
@@ -365,11 +363,20 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			break
 		}
 
+		// Multiple values
 		if len(typ.Results) != 1 {
-			tr.addError("%s: return multiple values", tr.fset.Position(typ.Return))
-			break
+			results := ""
+			for i, v := range typ.Results {
+				if i != 0 {
+					results += "," + SP
+				}
+				results += tr.getExpression(v)
+			}
+
+			tr.WriteString("return [" + results + "];")
+		} else {
+			tr.WriteString("return " + tr.getExpression(typ.Results[0]) + ";")
 		}
-		tr.WriteString("return " + tr.getExpression(typ.Results[0]) + ";")
 
 	// http://golang.org/doc/go_spec.html#Switch_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/switch

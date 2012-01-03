@@ -304,6 +304,11 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.FuncType:
 		e.tr.WriteString(fmt.Sprintf("function(%s)%s", joinParams(typ), SP))
 
+		if results := joinResults(typ); results != "" {
+			e.tr.WriteString("{" + SP + results)
+			e.tr.skipLbrace = true
+		}
+
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name
 	case *ast.Ident:
@@ -324,7 +329,7 @@ func (e *expression) transform(expr ast.Expr) {
 			name = "undefined"
 		} else if e.isPointer { // `*x` => `x[0]`
 			name += "[0]"
-		} else if e.isAddress { // `&x` => `x=[x]`
+		} else if e.isAddress { // `&x` => `x=[x]` (only the first)
 			var pointer *[]string
 
 			if e.isFunc {

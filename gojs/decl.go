@@ -212,9 +212,9 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 				}
 			} else { // Initialization explicit
 				if isPointer {
-					tr.WriteString("[" + initValue(vSpec) + "]")
+					tr.WriteString("[" + initValue(vSpec.Type) + "]")
 				} else {
-					tr.WriteString(initValue(vSpec))
+					tr.WriteString(initValue(vSpec.Type))
 				}
 			}
 
@@ -376,7 +376,12 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
 		decl.Name, joinParams(decl.Type), SP))
-	tr.getStatement(decl.Body)
 
+	if results := joinResults(decl.Type); results != "" {
+		tr.WriteString("{" + SP + results)
+		tr.skipLbrace = true
+	}
+
+	tr.getStatement(decl.Body)
 	tr.isFunc = false
 }

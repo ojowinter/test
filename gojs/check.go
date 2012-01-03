@@ -70,8 +70,11 @@ func (tr *transform) checkType(expr ast.Expr) error {
 		}
 
 	case *ast.CallExpr:
-		call := typ.Fun.(*ast.Ident).Name
+		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
+			return tr.checkType(call)
+		}
 
+		call := typ.Fun.(*ast.Ident).Name
 		switch call {
 		case "make", "new":
 			return tr.checkType(typ.Args[0])
