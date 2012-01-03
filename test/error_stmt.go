@@ -2,7 +2,7 @@
 
 package test
 
-func ret() (byte, byte) {
+func testStatement() {
 	ch := make(chan int)
 
 	go print("hello!")
@@ -10,8 +10,6 @@ func ret() (byte, byte) {
 
 	panic("problem")
 	recover()
-
-	return 0, 0
 }
 
 func testGoto() {

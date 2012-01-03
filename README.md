@@ -78,9 +78,12 @@ By this reason, the integers of 64 bits are unsupported.
 In JavaScript, the array is the only object that can be referenced. So it is
 transformed:
 
-`var x *bool` to `var x = [false];`,  
-`*x` to `x[0]`, and then,  
-`&x` to `x=[x]` (only in the first variable referenced).
+`var x *bool` to `var x = [false];`, and `*x` to `x[0]`.
+
+Then, for variables that are not defined at the beginning like pointers but
+they are referenced to be used i.e. into a function whose parameter is a pointer:
+
+`&x` to `x=[x]` (but only in the first variable referenced).
 
 #### Library
 

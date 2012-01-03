@@ -11,29 +11,43 @@ package gojs
 
 import "testing"
 
+const DIR = "../test/"
+
+func init() {
+	MaxMessage = 100 // to show all errors
+}
+
 func TestConst(t *testing.T)   { compile("const.go", t) }
 func TestVar(t *testing.T)     { compile("var.go", t) }
 func TestType(t *testing.T)    { compile("type.go", t) }
 func TestFunc(t *testing.T)    { compile("func.go", t) }
 func TestControl(t *testing.T) { compile("control.go", t) }
-func TestOp(t *testing.T)      { compile("operator.go", t) }
+//func TestOp(t *testing.T)      { compile("operator.go", t) }
 
-func TestErrorDecl(t *testing.T) { compileErr("error_decl.go", t) }
-func TestErrorStmt(t *testing.T) { compileErr("error_stmt.go", t) }
+// == Errors
+//
+// os: import from core library
+// ../test/error_decl.go:13:10: complex128 type
+// ../test/error_decl.go:14:10: complex128 type
+// ../test/error_decl.go:15:10: complex128 type
+// ../test/error_decl.go:16:10: complex128 type
+//MORE ERRORS
+func ExampleCompile_decl() { Compile(DIR + "error_decl.go") }
+
+// == Errors
+//
+// ../test/error_stmt.go:6:13: channel type
+// ../test/error_stmt.go:8:2: goroutine
+// ../test/error_stmt.go:9:2: defer statement
+// ../test/error_stmt.go:11:2: built-in function panic()
+// ../test/error_stmt.go:12:2: built-in function recover()
+// ../test/error_stmt.go:18:1: use of label
+func ExampleCompile_stmt () { Compile(DIR + "error_stmt.go") }
 
 // * * *
 
 func compile(filename string, t *testing.T) {
-	if err := Compile("../test/" + filename); err != nil {
-		t.Fatalf("expected parse file, got\n%s", err)
-	}
-}
-
-func compileErr(filename string, t *testing.T) {
-	MaxMessage = 100 // to show all errors
-
-	err := Compile("../test/" + filename)
-	if err == nil {
-		t.Fatal("expected error")
+	if err := Compile(DIR + filename); err != nil {
+		t.Fatal("expected parse file")
 	}
 }
