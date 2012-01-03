@@ -17,12 +17,16 @@ func init() {
 	MaxMessage = 100 // to show all errors
 }
 
-func TestConst(t *testing.T)   { compile("const.go", t) }
-func TestVar(t *testing.T)     { compile("var.go", t) }
-func TestType(t *testing.T)    { compile("type.go", t) }
-func TestFunc(t *testing.T)    { compile("func.go", t) }
-func TestControl(t *testing.T) { compile("control.go", t) }
-//func TestOp(t *testing.T)      { compile("operator.go", t) }
+func TestConst(t *testing.T) { compile("const.go", t) }
+func TestVar(t *testing.T)   { compile("var.go", t) }
+func TestType(t *testing.T)  { compile("type.go", t) }
+func TestFunc(t *testing.T)  { compile("func.go", t) }
+//func TestOp(t *testing.T)    { compile("operator.go", t) }
+
+// == Warnings
+//
+// ../test/control.go:82:2: 'default' clause above 'case' clause in switch statement
+func ExampleCompile_control() { Compile(DIR + "control.go") }
 
 // == Errors
 //
@@ -31,7 +35,6 @@ func TestControl(t *testing.T) { compile("control.go", t) }
 // ../test/error_decl.go:14:10: complex128 type
 // ../test/error_decl.go:15:10: complex128 type
 // ../test/error_decl.go:16:10: complex128 type
-//MORE ERRORS
 func ExampleCompile_decl() { Compile(DIR + "error_decl.go") }
 
 // == Errors
