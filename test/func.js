@@ -21,8 +21,8 @@ function testSimpleFunc() {
 	var y = 4;
 	var z = 5;
 
-	var max_xy = max(x, y);
-	var max_xz = max(x, z);
+	var _ = max(x, y); max_xy = _[0];
+	var _ = max(x, z); max_xz = _[0];
 
 	alert("max(" + x + ", " + y + ") = " + max_xy + "\n");
 	alert("max(" + x + ", " + z + ") = " + max_xz + "\n");
@@ -59,7 +59,7 @@ function testByValue() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var x1 = add(x);
+	var _ = add(x); x1 = _[0];
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }
@@ -73,11 +73,11 @@ function testByReference() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var x1 = add(x=[x]);
+	var _ = add(x=[x]); x1 = _[0];
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 
-	x1 = add(x);
+	_ = add(x); x1 = _[0];
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }

@@ -12,6 +12,7 @@ package gojs
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"strconv"
 	"strings"
 )
@@ -69,8 +70,8 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
-		// Checking
-		if ok := tr.CheckAndAddError(vSpec.Type); !ok {
+		// Type checking
+		if tr.getExpression(vSpec.Type).hasError {
 			continue
 		}
 
@@ -88,20 +89,17 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 			if vSpec.Values != nil {
 				v := vSpec.Values[i]
 
-				// Checking
-				if ok := tr.CheckAndAddError(v); !ok {
+				expr := tr.getExpression(v)
+				if expr.hasError {
 					continue
 				}
 
-				expr := tr.newExpression(ident)
-				expr.transform(v)
-				exprStr := expr.String()
-
 				if expr.useIota {
+					exprStr := expr.String()
 					value = strings.Replace(exprStr, IOTA, value, -1)
 					iotaExpr = append(iotaExpr, exprStr)
 				} else {
-					value = exprStr
+					value = expr.String()
 				}
 			} else {
 				if tr.hasError {
@@ -149,7 +147,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 		}
 
 		tr.addLine(vSpec.Pos())
-		tr.writeValues(vSpec.Names, vSpec.Values, vSpec.Type, "=", isGlobal)
+		tr.writeValues(vSpec.Names, vSpec.Values, vSpec.Type, token.DEFINE, isGlobal)
 	}
 }
 
@@ -182,8 +180,8 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		fields := make([]string, 0) // names of fields
 		//!anonField := make([]bool, 0) // anonymous field
 
-		// Checking
-		if ok := tr.CheckAndAddError(tSpec.Type); !ok {
+		// Type checking
+		if tr.getExpression(tSpec.Type).hasError {
 			continue
 		}
 
@@ -224,8 +222,8 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 				//  Tag     *BasicLit     // field tag; or nil
 				//  Comment *CommentGroup // line comments; or nil
 
-				// Checking
-				if ok := tr.CheckAndAddError(field.Type); !ok {
+				// Type checking
+				if tr.getExpression(field.Type).hasError {
 					continue
 				}
 				if field.Names == nil {

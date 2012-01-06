@@ -48,8 +48,11 @@ func Example_control() { Compile(DIR + "control.go") }
 // ../test/error_decl.go:48:12: channel type
 // ../test/error_decl.go:49:12: channel type
 // ../test/error_decl.go:50:7: channel operator
+// ../test/error_decl.go:60:2: function type in struct
+// ../test/error_decl.go:64:4: int64 type
+// ../test/error_decl.go:65:2: anonymous field in struct
+// ../test/error_decl.go:66:4: complex128 type
 func Example_decl() { Compile(DIR + "error_decl.go") }
-//func TestErrorDecl(t *testing.T)  { compile("error_decl.go", t) }
 
 // == Errors
 //

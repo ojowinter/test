@@ -463,7 +463,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Struct     token.Pos  // position of "struct" keyword
 	//  Fields     *FieldList // list of field declarations
 	//  Incomplete bool       // true if (source) fields are missing in the Fields list
-	/*case *ast.StructType:*/
+	case *ast.StructType:
 
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
 	//  Star token.Pos // position of "*"

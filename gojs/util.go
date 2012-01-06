@@ -12,14 +12,38 @@ package gojs
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 )
 
 // Writes names and values for both declarations and assignments.
 func (tr *transform) writeValues(names interface{}, values []ast.Expr,
-type_ interface{}, sign string, isGlobal bool) {
-	var _names []string
+type_ interface{}, operator token.Token, isGlobal bool) {
+	var sign string
+	var skipSemicolon, isBitClear bool
 	isFirst := true
-	skipSemicolon := false
+
+	// === Operator
+	switch operator {
+	case token.DEFINE:
+		tr.WriteString("var ")
+		sign = "="
+	case token.ASSIGN,
+		token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN, token.QUO_ASSIGN,
+		token.REM_ASSIGN,
+		token.AND_ASSIGN, token.OR_ASSIGN, token.XOR_ASSIGN, token.SHL_ASSIGN,
+		token.SHR_ASSIGN:
+
+		sign = operator.String()
+	case token.AND_NOT_ASSIGN:
+		sign = "&="
+		isBitClear = true
+
+	default:
+		panic(fmt.Sprintf("operator unimplemented: %s", operator.String()))
+	}
+
+	// === Names
+	var _names []string
 
 	switch t := names.(type) {
 	case []*ast.Ident:
@@ -28,17 +52,37 @@ type_ interface{}, sign string, isGlobal bool) {
 		for i, v := range t {
 			_names[i] = tr.getExpression(v).String()
 		}
+	case []ast.Expr: // like avobe
+		_names = make([]string, len(t))
+
+		for i, v := range t {
+			_names[i] = tr.getExpression(v).String()
+		}
+	default:
+		panic(fmt.Sprintf("%T: type not added", t))
 	}
 
-	// Call (function)
+	if tr.isSwitch {
+		tr.switchInit = _names[len(_names)-1]
+	}
+
+	// === Function
 	if values != nil {
 		if call, ok := values[0].(*ast.CallExpr); ok {
-			funcName := call.Fun.(*ast.Ident).Name
-			if funcName == "make" || funcName == "new" {
+
+			// Anonymous function
+			if _, ok := call.Fun.(*ast.SelectorExpr); ok {
 				goto _noFunc
 			}
 
-			str := fmt.Sprintf("var _%s;", SP+sign+SP+tr.getExpression(call).String())
+			// Declaration of slice/array
+			fun := call.Fun.(*ast.Ident).Name
+			if fun == "make" || fun == "new" {
+				goto _noFunc
+			}
+
+			// Handle return of multiple values
+			str := fmt.Sprintf("_%s;", SP+sign+SP+tr.getExpression(call).String())
 
 			for i, name := range _names {
 				if name == BLANK {
@@ -72,7 +116,7 @@ _noFunc:
 
 		// === Name
 		if isFirst {
-			tr.WriteString("var " + name)
+			tr.WriteString(name)
 			isFirst = false
 		} else {
 			tr.WriteString("," + SP + name)
@@ -92,12 +136,14 @@ _noFunc:
 			expr := tr.newExpression(name)
 			expr.transform(values[i])
 
-			/*if expr.hasError {
-				return
-			}*/
-
 			if _, ok := _value.(*ast.FuncLit); !ok {
-				tr.WriteString(initValue(type_, expr.String()))
+				exprStr := expr.String()
+
+				if isBitClear {
+					exprStr = "~(" + exprStr + ")"
+				}
+
+				tr.WriteString(initValue(type_, exprStr))
 			} else {
 //				wasFunc = true
 			}

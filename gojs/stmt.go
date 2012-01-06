@@ -43,69 +43,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // assignment token, DEFINE
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
-		var op string
-		var isBitClear bool
-
-		switch typ.Tok {
-		case token.DEFINE:
-			tr.WriteString("var ")
-			op = "="
-		case token.ASSIGN,
-			token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN, token.QUO_ASSIGN,
-			token.REM_ASSIGN,
-			token.AND_ASSIGN, token.OR_ASSIGN, token.XOR_ASSIGN, token.SHL_ASSIGN,
-			token.SHR_ASSIGN:
-
-			op = typ.Tok.String()
-		case token.AND_NOT_ASSIGN:
-			op = "&="
-			isBitClear = true
-		default:
-			panic(fmt.Sprintf("token unimplemented: %s", typ.Tok))
-		}
-
-		isFirst := true
-		for i, v := range typ.Lhs {
-			lIdent := tr.getExpression(v).String()
-
-			if lIdent == "_" {
-				continue
-			}
-			// Checking
-			if ok := tr.CheckAndAddError(typ.Rhs[i]); !ok {
-				continue
-			}
-
-			if isFirst {
-				tr.WriteString(lIdent)
-				isFirst = false
-			} else {
-				tr.WriteString("," + SP + lIdent)
-			}
-			tr.WriteString(SP + op + SP)
-
-			// Maybe an anonymous func.
-			rIdent := tr.newExpression(nil)
-			rIdent.transform(typ.Rhs[i])
-
-			if !rIdent.isFunc {
-				rIdentStr := rIdent.String()
-
-				// Skip empty assignments
-				if rIdentStr != EMPTY {
-					if !isBitClear {
-						tr.WriteString(rIdentStr)
-					} else {
-						tr.WriteString("~(" + rIdentStr + ")")
-					}
-				}
-			}
-
-			if tr.isSwitch {
-				tr.switchInit = lIdent
-			}
-		}
-		tr.WriteString(";")
+		tr.writeValues(typ.Lhs, typ.Rhs, nil, typ.Tok, false)
 
 	// http://golang.org/doc/go_spec.html#Blocks
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/block
