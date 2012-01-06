@@ -23,24 +23,31 @@ type expression struct {
 	tr            *transform
 	*bytes.Buffer // sintaxis translated
 
-	ident      string // variable's name
-	funcName   string // function's name
-	useIota    bool
-	isNegative bool
-	isAddress  bool
-	isPointer  bool
-	isFunc     bool // anonymous function
+	ident         string // variable's name
+	funcName      string // function's name
+	useIota       bool
+	isNegative    bool
+	isAddress     bool
+	isPointer     bool
+	isFunc        bool // anonymous function
+	skipSemicolon bool
+	hasError      bool
 
 	lenArray int      // store length of array; to use in case of ellipsis [...]
 	valArray []string // store the last values of an array
 }
 
 // Initializes a new type of "expression".
-func (tr *transform) newExpression(ident *ast.Ident) *expression {
+func (tr *transform) newExpression(iVar interface{}) *expression {
 	var id string
 
-	if ident != nil {
-		id = ident.Name
+	if iVar != nil {
+		switch tVar := iVar.(type) {
+		case *ast.Ident:
+			id = tVar.Name
+		case string:
+			id = tVar
+		}
 	}
 
 	return &expression{
@@ -53,17 +60,19 @@ func (tr *transform) newExpression(ident *ast.Ident) *expression {
 		false,
 		false,
 		false,
+		false,
+		false,
 		0,
 		make([]string, 0),
 	}
 }
 
 // Returns the Go expression in JavaScript.
-func (tr *transform) getExpression(expr ast.Expr) string {
+func (tr *transform) getExpression(expr ast.Expr) *expression {
 	e := tr.newExpression(nil)
 	e.transform(expr)
 
-	return e.String()
+	return e
 }
 
 // Returns the values of an array formatted like "[i0][i1]..."
@@ -82,9 +91,17 @@ func (e *expression) transform(expr ast.Expr) {
 	switch typ := expr.(type) {
 
 	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
+	//  Lbrack token.Pos // position of "["
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
 	//  Elt    Expr      // element type
 	case *ast.ArrayType:
+		// Type checking
+		if _, ok := typ.Elt.(*ast.Ident); ok {
+			if e.tr.getExpression(typ.Elt).hasError {
+				return
+			}
+		}
+
 		if typ.Len == nil { // slice
 			break
 		}
@@ -115,6 +132,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(typ.Elt)
 		} else if len(e.valArray) > 1 {
 			e.WriteString(";" + SP + strings.Repeat("}", len(e.valArray)-1))
+			e.skipSemicolon = true
 		}
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
@@ -171,15 +189,17 @@ func (e *expression) transform(expr ast.Expr) {
 			break
 		}
 
-		// === Built-in functions
+		// === Built-in functions - golang.org/pkg/builtin/
 		call := typ.Fun.(*ast.Ident).Name
 
 		switch call {
 		case "make":
-			switch argType := typ.Args[0].(type) {
-			default:
-				panic(fmt.Sprintf("call of 'make' unimplemented: %T", argType))
+			// Type checking
+			if e.tr.getExpression(typ.Args[0]).hasError {
+				return
+			}
 
+			switch argType := typ.Args[0].(type) {
 			// For slice
 			case *ast.ArrayType:
 				e.WriteString("new Array(")
@@ -189,18 +209,24 @@ func (e *expression) transform(expr ast.Expr) {
 			// The second argument (in Args), if any, is the capacity which
 			// is not useful in JS since it is dynamic.
 			case *ast.MapType:
-				e.WriteString("{};") // or "new Object()"
+				e.WriteString("{}") // or "new Object()"
+
+			case *ast.ChanType:
+				e.transform(typ.Fun)
+
+			default:
+				panic(fmt.Sprintf("call of 'make' unimplemented: %T", argType))
 			}
 
 		case "new":
 			switch argType := typ.Args[0].(type) {
-			default:
-				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
-
 			case *ast.ArrayType:
 				for _, arg := range typ.Args {
 					e.transform(arg)
 				}
+
+			default:
+				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
 			}
 
 		// Conversion
@@ -213,12 +239,19 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(fmt.Sprintf("%s(%s)",
 				Function[call], e.tr.GetArgs(call, typ.Args)))
 
-		// Not supported
-		case "panic", "recover":
+		// === Not supported
+		case "panic", "recover", "complex":
 			e.tr.addError("%s: built-in function %s()",
 				e.tr.fset.Position(typ.Fun.Pos()), call)
+			e.tr.hasError = true
+			return
+		case "int64", "uint64":
+			e.tr.addError("%s: conversion of type %s",
+				e.tr.fset.Position(typ.Fun.Pos()), call)
+			e.tr.hasError = true
+			return
 
-		// Not implemented - http://golang.org/pkg/builtin/
+		// === Not implemented
 		case "append", "cap", "close", "copy", "delete", "len", "uintptr":
 			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
 
@@ -230,19 +263,26 @@ func (e *expression) transform(expr ast.Expr) {
 				if i != 0 {
 					args += "," + SP
 				}
-				args += e.tr.getExpression(v)
+				args += e.tr.getExpression(v).String()
 			}
 
 			e.WriteString(fmt.Sprintf("%s(%s)", call, args))
 		}
+
+	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
+	//  Begin token.Pos // position of "chan" keyword or "<-" (whichever comes first)
+	//  Dir   ChanDir   // channel direction
+	//  Value Expr      // value type
+	case *ast.ChanType:
+		e.tr.addError("%s: channel type", e.tr.fset.Position(typ.Pos()))
+		e.tr.hasError = true
+		return
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
 	//  Type   Expr      // literal type; or nil
 	//  Elts   []Expr    // list of composite elements; or nil
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
-		default:
-			panic(fmt.Sprintf("'CompositeLit' unimplemented: %s", compoType))
 
 		case *ast.ArrayType:
 			e.lenArray = len(typ.Elts) // for ellipsis
@@ -265,10 +305,12 @@ func (e *expression) transform(expr ast.Expr) {
 				e.WriteString("]")
 			}
 
-		// http://golang.org/pkg/go/ast/#MapType || godoc go/ast MapType
-		//  Key   Expr
-		//  Value Expr
 		case *ast.MapType:
+			// Type checking
+			if e.tr.getExpression(typ.Type).hasError {
+				return
+			}
+
 			lenElts := len(typ.Elts) - 1
 			e.WriteString("{")
 
@@ -279,7 +321,10 @@ func (e *expression) transform(expr ast.Expr) {
 					e.WriteString("," + SP)
 				}
 			}
-			e.WriteString("};")
+			e.WriteString("}")
+
+		default:
+			panic(fmt.Sprintf("'CompositeLit' unimplemented: %s", compoType))
 		}
 
 	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
@@ -313,6 +358,19 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Name    string    // identifier name
 	case *ast.Ident:
 		name := typ.Name
+
+		switch name {
+		// Not supported
+		case "int64", "uint64", "complex64", "complex128":
+			e.tr.addError("%s: %s type", e.tr.fset.Position(typ.Pos()), name)
+			e.tr.hasError = true
+			return
+		// Not implemented
+		case "uintptr":
+			e.tr.addError("%s: unimplemented type %q", e.tr.fset.Position(typ.Pos()), name)
+			e.tr.hasError = true
+			return
+		}
 
 		if name == "iota" {
 			e.WriteString(IOTA)
@@ -354,16 +412,34 @@ func (e *expression) transform(expr ast.Expr) {
 
 		e.WriteString(name)
 
+	// http://golang.org/pkg/go/ast/#InterfaceType || godoc go/ast InterfaceType
+	//  Interface  token.Pos  // position of "interface" keyword
+	//  Methods    *FieldList // list of methods
+	//  Incomplete bool       // true if (source) methods are missing in the Methods list
+	case *ast.InterfaceType: // ToDo: review
+
 	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
 	//  Key   Expr
+	//  Colon token.Pos // position of ":"
 	//  Value Expr
 	case *ast.KeyValueExpr:
 		e.transform(typ.Key)
 		e.WriteString(":" + SP)
 		e.transform(typ.Value)
 
+	// http://golang.org/pkg/go/ast/#MapType || godoc go/ast MapType
+	//  Map   token.Pos // position of "map" keyword
+	//  Key   Expr
+	//  Value Expr
+	case *ast.MapType:
+		// Type checking
+		e.tr.getExpression(typ.Key)
+		e.tr.getExpression(typ.Value)
+
 	// http://golang.org/pkg/go/ast/#ParenExpr || godoc go/ast ParenExpr
+	//  Lparen token.Pos // position of "("
 	//  X      Expr      // parenthesized expression
+	//  Rparen token.Pos // position of ")"
 	case *ast.ParenExpr:
 		e.transform(typ.X)
 
@@ -376,6 +452,7 @@ func (e *expression) transform(expr ast.Expr) {
 		goName, jsName, err := e.tr.checkLib(typ)
 		if err != nil {
 			e.tr.addError(err)
+			e.tr.hasError = true
 			break
 		}
 
@@ -389,12 +466,14 @@ func (e *expression) transform(expr ast.Expr) {
 	/*case *ast.StructType:*/
 
 	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
+	//  Star token.Pos // position of "*"
 	//  X    Expr      // operand
 	case *ast.StarExpr:
 		e.isPointer = true
 		e.transform(typ.X)
 
 	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
+	//  OpPos token.Pos   // position of Op
 	//  Op    token.Token // operator
 	//  X     Expr        // operand
 	case *ast.UnaryExpr:
@@ -411,12 +490,19 @@ func (e *expression) transform(expr ast.Expr) {
 		case token.AND:
 			e.isAddress = true
 			writeOp = false
+		case token.ARROW:
+			e.tr.addError("%s: channel operator", e.tr.fset.Position(typ.OpPos))
+			e.tr.hasError = true
+			return
 		}
 
 		if writeOp {
 			e.WriteString(op)
 		}
 		e.transform(typ.X)
+
+	// The type has not been indicated
+	case nil:
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", expr))

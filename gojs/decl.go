@@ -141,98 +141,15 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
-		var wasFunc, isPointer bool
 		vSpec := s.(*ast.ValueSpec)
 
-		// Checking
-		if ok := tr.CheckAndAddError(vSpec.Type); !ok {
+		// Type checking
+		if tr.getExpression(vSpec.Type).hasError {
 			continue
 		}
 
-		// Is a pointer?
-		if vSpec.Type != nil {
-			if _, ok := vSpec.Type.(*ast.StarExpr); ok {
-				isPointer = true
-			}
-		}
-
 		tr.addLine(vSpec.Pos())
-		isFirst := true
-
-		for i, ident := range vSpec.Names {
-			skip := false
-
-			// === Names
-			if ident.Name == "_" {
-				skip = true
-			} else {
-				if isFirst {
-					tr.WriteString("var " + ident.Name)
-					isFirst = false
-				} else {
-					tr.WriteString("," + SP + ident.Name)
-				}
-
-				tr.WriteString(SP + "=" + SP)
-			}
-
-			// === Values
-			// TODO: calculate expression using "exp/types"
-			if vSpec.Values != nil {
-				value := vSpec.Values[i]
-
-				// Skip when it is not a function because it could return more
-				// than one value.
-				if skip {
-					if _, ok := value.(*ast.CallExpr); !ok {
-						continue
-					}
-				}
-
-				// Checking
-				if ok := tr.CheckAndAddError(value); !ok {
-					continue
-				}
-
-				// If the expression is an anonymous function, then
-				// it is written in the main buffer.
-				expr := tr.newExpression(ident)
-				expr.transform(value)
-
-				if !expr.isFunc {
-					exprStr := expr.String()
-
-					if isPointer {
-						tr.WriteString("[" + exprStr + "]")
-					} else if exprStr != "" && exprStr != EMPTY {
-						tr.WriteString(exprStr)
-					}
-				} else {
-					wasFunc = true
-				}
-			} else { // Initialization explicit
-				if isPointer {
-					tr.WriteString("[" + initValue(vSpec.Type) + "]")
-				} else {
-					tr.WriteString(initValue(vSpec.Type))
-				}
-			}
-
-			if skip || tr.hasError {
-				continue
-			}
-			if isGlobal {
-				tr.addIfExported(ident)
-			}
-		}
-
-		last := tr.Bytes()[tr.Len()-1] // last character
-
-		if wasFunc {
-			tr.WriteString(";")
-		} else if last != '}' && last != ';' {
-			tr.WriteString(";")
-		}
+		tr.writeValues(vSpec.Names, vSpec.Values, vSpec.Type, "=", isGlobal)
 	}
 }
 

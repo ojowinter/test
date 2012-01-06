@@ -61,8 +61,8 @@ var m4 = {1: "first", 2: 2, 3: 3};
 
 
 var p0 = [0];
-var p1 = [2];
-var p2 = [true];
+var p1 = [0];
+var p2 = [false];
 
 
 function main() {

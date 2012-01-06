@@ -94,3 +94,37 @@ func testByReference2() {
 	add(&value, incr)
 	fmt.Println(value) // 8
 }
+
+func testByReference3() {
+	x := 3
+	y := &x
+
+	*y++
+	println(x) // 4
+
+	*y++
+	println(x) // 5
+}
+
+func testByReference4() {
+	x := 3
+	f := func(){
+		x = 4
+	}
+	y := &x
+
+	f()
+	println(*y) // 4
+}
+
+/*
+function testByReference4() {
+	var x = [3];
+	var f = function() {
+		x[0] = 4;
+	};
+	var y = x;
+
+	f();
+	console.log(y[0] + "\n");
+}*/

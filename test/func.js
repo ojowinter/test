@@ -94,3 +94,25 @@ function testByReference2() {
 	add(value, incr);
 	alert(value + "\n");
 }
+
+function testByReference3() {
+	var x = 3;
+	var y = x;
+
+	y[0]++
+	console.log(x + "\n");
+
+	y[0]++
+	console.log(x + "\n");
+}
+
+function testByReference4() {
+	var x = 3;
+	var f = function() {
+		x = 4;
+	};
+	var y = x;
+
+	f();
+	console.log(y[0] + "\n");
+}

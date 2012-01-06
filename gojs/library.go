@@ -77,7 +77,7 @@ func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 			if i != 0 {
 				jsArgs += "," + SP
 			}
-			jsArgs += tr.getExpression(v)
+			jsArgs += tr.getExpression(v).String()
 		}
 	}
 
@@ -121,7 +121,7 @@ func (tr *transform) joinArgsPrint(args []ast.Expr, addLine bool) string {
 	}
 
 	for i, v := range args {
-		expr := tr.getExpression(v)
+		expr := tr.getExpression(v).String()
 
 		if i != 0 {
 			jsArgs += SP + "+" + SP + expr
@@ -155,7 +155,7 @@ func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
 	result := ""
 
 	// === Format
-	format := tr.getExpression(args[0])
+	format := tr.getExpression(args[0]).String()
 
 	format = strings.Replace(format, "%%", "%", -1) // literal percent sign
 	format = reVerb.ReplaceAllString(format, VERB)
@@ -171,7 +171,7 @@ func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
 		if i != 0 {
 			result += fmt.Sprintf("%s+%s", SP, SP+`"`)
 		}
-		result += fmt.Sprintf("%s+%s", values[i]+`"`+SP, SP+tr.getExpression(v))
+		result += fmt.Sprintf("%s+%s", values[i]+`"`+SP, SP+tr.getExpression(v).String())
 	}
 	result += fmt.Sprintf("%s+%s", SP, SP+`"`+values[len(values)-1])
 

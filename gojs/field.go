@@ -70,7 +70,7 @@ func joinResults(f *ast.FuncType) string {
 			continue
 		}
 
-		init := initValue(list.Type)
+		init := initValue(list.Type, "")
 
 		for _, v := range list.Names {
 			if !isFirst {

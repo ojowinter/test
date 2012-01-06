@@ -61,8 +61,8 @@ var (
 // Pointer
 var (
 	p0 *byte
-	p1 *int  = 2
-	p2 *bool = true
+	p1 *int
+	p2 *bool
 )
 
 func main() {
