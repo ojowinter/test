@@ -59,11 +59,11 @@ func Example_decl() { Compile(DIR + "error_decl.go") }
 //
 // ../test/error_stmt.go:6:13: channel type
 // ../test/error_stmt.go:8:2: goroutine
-// ../test/error_stmt.go:9:2: defer statement
+// ../test/error_stmt.go:9:2: defer directive
 // ../test/error_stmt.go:11:2: built-in function panic()
 // ../test/error_stmt.go:12:2: built-in function recover()
 // ../test/error_stmt.go:18:1: use of label
-// ../test/error_stmt.go:23:3: goto statement
+// ../test/error_stmt.go:23:3: goto directive
 func Example_stmt() { Compile(DIR + "error_stmt.go") }
 
 // * * *

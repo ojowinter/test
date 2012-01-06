@@ -99,10 +99,10 @@ function testByReference3() {
 	var x = 3;
 	var y = x;
 
-	y[0]++
+	y[0]++;
 	console.log(x + "\n");
 
-	y[0]++
+	y[0]++;
 	console.log(x + "\n");
 }
 

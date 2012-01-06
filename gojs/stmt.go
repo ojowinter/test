@@ -25,6 +25,7 @@ type dataStmt struct {
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
 	skipLbrace     bool // left brace
+	skipSemicolon  bool
 
 	isSwitch   bool
 	switchInit string
@@ -116,7 +117,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		case token.FALLTHROUGH:
 			tr.wasFallthrough = true
 		case token.GOTO: // not used since "label" is not transformed
-			tr.addError("%s: goto statement", tr.fset.Position(typ.TokPos))
+			tr.addError("%s: goto directive", tr.fset.Position(typ.TokPos))
 		}
 
 	// http://golang.org/pkg/go/ast/#CaseClause || godoc go/ast CaseClause
@@ -213,6 +214,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		if typ.Post != nil {
 			tr.WriteString(SP)
+			tr.skipSemicolon = true
 			tr.getStatement(typ.Post)
 		}
 
@@ -256,6 +258,12 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // INC or DEC
 	case *ast.IncDecStmt:
 		tr.WriteString(tr.getExpression(typ.X).String() + typ.Tok.String())
+
+		if !tr.skipSemicolon {
+			tr.WriteString(";")
+		} else {
+			tr.skipSemicolon = false
+		}
 
 	// http://golang.org/doc/go_spec.html#For_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for...in
@@ -358,7 +366,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Defer token.Pos // position of "defer" keyword
 	//  Call  *CallExpr
 	case *ast.DeferStmt:
-		tr.addError("%s: defer statement", tr.fset.Position(typ.Defer))
+		tr.addError("%s: defer directive", tr.fset.Position(typ.Defer))
 
 	// http://golang.org/doc/go_spec.html#Labeled_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/label

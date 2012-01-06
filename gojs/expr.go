@@ -23,8 +23,8 @@ type expression struct {
 	tr            *transform
 	*bytes.Buffer // sintaxis translated
 
-	varName       string // variable's name
-	funcName      string // function's name
+	varName       string // variable name
+	funcName      string // function name
 	useIota       bool
 	isNegative    bool
 	isAddress     bool
