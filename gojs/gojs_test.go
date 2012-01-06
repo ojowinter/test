@@ -21,6 +21,7 @@ func TestConst(t *testing.T) { compile("const.go", t) }
 func TestVar(t *testing.T)   { compile("var.go", t) }
 func TestType(t *testing.T)  { compile("type.go", t) }
 func TestFunc(t *testing.T)  { compile("func.go", t) }
+
 //func TestOp(t *testing.T)    { compile("operator.go", t) }
 
 // == Warnings
@@ -63,7 +64,7 @@ func Example_decl() { Compile(DIR + "error_decl.go") }
 // ../test/error_stmt.go:12:2: built-in function recover()
 // ../test/error_stmt.go:18:1: use of label
 // ../test/error_stmt.go:23:3: goto statement
-func Example_stmt () { Compile(DIR + "error_stmt.go") }
+func Example_stmt() { Compile(DIR + "error_stmt.go") }
 
 // * * *
 

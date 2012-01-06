@@ -53,9 +53,9 @@ type transform struct {
 	funcPointer []string
 
 	//slice map[string]string // for range; key: function name, value: slice name
-
 	//function string // actual function
-	line     int    // actual line
+
+	line     int // actual line
 	hasError bool
 	isFunc   bool
 }

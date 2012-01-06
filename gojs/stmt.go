@@ -43,6 +43,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tok    token.Token // assignment token, DEFINE
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
+		// Can not be indicated the variable's type in the assignment.
 		tr.writeValues(typ.Lhs, typ.Rhs, nil, typ.Tok, false)
 
 	// http://golang.org/doc/go_spec.html#Blocks

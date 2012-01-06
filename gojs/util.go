@@ -16,8 +16,7 @@ import (
 )
 
 // Writes names and values for both declarations and assignments.
-func (tr *transform) writeValues(names interface{}, values []ast.Expr,
-type_ interface{}, operator token.Token, isGlobal bool) {
+func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
 	var sign string
 	var skipSemicolon, isBitClear bool
 	isFirst := true
@@ -59,7 +58,7 @@ type_ interface{}, operator token.Token, isGlobal bool) {
 			_names[i] = tr.getExpression(v).String()
 		}
 	default:
-		panic(fmt.Sprintf("%T: type not added", t))
+		panic("unreachable")
 	}
 
 	if tr.isSwitch {
@@ -144,8 +143,6 @@ _noFunc:
 				}
 
 				tr.WriteString(initValue(type_, exprStr))
-			} else {
-//				wasFunc = true
 			}
 
 			if expr.skipSemicolon {

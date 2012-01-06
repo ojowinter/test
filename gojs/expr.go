@@ -23,7 +23,7 @@ type expression struct {
 	tr            *transform
 	*bytes.Buffer // sintaxis translated
 
-	ident         string // variable's name
+	varName       string // variable's name
 	funcName      string // function's name
 	useIota       bool
 	isNegative    bool
@@ -67,11 +67,11 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 	}
 }
 
-// Returns the Go expression in JavaScript.
+// Returns the Go expression transformed to JavaScript.
 func (tr *transform) getExpression(expr ast.Expr) *expression {
 	e := tr.newExpression(nil)
-	e.transform(expr)
 
+	e.transform(expr)
 	return e
 }
 
@@ -123,7 +123,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(fmt.Sprintf(
 				";%sfor%s(var %s=0;%s<%s;%s++){%s=new Array(",
 				SP, SP, vArray, SP+vArray, e.valArray[iArray], SP+vArray,
-				SP+e.ident+e.printArray()))
+				SP+e.varName+e.printArray()))
 			e.transform(typ.Len)
 			e.WriteString(")")
 		}
@@ -293,7 +293,7 @@ func (e *expression) transform(expr ast.Expr) {
 				if compoType.Len == nil {
 					e.WriteString("[")
 				} else {
-					e.WriteString(fmt.Sprintf(";%s=%s[", SP+e.ident+SP, SP))
+					e.WriteString(fmt.Sprintf(";%s=%s[", SP+e.varName+SP, SP))
 				}
 
 				for i, el := range typ.Elts {
