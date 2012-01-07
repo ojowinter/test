@@ -70,6 +70,13 @@ function emptyReturn(f) { var squareroot = 0, ok = false;
 	return [squareroot, ok];
 }
 
+function emptyReturn2(n) { var ok = false;
+	if (n > 0) {
+		ok = true;
+	}
+	return ok;
+}
+
 function parameterByValue() {
 
 	var add = function(v) {

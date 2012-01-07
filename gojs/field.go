@@ -59,6 +59,7 @@ func joinParams(f *ast.FuncType) string {
 // Gets the results to use both in the declaration and in its return.
 func joinResults(f *ast.FuncType) (decl, ret string) {
 	isFirst := true
+	isMultiple := false
 
 	if f.Results == nil {
 		return
@@ -75,6 +76,7 @@ func joinResults(f *ast.FuncType) (decl, ret string) {
 			if !isFirst {
 				decl += "," + SP
 				ret += "," + SP
+				isMultiple = true
 			} else {
 				isFirst = false
 			}
@@ -88,7 +90,7 @@ func joinResults(f *ast.FuncType) (decl, ret string) {
 		decl = "var " + decl + ";"
 	}
 
-	if !isFirst {
+	if isMultiple {
 		ret = "[" + ret + "]"
 	}
 	ret = "return " + ret + ";"

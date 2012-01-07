@@ -70,6 +70,13 @@ func emptyReturn(f float64) (squareroot float64, ok bool) {
 	return // Omitting the output named variables, but keeping the "return".
 }
 
+func emptyReturn2(n int) (ok bool) {
+	if n > 0 {
+		ok = true
+	}
+	return
+}
+
 func parameterByValue() {
 	// Returns 1 plus its input parameter
 	var add = func(v int) int {
