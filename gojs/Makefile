@@ -4,7 +4,6 @@ TARG=github.com/kless/GoJscript/gojs
 GOFILES=\
 	decl.go\
 	expr.go\
-	field.go\
 	gojs.go\
 	library.go\
 	stmt.go\

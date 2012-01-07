@@ -347,18 +347,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Params  *FieldList // (incoming) parameters; or nil
 	//  Results *FieldList // (outgoing) results; or nil
 	case *ast.FuncType:
-		e.tr.WriteString(fmt.Sprintf("function(%s)%s", joinParams(typ), SP))
-
-		// Return multiple values (just like in "*transform.getFunc()")
-		declResults, declReturn := joinResults(typ)
-
-		if declResults != "" {
-			e.tr.WriteString("{" + SP + declResults)
-			e.tr.skipLbrace = true
-			e.tr.results = declReturn
-		} else {
-			e.tr.results = ""
-		}
+		e.tr.writeFunc(nil, typ)
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 	//  Name    string    // identifier name

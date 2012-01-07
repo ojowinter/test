@@ -289,19 +289,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.addLine(decl.Pos())
 	tr.addIfExported(decl.Name)
 
-	tr.WriteString(fmt.Sprintf("function %s(%s)%s",
-		decl.Name, joinParams(decl.Type), SP))
-
-	// Return multiple values
-	declResults, declReturn := joinResults(decl.Type)
-	if declResults != "" {
-		tr.WriteString("{" + SP + declResults)
-		tr.skipLbrace = true
-		tr.results = declReturn
-	} else {
-		tr.results = ""
-	}
-
+	tr.writeFunc(decl.Name, decl.Type)
 	tr.getStatement(decl.Body)
 	tr.isFunc = false
 }
