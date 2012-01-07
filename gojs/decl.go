@@ -147,7 +147,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 		}
 
 		tr.addLine(vSpec.Pos())
-		tr.writeValues(vSpec.Names, vSpec.Values, vSpec.Type, token.DEFINE, isGlobal)
+		tr.writeVar(vSpec.Names, vSpec.Values, vSpec.Type, token.DEFINE, isGlobal)
 	}
 }
 

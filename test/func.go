@@ -63,14 +63,19 @@ func resultVariable() {
 	}
 }
 
-func emptyReturn(f float64) (squareroot float64, ok bool) {
-	if f > 0 {
-		squareroot, ok = math.Sqrt(f), true
+func testReturn1() {
+	MySqrt := func(f float64) (squareroot float64, ok bool) {
+		if f > 0 {
+			squareroot, ok = math.Sqrt(f), true
+		}
+		return // Omitting the output named variables, but keeping the "return".
 	}
-	return // Omitting the output named variables, but keeping the "return".
+
+	_, check := MySqrt(5)
+	fmt.Println(check) // true
 }
 
-func emptyReturn2(n int) (ok bool) {
+func testReturn2(n int) (ok bool) {
 	if n > 0 {
 		ok = true
 	}

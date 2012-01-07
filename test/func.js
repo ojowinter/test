@@ -63,14 +63,19 @@ function resultVariable() {
 	}
 }
 
-function emptyReturn(f) { var squareroot = 0, ok = false;
-	if (f > 0) {
-		squareroot = Math.sqrt(f), ok = true;
-	}
-	return [squareroot, ok];
+function testReturn1() {
+	var MySqrt = function(f) { var squareroot = 0, ok = false;
+		if (f > 0) {
+			squareroot = Math.sqrt(f), ok = true;
+		}
+		return [squareroot, ok];
+	};
+
+	var check = MySqrt(5)[1];
+	alert(check + "\n");
 }
 
-function emptyReturn2(n) { var ok = false;
+function testReturn2(n) { var ok = false;
 	if (n > 0) {
 		ok = true;
 	}

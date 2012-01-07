@@ -15,8 +15,8 @@ import (
 	"go/token"
 )
 
-// Writes names and values for both declarations and assignments.
-func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
+// Writes variables for both declarations and assignments.
+func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
 	var sign string
 	var skipSemicolon, isBitClear bool
 	isFirst := true
@@ -96,6 +96,12 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 
 			if len(_names) == 1 {
 				tr.WriteString(_names[0] + SP + sign + SP + fun + ";")
+				return
+			}
+			if len(iValidNames) == 1 {
+				i := iValidNames[0]
+				tr.WriteString(fmt.Sprintf("%s[%d];",
+					_names[i] + SP + sign + SP + fun, i))
 				return
 			}
 
@@ -206,6 +212,23 @@ func initValue(type_ interface{}, value string) string {
 //
 // === Functions
 
+// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+//  Func    token.Pos  // position of "func" keyword
+//  Params  *FieldList // (incoming) parameters; or nil
+//  Results *FieldList // (outgoing) results; or nil
+
+// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
+//  Opening token.Pos // position of opening parenthesis/brace, if any
+//  List    []*Field  // field list; or nil
+//  Closing token.Pos // position of closing parenthesis/brace, if any
+
+// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
+//  Doc     *CommentGroup // associated documentation; or nil
+//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
+//  Type    Expr          // field/method/parameter type
+//  Tag     *BasicLit     // field tag; or nil
+//  Comment *CommentGroup // line comments; or nil
+
 // Writes the function declaration.
 func (tr *transform) writeFunc(name *ast.Ident, typ *ast.FuncType) {
 	if name != nil {
@@ -225,23 +248,6 @@ func (tr *transform) writeFunc(name *ast.Ident, typ *ast.FuncType) {
 		tr.results = ""
 	}
 }
-
-// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
-//  Func    token.Pos  // position of "func" keyword
-//  Params  *FieldList // (incoming) parameters; or nil
-//  Results *FieldList // (outgoing) results; or nil
-
-// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
-//  Opening token.Pos // position of opening parenthesis/brace, if any
-//  List    []*Field  // field list; or nil
-//  Closing token.Pos // position of closing parenthesis/brace, if any
-
-// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
-//  Doc     *CommentGroup // associated documentation; or nil
-//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
-//  Type    Expr          // field/method/parameter type
-//  Tag     *BasicLit     // field tag; or nil
-//  Comment *CommentGroup // line comments; or nil
 
 // Gets the parameters.
 func joinParams(f *ast.FuncType) string {
