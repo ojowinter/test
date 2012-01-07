@@ -42,7 +42,8 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 	}
 
 	// === Names
-	var _names []string
+	var _names      []string
+	var iValidNames []int // index of variables which are not in blank
 
 	switch t := names.(type) {
 	case []*ast.Ident:
@@ -61,6 +62,16 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 		panic("unreachable")
 	}
 
+	// Check if there is any variable to use
+	for i, v := range _names {
+		if v != BLANK {
+			iValidNames = append(iValidNames, i)
+		}
+	}
+	if len(iValidNames) == 0 {
+		return
+	}
+
 	if tr.isSwitch {
 		tr.switchInit = _names[len(_names)-1]
 	}
@@ -69,7 +80,7 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 	if values != nil {
 		if call, ok := values[0].(*ast.CallExpr); ok {
 
-			// Anonymous function
+			// Function literal
 			if _, ok := call.Fun.(*ast.SelectorExpr); ok {
 				goto _noFunc
 			}
@@ -80,14 +91,19 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 				goto _noFunc
 			}
 
-			// Handle return of multiple values
-			str := fmt.Sprintf("_%s", SP+sign+SP+tr.getExpression(call).String())
+			// === Assign variable to the output of a function
+			fun = tr.getExpression(call).String()
 
-			for i, name := range _names {
-				if name == BLANK {
-					continue
-				}
-				str += fmt.Sprintf(",%s_[%d]", SP+name+SP+sign+SP, i)
+			if len(iValidNames) == 1 {
+				tr.WriteString(_names[iValidNames[0]] + SP + sign + SP + fun + ";")
+				return
+			}
+
+			// multiple variables
+			str := fmt.Sprintf("_%s", SP+sign+SP+fun)
+
+			for _, i := range iValidNames {
+				str += fmt.Sprintf(",%s_[%d]", SP+_names[i]+SP+sign+SP, i)
 			}
 
 			tr.WriteString(str + ";")
@@ -97,11 +113,8 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 
 _noFunc:
 
-	// number of names = number of values
-	for i, name := range _names {
-		if name == BLANK {
-			continue
-		}
+	for _, i := range iValidNames {
+		name := _names[i]
 
 		// === Name
 		if isFirst {

@@ -28,42 +28,42 @@ Go sintaxis not supported:
 + Channels, goroutines (could be transformed to [Web Workers][workers]).
 + Built-in functions panic, recover.
 + Defer statement.
-+ Return multiple values.
 + Goto, labels. (1) In JavaScript, the labels are restricted to "for" and
 "while" loops when they are called from "continue" and "break" statements so
 its use is very limited, and (2) it is advised to [avoid its use][label].
 
 Status:
 
-	const				[OK]
-	itoa				[OK]
-	blank identifier	[OK]
-	var					[OK]
-	array				[OK]
-	slice				[OK]
-	ellipsis			[OK]
-	map					[OK]
-	empty interface		[OK]
-	check channel		[OK]
-	struct				[OK]
-	pointer				[OK]
-	imports				[OK]
-	functions			[OK]
-	assignments in func	[OK]
-	return				[OK]
-	if					[OK]
-	error for goroutine	[OK]
-	switch				[OK]
-	Comparison operators[OK]
-	Assignment operators[OK]
-	for					[OK]
-	range				[OK]
-	break, continue		[OK]
-	fallthrough			[OK]
-	JS functions		[OK]
-	goto, label			[OK]
-	anonymous function	[OK]
-	JS constants		[OK]
+	const					[OK]
+	itoa					[OK]
+	blank identifier		[OK]
+	var						[OK]
+	array					[OK]
+	slice					[OK]
+	ellipsis				[OK]
+	map						[OK]
+	empty interface			[OK]
+	check channel			[OK]
+	struct					[OK]
+	pointer					[OK]
+	imports					[OK]
+	functions				[OK]
+	assignments in func		[OK]
+	return					[OK]
+	if						[OK]
+	error for goroutine		[OK]
+	switch					[OK]
+	Comparison operators	[OK]
+	Assignment operators	[OK]
+	for						[OK]
+	range					[OK]
+	break, continue			[OK]
+	fallthrough				[OK]
+	JS functions			[OK]
+	goto, label				[OK]
+	anonymous function		[OK]
+	JS constants			[OK]
+	Return multiple values	[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
@@ -84,6 +84,21 @@ Then, for variables that are not defined at the beginning like pointers but
 they are referenced to be used i.e. into a function whose parameter is a pointer:
 
 `&x` to `x=[x]` (but only in the first variable referenced).
+
+#### Return of multiple values
+
+When a Go function returns more than one value then those values are put into an
+array. Then, to access to the different values it is created a variable
+`_` assigned to the return of the function, and the variable's names defined in
+Go are used to access to each value of that array.
+
+By example, for a Go function like this:
+
+	sum, product := sumAndProduct(x, y)
+
+its transformation would be:
+
+	var _ = SumAndProduct(x, y), sum = _[0], product = _[1];
 
 #### Library
 

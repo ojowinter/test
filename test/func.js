@@ -21,8 +21,8 @@ function simpleFunc() {
 	var y = 4;
 	var z = 5;
 
-	var _ = max(x, y), max_xy = _[0];
-	var _ = max(x, z), max_xz = _[0];
+	var max_xy = max(x, y);
+	var max_xz = max(x, z);
 
 	alert("max(" + x + ", " + y + ") = " + max_xy + "\n");
 	alert("max(" + x + ", " + z + ") = " + max_xz + "\n");
@@ -73,7 +73,7 @@ function parameterByValue() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var _ = add(x), x1 = _[0];
+	var x1 = add(x);
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }
@@ -87,11 +87,11 @@ function parameterByReference() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var _ = add(x=[x]), x1 = _[0];
+	var x1 = add(x=[x]);
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 
-	_ = add(x), x1 = _[0];
+	x1 = add(x);
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }
