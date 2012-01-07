@@ -27,8 +27,10 @@ type dataStmt struct {
 	skipLbrace     bool // left brace
 	skipSemicolon  bool
 
-	isSwitch   bool
-	switchInit string
+	isSwitch  bool
+	varSwitch string
+
+	results string // variables names that return must use
 }
 
 // Transforms the Go statement.
@@ -307,7 +309,11 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.wasReturn = true
 
 		if typ.Results == nil {
-			tr.WriteString("return;")
+			if tr.results != "" {
+				tr.WriteString(tr.results)
+			} else {
+				tr.WriteString("return;")
+			}
 			break
 		}
 
@@ -347,9 +353,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 		if typ.Tag != nil {
 			tag = tr.getExpression(typ.Tag).String()
-		} else if tr.switchInit != "" {
-			tag = tr.switchInit
-			tr.switchInit = ""
+		} else if tr.varSwitch != "" {
+			tag = tr.varSwitch
+			tr.varSwitch = ""
 		} else {
 			tag = "true"
 		}

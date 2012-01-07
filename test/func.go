@@ -63,6 +63,13 @@ func resultVariable() {
 	}
 }
 
+func emptyReturn(f float64) (squareroot float64, ok bool) {
+	if f > 0 {
+		squareroot, ok = math.Sqrt(f), true
+	}
+	return // Omitting the output named variables, but keeping the "return".
+}
+
 func parameterByValue() {
 	// Returns 1 plus its input parameter
 	var add = func(v int) int {

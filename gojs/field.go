@@ -56,13 +56,12 @@ func joinParams(f *ast.FuncType) string {
 	return s
 }
 
-// Gets the results.
-func joinResults(f *ast.FuncType) string {
+// Gets the results to use both in the declaration and in its return.
+func joinResults(f *ast.FuncType) (decl, ret string) {
 	isFirst := true
-	s := ""
 
 	if f.Results == nil {
-		return s
+		return
 	}
 
 	for _, list := range f.Results.List {
@@ -74,18 +73,25 @@ func joinResults(f *ast.FuncType) string {
 
 		for _, v := range list.Names {
 			if !isFirst {
-				s += "," + SP
-			}
-			s += fmt.Sprintf("%s=%s", v.Name+SP, SP+init)
-
-			if isFirst {
+				decl += "," + SP
+				ret += "," + SP
+			} else {
 				isFirst = false
 			}
+
+			decl += fmt.Sprintf("%s=%s", v.Name+SP, SP+init)
+			ret += v.Name
 		}
 	}
 
-	if s != "" {
-		s = "var " + s + ";"
+	if decl != "" {
+		decl = "var " + decl + ";"
 	}
-	return s
+
+	if !isFirst {
+		ret = "[" + ret + "]"
+	}
+	ret = "return " + ret + ";"
+
+	return
 }

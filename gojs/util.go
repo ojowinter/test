@@ -73,7 +73,7 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 	}
 
 	if tr.isSwitch {
-		tr.switchInit = _names[len(_names)-1]
+		tr.varSwitch = _names[len(_names)-1]
 	}
 
 	// === Function

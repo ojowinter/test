@@ -349,9 +349,15 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.FuncType:
 		e.tr.WriteString(fmt.Sprintf("function(%s)%s", joinParams(typ), SP))
 
-		if results := joinResults(typ); results != "" {
-			e.tr.WriteString("{" + SP + results)
+		// Return multiple values (just like in "*transform.getFunc()")
+		declResults, declReturn := joinResults(typ)
+
+		if declResults != "" {
+			e.tr.WriteString("{" + SP + declResults)
 			e.tr.skipLbrace = true
+			e.tr.results = declReturn
+		} else {
+			e.tr.results = ""
 		}
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident

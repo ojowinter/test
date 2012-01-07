@@ -63,6 +63,13 @@ function resultVariable() {
 	}
 }
 
+function emptyReturn(f) { var squareroot = 0, ok = false;
+	if (f > 0) {
+		squareroot = Math.sqrt(f), ok = true;
+	}
+	return [squareroot, ok];
+}
+
 function parameterByValue() {
 
 	var add = function(v) {

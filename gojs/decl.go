@@ -293,9 +293,13 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		decl.Name, joinParams(decl.Type), SP))
 
 	// Return multiple values
-	if results := joinResults(decl.Type); results != "" {
-		tr.WriteString("{" + SP + results)
+	declResults, declReturn := joinResults(decl.Type)
+	if declResults != "" {
+		tr.WriteString("{" + SP + declResults)
 		tr.skipLbrace = true
+		tr.results = declReturn
+	} else {
+		tr.results = ""
 	}
 
 	tr.getStatement(decl.Body)
