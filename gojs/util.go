@@ -94,8 +94,8 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 			// === Assign variable to the output of a function
 			fun = tr.getExpression(call).String()
 
-			if len(iValidNames) == 1 {
-				tr.WriteString(_names[iValidNames[0]] + SP + sign + SP + fun + ";")
+			if len(_names) == 1 {
+				tr.WriteString(_names[0] + SP + sign + SP + fun + ";")
 				return
 			}
 
