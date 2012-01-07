@@ -1,8 +1,8 @@
-// Statements not supported
+// Directives not supported
 
 package test
 
-func testStatement() {
+func unvalidDirectives() {
 	ch := make(chan int)
 
 	go print("hello!")

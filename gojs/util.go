@@ -81,26 +81,16 @@ func (tr *transform) writeValues(names interface{}, values []ast.Expr, type_ int
 			}
 
 			// Handle return of multiple values
-			str := fmt.Sprintf("_%s;", SP+sign+SP+tr.getExpression(call).String())
+			str := fmt.Sprintf("_%s", SP+sign+SP+tr.getExpression(call).String())
 
 			for i, name := range _names {
 				if name == BLANK {
 					continue
 				}
-
-				if !isFirst {
-					str += ","
-				} else {
-					isFirst = false
-				}
-
-				str += fmt.Sprintf("%s_[%d]", SP+name+SP+sign+SP, i)
+				str += fmt.Sprintf(",%s_[%d]", SP+name+SP+sign+SP, i)
 			}
 
-			if !isFirst {
-				tr.WriteString(str + ";")
-			}
-
+			tr.WriteString(str + ";")
 			return
 		}
 	}

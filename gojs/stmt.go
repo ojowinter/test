@@ -259,10 +259,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	case *ast.IncDecStmt:
 		tr.WriteString(tr.getExpression(typ.X).String() + typ.Tok.String())
 
-		if !tr.skipSemicolon {
-			tr.WriteString(";")
-		} else {
+		if tr.skipSemicolon {
 			tr.skipSemicolon = false
+		} else {
+			tr.WriteString(";")
 		}
 
 	// http://golang.org/doc/go_spec.html#For_statements

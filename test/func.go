@@ -8,9 +8,9 @@ import (
 // Function in the same line.
 func hello() { print("Hello world!") }
 
-func testSimpleFunc() {
+func simpleFunc() {
 	// Returns the maximum between two int a, and b.
-	max := func(a, b int) int {
+	var max = func(a, b int) int {
 		if a > b {
 			return a
 		}
@@ -21,15 +21,29 @@ func testSimpleFunc() {
 	y := 4
 	z := 5
 
-	max_xy := max(x, y) //calling max(x, y)
-	max_xz := max(x, z) //calling max(x, z)
+	max_xy := max(x, y) // calling max(x, y)
+	max_xz := max(x, z) // calling max(x, z)
 
 	fmt.Printf("max(%d, %d) = %d\n", x, y, max_xy)
 	fmt.Printf("max(%d, %d) = %d\n", x, z, max_xz)
-	fmt.Printf("max(%d, %d) = %d\n", y, z, max(y, z)) //just call it here
+	fmt.Printf("max(%d, %d) = %d\n", y, z, max(y, z)) // just call it here
 }
 
-func testResultVar() {
+func twoOuputValues() {
+	// Returns A+B and A*B in a single shot
+	SumAndProduct := func(A, B int) (int, int) {
+		return A+B, A*B
+	}
+
+	x := 3
+	y := 4
+	xPLUSy, xTIMESy := SumAndProduct(x, y)
+
+	fmt.Printf("%d + %d = %d\n", x, y, xPLUSy)  // 3 + 4 = 7
+	fmt.Printf("%d * %d = %d\n", x, y, xTIMESy) // 3 * 4 = 12
+}
+
+func resultVariable() {
 	// A function that returns a bool that is set to true of Sqrt is possible
 	// and false when not. And the actual square root of a float64
 	MySqrt := func(f float64) (s float64, ok bool) {
@@ -38,18 +52,18 @@ func testResultVar() {
 		}
 		return s, ok
 	}
-/*
+
 	for i := -2.0; i <= 10; i++ {
-		possible, sqroot := MySqrt(i)
-		if possible {
+		sqroot, ok := MySqrt(i)
+		if ok {
 			fmt.Printf("The square root of %f is %f\n", i, sqroot)
 		} else {
 			fmt.Printf("Sorry, no square root for %f\n", i)
 		}
-	}*/
+	}
 }
 
-func testByValue() {
+func parameterByValue() {
 	// Returns 1 plus its input parameter
 	var add = func(v int) int {
 		v = v + 1
@@ -64,7 +78,7 @@ func testByValue() {
 	fmt.Println("x = ", x)    // "x = 3"
 }
 
-func testByReference() {
+func parameterByReference() {
 	add := func(v *int) int { // notice that we give it a pointer to an int
 		*v = *v + 1 // we dereference and change the value pointed by a
 		return *v
@@ -82,7 +96,7 @@ func testByReference() {
 	fmt.Println("x = ", x)    // "x = 5"
 }
 
-func testByReference2() {
+func byReference2() {
 	add := func(v *int, i int) { *v += i }
 
 	value := 6
@@ -95,7 +109,7 @@ func testByReference2() {
 	fmt.Println(value) // 8
 }
 
-func testByReference3() {
+func byReference3() {
 	x := 3
 	y := &x
 
@@ -106,7 +120,7 @@ func testByReference3() {
 	println(x) // 5
 }
 
-func testByReference4() {
+func byReference4() {
 	x := 3
 	f := func(){
 		x = 4
@@ -118,7 +132,7 @@ func testByReference4() {
 }
 
 /*
-function testByReference4() {
+function byReference4() {
 	var x = [3];
 	var f = function() {
 		x[0] = 4;

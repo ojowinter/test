@@ -8,7 +8,7 @@
 
 function hello() { console.log("Hello world!"); }
 
-function testSimpleFunc() {
+function simpleFunc() {
 
 	var max = function(a, b) {
 		if (a > b) {
@@ -21,15 +21,29 @@ function testSimpleFunc() {
 	var y = 4;
 	var z = 5;
 
-	var _ = max(x, y); max_xy = _[0];
-	var _ = max(x, z); max_xz = _[0];
+	var _ = max(x, y), max_xy = _[0];
+	var _ = max(x, z), max_xz = _[0];
 
 	alert("max(" + x + ", " + y + ") = " + max_xy + "\n");
 	alert("max(" + x + ", " + z + ") = " + max_xz + "\n");
 	alert("max(" + y + ", " + z + ") = " + max(y, z) + "\n");
 }
 
-function testResultVar() {
+function twoOuputValues() {
+
+	var SumAndProduct = function(A, B) {
+		return [A + B, A * B];
+	};
+
+	var x = 3;
+	var y = 4;
+	var _ = SumAndProduct(x, y), xPLUSy = _[0], xTIMESy = _[1];
+
+	alert("" + x + " + " + y + " = " + xPLUSy + "\n");
+	alert("" + x + " * " + y + " = " + xTIMESy + "\n");
+}
+
+function resultVariable() {
 
 
 	var MySqrt = function(f) { var s = 0, ok = false;
@@ -39,17 +53,17 @@ function testResultVar() {
 		return [s, ok];
 	};
 
-
-
-
-
-
-
-
-
+	for (var i = -2.0; i <= 10; i++) {
+		var _ = MySqrt(i), sqroot = _[0], ok = _[1];
+		if (ok) {
+			alert("The square root of " + i + " is " + sqroot + "\n");
+		} else {
+			alert("Sorry, no square root for " + i + "\n");
+		}
+	}
 }
 
-function testByValue() {
+function parameterByValue() {
 
 	var add = function(v) {
 		v = v + 1;
@@ -59,12 +73,12 @@ function testByValue() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var _ = add(x); x1 = _[0];
+	var _ = add(x), x1 = _[0];
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }
 
-function testByReference() {
+function parameterByReference() {
 	var add = function(v) {
 		v[0] = v[0] + 1;
 		return v[0];
@@ -73,16 +87,16 @@ function testByReference() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var _ = add(x=[x]); x1 = _[0];
+	var _ = add(x=[x]), x1 = _[0];
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 
-	_ = add(x); x1 = _[0];
+	_ = add(x), x1 = _[0];
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 }
 
-function testByReference2() {
+function byReference2() {
 	var add = function(v, i) { v[0] += i; };
 
 	var value = 6;
@@ -95,7 +109,7 @@ function testByReference2() {
 	alert(value + "\n");
 }
 
-function testByReference3() {
+function byReference3() {
 	var x = 3;
 	var y = x;
 
@@ -106,7 +120,7 @@ function testByReference3() {
 	console.log(x + "\n");
 }
 
-function testByReference4() {
+function byReference4() {
 	var x = 3;
 	var f = function() {
 		x = 4;
