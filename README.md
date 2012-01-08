@@ -148,8 +148,8 @@ Nothing.
 ## Contributing
 
 If you are going to change code related to the compiler then you should run
-`go test` after of each change in your forked repository; it will transform the
-Go files in the directory "test". To see the differences use `git diff`,
+`go test` after of each change in your forked repository. It will transform the
+Go files in the directory "test"; to see the differences use `git diff`,
 checking whether the change is what you were expecting.  
 It is also expected to get some errors and warnings in some of them, which are
 validated using the test functions for examples. See file "gojs/gojs_test.go".
