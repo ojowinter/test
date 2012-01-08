@@ -144,6 +144,23 @@ Nothing.
 << INSTRUCTIONS TO RUN THE PROGRAM >>
 
 
+## Contributing
+
+If you are going to contribute to this project then you should run `go test`
+after of each change in your forked repository.  
+It will transform the Go files in the directory "test". To see the differences
+use `git diff`, checking whether the change is what you were expecting.  
+It is also expected to get some errors and warnings in some of them, which are
+validated using the test functions for examples. See file "gojs/gojs_test.go".
+
+Ideas:
+
++ Implement the new JS API for HTML5, transforming it from Go functions. See
+ both maps *Constant* and *Function* in file "gojs/library.go". But you must
+ be sure that the API is already implemented in both browsers Firefox and Chrome.
++ JavaScript library to handle integers of 64 bits.
+
+
 ## Copyright and licensing
 
 *Copyright 2011  The "GoJscript" Authors*. See file AUTHORS and CONTRIBUTORS.  

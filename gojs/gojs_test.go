@@ -11,7 +11,7 @@ package gojs
 
 import "testing"
 
-var DIR = "../test/"
+const DIR = "../test/"
 
 func init() {
 	MaxMessage = 100 // to show all errors
