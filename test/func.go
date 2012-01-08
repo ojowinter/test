@@ -5,8 +5,13 @@ import (
 	"math"
 )
 
-// Function in the same line.
-func hello() { print("Hello world!") }
+func singleLine() { print("Hello world!") }
+
+var x = 10
+
+func init() {
+	x = 13
+}
 
 func simpleFunc() {
 	// Returns the maximum between two int a, and b.

@@ -5,8 +5,13 @@
 
 
 
+function singleLine() { console.log("Hello world!"); }
 
-function hello() { console.log("Hello world!"); }
+var x = 10;
+
+(function() {
+	x = 13;
+}());
 
 function simpleFunc() {
 

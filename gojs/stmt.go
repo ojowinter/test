@@ -26,6 +26,7 @@ type dataStmt struct {
 	wasReturn      bool // the last statement was "return"?
 	skipLbrace     bool // left brace
 	skipSemicolon  bool
+	isFuncInit     bool
 
 	isSwitch  bool
 	varSwitch string
@@ -92,6 +93,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(SP)
 		}
 		tr.WriteString("}")
+
+		if tr.isFuncInit {
+			tr.WriteString("());")
+		}
 
 	// http://golang.org/pkg/go/ast/#BranchStmt || godoc go/ast BranchStmt
 	//  TokPos token.Pos   // position of Tok

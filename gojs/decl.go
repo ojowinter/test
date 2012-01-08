@@ -287,9 +287,20 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.isFunc = true
 	tr.funcPointer = make([]string, 0)
 	tr.addLine(decl.Pos())
+
 	tr.addIfExported(decl.Name)
 
-	tr.writeFunc(decl.Name, decl.Type)
+	if decl.Name.Name != "init" {
+		tr.writeFunc(decl.Name, decl.Type)
+	} else {
+		tr.isFuncInit = true
+		tr.WriteString("(function()" + SP)
+	}
+
 	tr.getStatement(decl.Body)
+
 	tr.isFunc = false
+	if tr.isFuncInit {
+		tr.isFuncInit = false
+	}
 }

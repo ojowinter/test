@@ -65,6 +65,7 @@ Status:
 	JS constants			[OK]
 	Return multiple values	[OK]
 	Modularity				[OK]
+	Functions init			[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
@@ -146,10 +147,10 @@ Nothing.
 
 ## Contributing
 
-If you are going to contribute to this project then you should run *go test*
-after of each change in your forked repository. It will transform the Go files
-in the directory "test". To see the differences use *git diff*, checking whether
-the change is what you were expecting.  
+If you are going to change code related to the compiler then you should run
+`go test` after of each change in your forked repository; it will transform the
+Go files in the directory "test". To see the differences use `git diff`,
+checking whether the change is what you were expecting.  
 It is also expected to get some errors and warnings in some of them, which are
 validated using the test functions for examples. See file "gojs/gojs_test.go".
 
