@@ -29,7 +29,7 @@ Go sintaxis not supported:
 + Built-in functions panic, recover.
 + Defer statement.
 + Goto, labels. (1) In JavaScript, the labels are restricted to "for" and
-"while" loops when they are called from "continue" and "break" statements so
+"while" loops when they are called from "continue" and "break" directives so
 its use is very limited, and (2) it is advised to [avoid its use][label].
 
 Status:
@@ -146,10 +146,10 @@ Nothing.
 
 ## Contributing
 
-If you are going to contribute to this project then you should run `go test`
-after of each change in your forked repository.  
-It will transform the Go files in the directory "test". To see the differences
-use `git diff`, checking whether the change is what you were expecting.  
+If you are going to contribute to this project then you should run *go test*
+after of each change in your forked repository. It will transform the Go files
+in the directory "test". To see the differences use *git diff*, checking whether
+the change is what you were expecting.  
 It is also expected to get some errors and warnings in some of them, which are
 validated using the test functions for examples. See file "gojs/gojs_test.go".
 
@@ -158,7 +158,11 @@ Ideas:
 + Implement the new JS API for HTML5, transforming it from Go functions. See
  both maps *Constant* and *Function* in file "gojs/library.go". But you must
  be sure that the API is already implemented in both browsers Firefox and Chrome.
-+ JavaScript library to handle integers of 64 bits.
++ JavaScript library to handle integers of 64 bits. Build it in Go since it
+ can be transformed to JS ;)
++ The [Clojure library](http://closure-library.googlecode.com/svn/docs/index.html)
+ could be used like inspiration to write useful libraries (o to transform it
+ from Go core library if it is possible).
 
 
 ## Copyright and licensing
