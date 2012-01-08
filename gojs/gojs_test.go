@@ -11,7 +11,7 @@ package gojs
 
 import "testing"
 
-const DIR = "../test/"
+var DIR = "../test/"
 
 func init() {
 	MaxMessage = 100 // to show all errors
@@ -65,6 +65,11 @@ func Example_decl() { Compile(DIR + "error_decl.go") }
 // ../test/error_stmt.go:18:1: use of label
 // ../test/error_stmt.go:23:3: goto directive
 func Example_stmt() { Compile(DIR + "error_stmt.go") }
+
+// === Helpers
+//
+
+//func TestHelper(t *testing.T) { compile("../helper/helper.go", t) }
 
 // * * *
 

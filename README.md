@@ -64,6 +64,7 @@ Status:
 	anonymous function		[OK]
 	JS constants			[OK]
 	Return multiple values	[OK]
+	Modularity				[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
@@ -111,6 +112,21 @@ JavaScript code is run in Webkit (Chrome, Safari), of Mozilla Firefox with the
 plugin FireBug.
 
 [console]: http://v0.joehewitt.com/software/firebug/docs.php
+
+#### Modularity
+
+JavaScript has not some kind of module system built in. To simulate it, all the
+code for the package is written inside an anonymous function which is called
+directly. Then, it is used a helper function to give to an object (named like
+the package) the values that must be exported.
+
+By example, for a package named *foo* with names exported *Add* and *Product*:
+
+	var foo = {}; (function() {
+	// Code of your package
+
+	_export(foo, [Add, Product])
+	})();
 
 
 ## Installation

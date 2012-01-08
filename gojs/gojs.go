@@ -158,19 +158,38 @@ func (tr *transform) addIfExported(iName interface{}) {
 // Writes the output in "filename" but with extension ".js".
 func Compile(filename string) error {
 	trans := newTransform()
+	pkgName := ""
 
 	/* Parse several files
 	parse.ParseFile(fset, "a.go", nil, 0)
 	parse.ParseFile(fset, "b.go", nil, 0)
 	*/
 
-	// If Go sintaxis is incorrect then there will be an error.
+	// http://golang.org/pkg/go/ast/#File || godoc go/ast File
+	//  Doc        *CommentGroup   // associated documentation; or nil
+	//  Package    token.Pos       // position of "package" keyword
+	//  Name       *Ident          // package name
+	//  Decls      []Decl          // top-level declarations; or nil
+	//  Scope      *Scope          // package scope (this file only)
+	//  Imports    []*ImportSpec   // imports in this file
+	//  Unresolved []*Ident        // unresolved identifiers in this file
+	//  Comments   []*CommentGroup // list of all comments in the source file
+
 	node, err := parser.ParseFile(trans.fset, filename, nil, 0) //parser.ParseComments)
 	if err != nil {
 		return err
 	}
 
 	trans.WriteString(HEADER)
+
+	// Package name
+	pkgName = trans.getExpression(node.Name).String()
+
+	if pkgName != "main" {
+		trans.addLine(node.Package)
+		trans.WriteString(fmt.Sprintf("var %s=%s{};%s(function()%s{",
+			pkgName+SP, SP, SP, SP))
+	}
 
 	for _, decl := range node.Decls {
 		switch decl.(type) {
@@ -214,18 +233,22 @@ func Compile(filename string) error {
 	}
 
 	// Export declarations in packages
-	//
-	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/export
-	if trans.getExpression(node.Name).String() != "main" && len(trans.exported) != 0 {
-		for i, v := range trans.exported {
-			if i == 0 {
-				trans.WriteString(NL + NL + "export " + v)
-			} else {
-				trans.WriteString("," + SP + v)
+	if pkgName != "main" {
+		if len(trans.exported) != 0 {
+			for i, v := range trans.exported {
+				if i == 0 {
+					trans.WriteString(fmt.Sprintf("%s_export(%s,%s[%s",
+						NL+NL, pkgName, SP, v))
+				} else {
+					trans.WriteString("," + SP + v)
+				}
 			}
+			trans.WriteString("]);")
+		} else {
+			trans.WriteString(NL)
 		}
 
-		trans.WriteString(";")
+		trans.WriteString(NL + "})();")
 	}
 	trans.WriteString(NL)
 
