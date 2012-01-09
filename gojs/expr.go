@@ -243,6 +243,11 @@ func (e *expression) transform(expr ast.Expr) {
 			msg := e.tr.getExpression(typ.Args[0]).String()
 			msg = "\"panic: " + msg[1:]
 
+			// The transformation to "fmt.Sprintf" already appends ")"
+			if strings.HasSuffix(msg, ")") {
+				msg = msg[:len(msg)-1]
+			}
+
 			e.WriteString(fmt.Sprintf("%s(%s);%s()",
 				Function["print"], msg, SP+Function[call]))
 

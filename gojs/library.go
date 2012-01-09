@@ -39,6 +39,7 @@ var Function = map[string]string{
 	"fmt.Print":   "alert",
 	"fmt.Println": "alert",
 	"fmt.Printf":  "alert",
+	"fmt.Sprintf": "",
 
 	"math.Abs":   "Math.abs",
 	"math.Acos":  "Math.acos",
@@ -74,6 +75,9 @@ func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 		jsArgs = tr.joinArgsPrint(args, true)
 	case "fmt.Printf":
 		jsArgs = tr.joinArgsPrintf(args)
+	case "fmt.Sprintf":
+		jsArgs = tr.joinArgsPrintf(args)
+		jsArgs = jsArgs[1:]
 	default:
 		for i, v := range args {
 			if i != 0 {

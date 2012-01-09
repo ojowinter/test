@@ -157,6 +157,7 @@ func byReference4() {
 
 func testPanic() {
 	panic("unreachable")
+	panic(fmt.Sprintf("not implemented: %s", "foo"))
 }
 
 /*
