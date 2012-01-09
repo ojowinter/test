@@ -155,4 +155,8 @@ function byReference4() {
 	console.log(y[0] + "\n");
 }
 
+function testPanic() {
+	console.log("panic: unreachable"); console.trace();
+}
+
 })();

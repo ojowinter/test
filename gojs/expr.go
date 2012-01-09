@@ -239,8 +239,15 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(fmt.Sprintf("%s(%s)",
 				Function[call], e.tr.GetArgs(call, typ.Args)))
 
+		case "panic":
+			msg := e.tr.getExpression(typ.Args[0]).String()
+			msg = "\"panic: " + msg[1:]
+
+			e.WriteString(fmt.Sprintf("%s(%s);%s()",
+				Function["print"], msg, SP+Function[call]))
+
 		// === Not supported
-		case "panic", "recover", "complex":
+		case "recover", "complex":
 			e.tr.addError("%s: built-in function %s()",
 				e.tr.fset.Position(typ.Fun.Pos()), call)
 			e.tr.hasError = true

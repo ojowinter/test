@@ -31,6 +31,8 @@ var Constant = map[string]string{
 
 // Functions that can be transformed since JavaScript has an equivalent one.
 var Function = map[string]string{
+	"panic": "console.trace",
+
 	"print":   "console.log",
 	"println": "console.log",
 

@@ -155,6 +155,10 @@ func byReference4() {
 	println(*y) // 4
 }
 
+func testPanic() {
+	panic("unreachable")
+}
+
 /*
 function byReference4() {
 	var x = [3];
