@@ -175,7 +175,13 @@ func (e *expression) transform(expr ast.Expr) {
 		// === Library
 		if call, ok := typ.Fun.(*ast.SelectorExpr); ok {
 			e.transform(call)
-			e.WriteString(fmt.Sprintf("(%s)", e.tr.GetArgs(e.funcName, typ.Args)))
+
+			str := fmt.Sprintf("%s", e.tr.GetArgs(e.funcName, typ.Args))
+			if e.funcName != "fmt.Sprintf" {
+				str = "(" + str + ")"
+			}
+
+			e.WriteString(str)
 			break
 		}
 
@@ -240,16 +246,8 @@ func (e *expression) transform(expr ast.Expr) {
 				Function[call], e.tr.GetArgs(call, typ.Args)))
 
 		case "panic":
-			msg := e.tr.getExpression(typ.Args[0]).String()
-			msg = "\"panic: " + msg[1:]
-
-			// The transformation to "fmt.Sprintf" already appends ")"
-			if strings.HasSuffix(msg, ")") {
-				msg = msg[:len(msg)-1]
-			}
-
-			e.WriteString(fmt.Sprintf("%s(%s);%s()",
-				Function["print"], msg, SP+Function[call]))
+			e.WriteString(fmt.Sprintf("%s(%s)",
+				Function[call], e.tr.getExpression(typ.Args[0])))
 
 		// === Not supported
 		case "recover", "complex":

@@ -156,8 +156,8 @@ function byReference4() {
 }
 
 function testPanic() {
-	console.log("panic: unreachable"); console.trace();
-	console.log("panic: not implemented: " + "foo" + ""); console.trace();
+	throw new Error("unreachable");
+	throw new Error("not implemented: " + "foo" + "");
 }
 
 })();

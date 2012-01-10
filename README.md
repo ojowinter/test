@@ -113,7 +113,7 @@ are transformed to [*console.log()*][console], which only can be used if the
 JavaScript code is run in Webkit (Chrome, Safari), of Mozilla Firefox with the
 plugin FireBug.
 
-*panic()* is transformed to *console.trace()*
+*panic()* is transformed to *throw new Error()*
 
 [console]: http://v0.joehewitt.com/software/firebug/docs.php
 

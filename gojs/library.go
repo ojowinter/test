@@ -31,7 +31,7 @@ var Constant = map[string]string{
 
 // Functions that can be transformed since JavaScript has an equivalent one.
 var Function = map[string]string{
-	"panic": "console.trace",
+	"panic": "throw new Error",
 
 	"print":   "console.log",
 	"println": "console.log",
@@ -73,11 +73,8 @@ func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 		jsArgs = tr.joinArgsPrint(args, false)
 	case "println", "fmt.Println":
 		jsArgs = tr.joinArgsPrint(args, true)
-	case "fmt.Printf":
+	case "fmt.Printf", "fmt.Sprintf":
 		jsArgs = tr.joinArgsPrintf(args)
-	case "fmt.Sprintf":
-		jsArgs = tr.joinArgsPrintf(args)
-		jsArgs = jsArgs[1:]
 	default:
 		for i, v := range args {
 			if i != 0 {
