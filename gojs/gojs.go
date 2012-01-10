@@ -41,43 +41,44 @@ var MaxMessage = 10 // maximum number of errors and warnings to show
 
 // Represents the code transformed to JavaScript.
 type transform struct {
-	fset          *token.FileSet
-	*bytes.Buffer // sintaxis translated to JS
-	*dataStmt     // extra data for a statement
+	block    int // actual block
+	line     int // actual line
+	hasError bool
+	isFunc   bool
 
 	err      []error  // errors
 	warn     []string // warnings
 	exported []string // declarations to be exported
 
-	globPointer []string
-	funcPointer []string
+	blockVar map[int][]string // variables in each block
 
 	//slice map[string]string // for range; key: function name, value: slice name
 	//function string // actual function
 
-	line     int // actual line
-	hasError bool
-	isFunc   bool
+	fset          *token.FileSet
+	*bytes.Buffer // sintaxis translated to JS
+	*dataStmt     // extra data for a statement
 }
 
 func newTransform() *transform {
 	return &transform{
-		token.NewFileSet(),
-		new(bytes.Buffer),
-		&dataStmt{},
+		0,
+		0,
+		false,
+		false,
 
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
 		make([]string, 0),
 
-		make([]string, 0),
-		make([]string, 0),
+		make(map[int][]string),
 
 		//make(map[string]string),
 		//"",
-		0,
-		false,
-		false,
+
+		token.NewFileSet(),
+		new(bytes.Buffer),
+		&dataStmt{},
 	}
 }
 

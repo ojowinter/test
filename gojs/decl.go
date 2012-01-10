@@ -286,7 +286,6 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 	isFuncInit := false
 	tr.isFunc = true
-	tr.funcPointer = make([]string, 0)
 
 	tr.addLine(decl.Pos())
 	tr.addIfExported(decl.Name)

@@ -111,7 +111,7 @@ function parameterByReference() {
 	var x = 3;
 	alert("x =  " + x + "\n");
 
-	var x1 = add(x=[x]);
+	var x1 = add(x);
 	alert("x+1 =  " + x1 + "\n");
 	alert("x =  " + x + "\n");
 
@@ -126,7 +126,7 @@ function byReference2() {
 	var value = 6;
 	var incr = 1;
 
-	add(value=[value], incr);
+	add(value, incr);
 	alert(value + "\n");
 
 	add(value, incr);

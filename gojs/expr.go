@@ -365,57 +365,35 @@ func (e *expression) transform(expr ast.Expr) {
 		name := typ.Name
 
 		switch name {
+		case "iota":
+			e.WriteString(IOTA)
+			e.useIota = true
+
+		// Undefined value in array / slice
+		case "_":
+			if len(e.valArray) == 0 {
+				e.WriteString(name)
+			}
+		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined
+		case "nil":
+			e.WriteString("undefined")
+
 		// Not supported
 		case "int64", "uint64", "complex64", "complex128":
 			e.tr.addError("%s: %s type", e.tr.fset.Position(typ.Pos()), name)
 			e.tr.hasError = true
-			return
 		// Not implemented
 		case "uintptr":
 			e.tr.addError("%s: unimplemented type %q", e.tr.fset.Position(typ.Pos()), name)
 			e.tr.hasError = true
-			return
+
+		default:
+			if e.isPointer { // `*x` => `x[0]`
+				name += "[0]"
+			} //else if e.isAddress { // `&x` => `x`
+
+			e.WriteString(name)
 		}
-
-		if name == "iota" {
-			e.WriteString(IOTA)
-			e.useIota = true
-			break
-		}
-		// Undefined value in array / slice
-		if name == "_" && len(e.valArray) != 0 {
-			break
-		}
-
-		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined
-		if name == "nil" {
-			name = "undefined"
-		} else if e.isPointer { // `*x` => `x[0]`
-			name += "[0]"
-		} else if e.isAddress { // `&x` => `x=[x]` (only the first)
-			var pointer *[]string
-
-			if e.isFunc {
-				pointer = &e.tr.funcPointer
-			} else {
-				pointer = &e.tr.globPointer
-			}
-
-			found := false
-			for _, v := range *pointer {
-				if v == name {
-					found = true
-					break
-				}
-			}
-
-			if !found {
-				*pointer = append(*pointer, name)
-				name = fmt.Sprintf("%s=[%s]", name, name)
-			}
-		}
-
-		e.WriteString(name)
 
 	// http://golang.org/pkg/go/ast/#InterfaceType || godoc go/ast InterfaceType
 	//  Interface  token.Pos  // position of "interface" keyword
