@@ -57,6 +57,15 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  List   []Stmt
 	//  Rbrace token.Pos // position of "}"
 	case *ast.BlockStmt:
+		tr.blockLevel++
+
+		// === Initialization to save variables created on this block
+		if _, ok := tr.vars[tr.funcLevel][tr.blockLevel]; !ok {
+			tr.vars[tr.funcLevel][tr.blockLevel] = make([]string, 0)
+			tr.pointers[tr.funcLevel][tr.blockLevel] = make([]string, 0)
+		}
+		// ===
+
 		if !tr.skipLbrace {
 			tr.WriteString("{")
 		} else {
@@ -91,7 +100,9 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		} else {
 			tr.WriteString(SP)
 		}
+
 		tr.WriteString("}")
+		tr.blockLevel--
 
 	// http://golang.org/pkg/go/ast/#BranchStmt || godoc go/ast BranchStmt
 	//  TokPos token.Pos   // position of Tok

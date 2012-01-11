@@ -18,12 +18,13 @@ import (
 // Writes variables for both declarations and assignments.
 func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
 	var sign string
-	var skipSemicolon, isBitClear bool
+	var isNew, isBitClear, skipSemicolon bool
 	isFirst := true
 
 	// === Operator
 	switch operator {
 	case token.DEFINE:
+		isNew = true
 		tr.WriteString("var ")
 		sign = "="
 	case token.ASSIGN,
@@ -151,7 +152,7 @@ _noFunc:
 					exprStr = "~(" + exprStr + ")"
 				}
 
-				tr.WriteString(initValue(type_, exprStr))
+				tr.WriteString(tr.initValue(type_, name, exprStr, isNew))
 			}
 
 			if expr.skipSemicolon {
@@ -159,7 +160,7 @@ _noFunc:
 			}
 
 		} else { // Initialization explicit
-			tr.WriteString(initValue(type_, ""))
+			tr.WriteString(tr.initValue(type_, name, "", isNew))
 		}
 
 	}
@@ -171,13 +172,13 @@ _noFunc:
 
 // Returns the value, which is initialized if were necessary.
 // A pointer is formatted like an array.
-func initValue(type_ interface{}, value string) string {
+func (tr *transform) initValue(type_ interface{}, name, value string, isNew bool) string {
 	var ident *ast.Ident
 	var isPointer bool
 
 	switch typ := type_.(type) {
 	case nil:
-		return value
+		break
 	case *ast.Ident:
 		ident = typ
 	case *ast.StarExpr:
@@ -198,14 +199,27 @@ func initValue(type_ interface{}, value string) string {
 			"float32", "float64",
 			"byte", "rune", "uintptr":
 			value = "0"
-		//case "complex64", "complex128":
-			//value = "(0+0i)"
+		case "complex64", "complex128":
+			value = "(0+0i)"
+		default:
+			panic("unexpected value for initializate: " + ident.Name)
 		}
 	}
 
 	if isPointer {
-		return "[" + value + "]"
+		tr.pointers[tr.funcLevel][tr.blockLevel] = append(tr.pointers[tr.funcLevel][tr.blockLevel], name)
+	} else if isNew { // The new variables could be addressed ahead
+		tr.vars[tr.funcLevel][tr.blockLevel] = append(tr.vars[tr.funcLevel][tr.blockLevel], name)
 	}
+
+	if isPointer || isNew {
+		return fmt.Sprintf("{{%d:%d[}}%s{{]%d:%d}}",
+			tr.funcLevel, tr.blockLevel, value, tr.funcLevel, tr.blockLevel)
+	}
+
+	/*if isPointer {
+		return "[" + value + "]"
+	}*/
 	return value
 }
 
@@ -238,7 +252,7 @@ func (tr *transform) writeFunc(name *ast.Ident, typ *ast.FuncType) {
 	}
 
 	// Return multiple values
-	declResults, declReturn := joinResults(typ)
+	declResults, declReturn := tr.joinResults(typ)
 
 	if declResults != "" {
 		tr.WriteString("{" + SP + declResults)
@@ -275,7 +289,7 @@ func joinParams(f *ast.FuncType) string {
 }
 
 // Gets the results to use both in the declaration and in its return.
-func joinResults(f *ast.FuncType) (decl, ret string) {
+func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 	isFirst := true
 	isMultiple := false
 
@@ -288,7 +302,7 @@ func joinResults(f *ast.FuncType) (decl, ret string) {
 			continue
 		}
 
-		init := initValue(list.Type, "")
+		init := tr.initValue(list.Type, "", "", true)
 
 		for _, v := range list.Names {
 			if !isFirst {
@@ -314,4 +328,44 @@ func joinResults(f *ast.FuncType) (decl, ret string) {
 	ret = "return " + ret + ";"
 
 	return
+}
+
+//
+// === Pointers
+
+// Checks if a variable name is in the list of pointers
+func (tr *transform) checkPointer(str string) {
+	// Check from the last block until the first one.
+	for i := tr.blockLevel; i >= 0; i-- {
+		for _, name := range tr.pointers[tr.funcLevel][i] {
+			if name == str {
+				// It is already marked
+				return
+			}
+		}
+	}
+
+	// Search the point where the variable was declared.
+	for i := tr.blockLevel; i >= 0; i-- {
+		for _, name := range tr.vars[tr.funcLevel][i] {
+//println("name: ", name)
+			if name == str {
+				tr.pointers[tr.funcLevel][i] = append(tr.pointers[tr.funcLevel][i], name)
+				return
+			}
+		}
+	}
+
+	// Lastly, search in the global variables.
+	for i := tr.blockLevel; i >= 0; i-- {
+		for _, name := range tr.vars[0][i] {
+			if name == str {
+				tr.pointers[0][i] = append(tr.pointers[0][i], name)
+				return
+			}
+		}
+	}
+
+//fmt.Printf("func: %d, block: %d, name: %s\n", tr.funcLevel, tr.blockLevel, str)
+	panic("unreachable")
 }

@@ -147,6 +147,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 		}
 
 		tr.addLine(vSpec.Pos())
+		// Pass token.DEFINE to know that it is a new variable
 		tr.writeVar(vSpec.Names, vSpec.Values, vSpec.Type, token.DEFINE, isGlobal)
 	}
 }
@@ -286,6 +287,16 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 	isFuncInit := false
 	tr.isFunc = true
+
+	// === Initialization to save variables created on this function
+	if decl.Name != nil { // discard literal functions
+		tr.funcLevel++
+		tr.blockLevel = 0
+
+		tr.vars[tr.funcLevel] = make(map[int][]string)
+		tr.pointers[tr.funcLevel] = make(map[int][]string)
+	}
+	// ===
 
 	tr.addLine(decl.Pos())
 	tr.addIfExported(decl.Name)

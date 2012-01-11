@@ -16,19 +16,19 @@ const DIR = "../test/"
 func init() {
 	MaxMessage = 100 // to show all errors
 }
-
+/*
 func TestConst(t *testing.T) { compile("const.go", t) }
 func TestVar(t *testing.T)   { compile("var.go", t) }
 func TestType(t *testing.T)  { compile("type.go", t) }
 func TestFunc(t *testing.T)  { compile("func.go", t) }
-
+*/
 //func TestOp(t *testing.T)    { compile("operator.go", t) }
 
 // == Warnings
 //
 // ../test/control.go:82:2: 'default' clause above 'case' clause in switch statement
-func Example_control() { Compile(DIR + "control.go") }
-
+/*func Example_control() { Compile(DIR + "control.go") }
+*/
 // == Errors
 //
 // os: import from core library
@@ -54,7 +54,7 @@ func Example_control() { Compile(DIR + "control.go") }
 // ../test/error_decl.go:65:2: anonymous field in struct
 // ../test/error_decl.go:66:4: complex128 type
 func Example_decl() { Compile(DIR + "error_decl.go") }
-
+/*func TestDecl(t *testing.T)  { compile("error_decl.go", t) }*/
 // == Errors
 //
 // ../test/error_stmt.go:6:13: channel type
@@ -63,8 +63,8 @@ func Example_decl() { Compile(DIR + "error_decl.go") }
 // ../test/error_stmt.go:12:2: built-in function recover()
 // ../test/error_stmt.go:18:1: use of label
 // ../test/error_stmt.go:23:3: goto directive
-func Example_stmt() { Compile(DIR + "error_stmt.go") }
-
+/*func Example_stmt() { Compile(DIR + "error_stmt.go") }
+*/
 // === Helpers
 //
 

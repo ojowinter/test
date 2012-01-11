@@ -41,16 +41,20 @@ var MaxMessage = 10 // maximum number of errors and warnings to show
 
 // Represents the code transformed to JavaScript.
 type transform struct {
-	block    int // actual block
-	line     int // actual line
-	hasError bool
-	isFunc   bool
+	line       int // actual line
+	funcLevel  int // number of function
+	blockLevel int // block level
+	hasError   bool
+	isFunc     bool
 
 	err      []error  // errors
 	warn     []string // warnings
 	exported []string // declarations to be exported
 
-	blockVar map[int][]string // variables in each block
+	// Variables and pointers in each block, for each function
+	// { number of function: {number of block: variable name} }
+	vars     map[int]map[int][]string // any of them could be addressed
+	pointers map[int]map[int][]string
 
 	//slice map[string]string // for range; key: function name, value: slice name
 	//function string // actual function
@@ -61,7 +65,8 @@ type transform struct {
 }
 
 func newTransform() *transform {
-	return &transform{
+	tr := &transform{
+		0,
 		0,
 		0,
 		false,
@@ -71,7 +76,8 @@ func newTransform() *transform {
 		make([]string, 0, MaxMessage),
 		make([]string, 0),
 
-		make(map[int][]string),
+		make(map[int]map[int][]string),
+		make(map[int]map[int][]string),
 
 		//make(map[string]string),
 		//"",
@@ -80,6 +86,15 @@ func newTransform() *transform {
 		new(bytes.Buffer),
 		&dataStmt{},
 	}
+
+	// Global variables
+	tr.vars[0] = make(map[int][]string)
+	tr.pointers[0] = make(map[int][]string)
+
+	tr.vars[0][0] = make([]string, 0)
+	tr.pointers[0][0] = make([]string, 0)
+
+	return tr
 }
 
 // Returns the line number.
