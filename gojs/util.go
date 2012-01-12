@@ -18,7 +18,7 @@ import (
 // Writes variables for both declarations and assignments.
 func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
 	var sign string
-	var isNew, isBitClear, skipSemicolon bool
+	var isNew, isPointer, isBitClear, skipSemicolon bool
 	isFirst := true
 
 	// === Operator
@@ -122,6 +122,7 @@ _noFunc:
 
 	for _, i := range iValidNames {
 		name := _names[i]
+		value := ""
 
 		// === Name
 		if isFirst {
@@ -138,21 +139,21 @@ _noFunc:
 
 		// === Value
 		if values != nil {
-			_value := values[i]
+			valueOfValidName := values[i]
 
 			// If the expression is an anonymous function, then
 			// it is written in the main buffer.
 			expr := tr.newExpression(name)
-			expr.transform(values[i])
+			expr.transform(valueOfValidName)
 
-			if _, ok := _value.(*ast.FuncLit); !ok {
+			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
 				exprStr := expr.String()
 
 				if isBitClear {
 					exprStr = "~(" + exprStr + ")"
 				}
 
-				tr.WriteString(tr.initValue(type_, name, exprStr, isNew))
+				value, isPointer = tr.initValue(type_, exprStr)
 			}
 
 			if expr.skipSemicolon {
@@ -160,9 +161,23 @@ _noFunc:
 			}
 
 		} else { // Initialization explicit
-			tr.WriteString(tr.initValue(type_, name, "", isNew))
+			value, isPointer = tr.initValue(type_, "")
 		}
 
+		// The new variables could be addressed ahead
+		if isNew && !isPointer {
+			value = fmt.Sprintf("{{%d:%d:%s[}}%s{{]%d:%d:%s}}",
+				tr.funcLevel, tr.blockLevel, name, value,
+				tr.funcLevel, tr.blockLevel, name)
+
+			tr.vars[tr.funcLevel][tr.blockLevel] = append(
+				tr.vars[tr.funcLevel][tr.blockLevel], name)
+		} else if isPointer {
+			tr.pointers[tr.funcLevel][tr.blockLevel] = append(
+				tr.pointers[tr.funcLevel][tr.blockLevel], name)
+		}
+
+		tr.WriteString(value)
 	}
 
 	if !isFirst && !skipSemicolon {
@@ -170,15 +185,15 @@ _noFunc:
 	}
 }
 
-// Returns the value, which is initialized if were necessary.
-// A pointer is formatted like an array.
-func (tr *transform) initValue(type_ interface{}, name, value string, isNew bool) string {
+// Returns the value, which is initialized if were necessary, and a boolean
+// indicating if it is a pointer.
+func (tr *transform) initValue(type_ interface{}, value string) (string, bool) {
 	var ident *ast.Ident
 	var isPointer bool
 
 	switch typ := type_.(type) {
 	case nil:
-		break
+		return value, false
 	case *ast.Ident:
 		ident = typ
 	case *ast.StarExpr:
@@ -207,20 +222,9 @@ func (tr *transform) initValue(type_ interface{}, name, value string, isNew bool
 	}
 
 	if isPointer {
-		tr.pointers[tr.funcLevel][tr.blockLevel] = append(tr.pointers[tr.funcLevel][tr.blockLevel], name)
-	} else if isNew { // The new variables could be addressed ahead
-		tr.vars[tr.funcLevel][tr.blockLevel] = append(tr.vars[tr.funcLevel][tr.blockLevel], name)
+		return "[" + value + "]", isPointer
 	}
-
-	if isPointer || isNew {
-		return fmt.Sprintf("{{%d:%d[}}%s{{]%d:%d}}",
-			tr.funcLevel, tr.blockLevel, value, tr.funcLevel, tr.blockLevel)
-	}
-
-	/*if isPointer {
-		return "[" + value + "]"
-	}*/
-	return value
+	return value, isPointer
 }
 
 //
@@ -302,7 +306,7 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 			continue
 		}
 
-		init := tr.initValue(list.Type, "", "", true)
+		value, _ := tr.initValue(list.Type, "")
 
 		for _, v := range list.Names {
 			if !isFirst {
@@ -313,7 +317,7 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 				isFirst = false
 			}
 
-			decl += fmt.Sprintf("%s=%s", v.Name+SP, SP+init)
+			decl += fmt.Sprintf("%s=%s", v.Name+SP, SP+value)
 			ret += v.Name
 		}
 	}
