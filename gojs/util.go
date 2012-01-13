@@ -166,7 +166,7 @@ _noFunc:
 
 		// The new variables could be addressed ahead
 		if isNew && !isPointer {
-			value = fmt.Sprintf("{{%d:%d:%s[}}%s{{]%d:%d:%s}}",
+			value = fmt.Sprintf("{{L:%d:%d:%s}}%s{{R:%d:%d:%s}}",
 				tr.funcLevel, tr.blockLevel, name, value,
 				tr.funcLevel, tr.blockLevel, name)
 
@@ -337,13 +337,12 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 //
 // === Pointers
 
-// Checks if a variable name is in the list of pointers
+// Checks if a variable name is in the list of pointers to add it if it is not.
 func (tr *transform) checkPointer(str string) {
 	// Check from the last block until the first one.
 	for i := tr.blockLevel; i >= 0; i-- {
 		for _, name := range tr.pointers[tr.funcLevel][i] {
-			if name == str {
-				// It is already marked
+			if name == str { // It is already marked
 				return
 			}
 		}
@@ -352,7 +351,6 @@ func (tr *transform) checkPointer(str string) {
 	// Search the point where the variable was declared.
 	for i := tr.blockLevel; i >= 0; i-- {
 		for _, name := range tr.vars[tr.funcLevel][i] {
-//println("name: ", name)
 			if name == str {
 				tr.pointers[tr.funcLevel][i] = append(tr.pointers[tr.funcLevel][i], name)
 				return
@@ -370,6 +368,5 @@ func (tr *transform) checkPointer(str string) {
 		}
 	}
 
-//fmt.Printf("func: %d, block: %d, name: %s\n", tr.funcLevel, tr.blockLevel, str)
 	panic("unreachable")
 }

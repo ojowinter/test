@@ -108,7 +108,7 @@ function parameterByReference() {
 		return v[0];
 	};
 
-	var x = 3;
+	var x = [3];
 	alert("x =  " + x + "\n");
 
 	var x1 = add(x);
@@ -123,7 +123,7 @@ function parameterByReference() {
 function byReference2() {
 	var add = function(v, i) { v[0] += i; };
 
-	var value = 6;
+	var value = [6];
 	var incr = 1;
 
 	add(value, incr);
@@ -134,7 +134,7 @@ function byReference2() {
 }
 
 function byReference3() {
-	var x = 3;
+	var x = [3];
 	var y = x;
 
 	y[0]++;
@@ -145,7 +145,7 @@ function byReference3() {
 }
 
 function byReference4() {
-	var x = 3;
+	var x = [3];
 	var f = function() {
 		x = 4;
 	};

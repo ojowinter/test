@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 )
 
@@ -37,7 +38,10 @@ const (
 	IOTA = "{{iota}}"
 )
 
-var MaxMessage = 10 // maximum number of errors and warnings to show
+// Tag for identify pointers
+var reTagPointer = regexp.MustCompile(`{{[LR]:\d+:\d+:[^}]+}}`)
+
+var MaxMessage = 10// maximum number of errors and warnings to show
 
 // Represents the code transformed to JavaScript.
 type transform struct {
@@ -272,6 +276,21 @@ func Compile(filename string) error {
 	name := strings.Replace(filename, path.Ext(filename), "", 1)
 	str := trans.String()
 
+	// Variables addressed
+	for funcId, v := range trans.pointers {
+		for blockId, vars := range v {
+			for _, varName := range vars {
+				lBrack := fmt.Sprintf("{{L:%d:%d:%s}}", funcId, blockId, varName)
+				rBrack := fmt.Sprintf("{{R:%d:%d:%s}}", funcId, blockId, varName)
+
+				str = strings.Replace(str, lBrack, "[", 1)
+				str = strings.Replace(str, rBrack, "]", 1)
+			}
+		}
+	}
+	// Remove the tag in the other variables
+	str = reTagPointer.ReplaceAllString(str, "")
+
 	// Version to debug
 	deb := strings.Replace(str, NL, "\n", -1)
 	deb = strings.Replace(deb, TAB, "\t", -1)
@@ -301,6 +320,14 @@ func Compile(filename string) error {
 			fmt.Fprintln(os.Stderr, "\n Too many warnings")
 		}
 	}
-
+/*
+for k, v := range trans.pointers {
+	fmt.Println(k, v)
+}
+println("\n")
+for k, v := range trans.vars {
+	fmt.Println(k, v)
+}
+*/
 	return nil
 }
