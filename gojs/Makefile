@@ -2,11 +2,12 @@ include $(GOROOT)/src/Make.inc
 
 TARG=github.com/kless/GoJscript/gojs
 GOFILES=\
-	decl.go\
 	expr.go\
+	func.go\
 	gojs.go\
 	library.go\
+	pointer.go\
 	stmt.go\
-	util.go\
+	var.go\
 
 include $(GOROOT)/src/Make.pkg

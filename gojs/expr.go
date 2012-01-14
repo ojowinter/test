@@ -391,7 +391,7 @@ func (e *expression) transform(expr ast.Expr) {
 			if e.isPointer { // `*x` => `x[0]`
 				name += "[0]"
 			} else if e.isAddress {
-				e.tr.checkPointer(name)
+				e.tr.addPointer(name)
 			}
 
 			e.WriteString(name)

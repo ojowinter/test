@@ -17,43 +17,6 @@ import (
 	"strings"
 )
 
-// Imports
-//
-// http://golang.org/doc/go_spec.html#Import_declarations
-// https://developer.mozilla.org/en/JavaScript/Reference/Statements/import
-func (tr *transform) getImport(spec []ast.Spec) {
-
-	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
-	//  Doc     *CommentGroup // associated documentation; or nil
-	//  Name    *Ident        // local package name (including "."); or nil
-	//  Path    *BasicLit     // import path
-	//  Comment *CommentGroup // line comments; or nil
-	//  EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
-	for _, v := range spec {
-		iSpec := v.(*ast.ImportSpec)
-		path := strings.Replace(iSpec.Path.Value, "\"", "", -1)
-
-		// Core library
-		if !strings.Contains(path, ".") {
-			found := false
-			for _, v := range validImport {
-				if v == path {
-					found = true
-					break
-				}
-			}
-
-			if !found {
-				tr.addError("%s: import from core library", path)
-				continue
-			}
-		}
-
-		//import objectName.*;
-		//fmt.Println(iSpec.Name, pathDir)
-	}
-}
-
 // Constants
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
@@ -268,50 +231,234 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 	}
 }
 
-// Functions
 //
-// http://golang.org/doc/go_spec.html#Function_declarations
-// https://developer.mozilla.org/en/JavaScript/Reference/Statements/function
-func (tr *transform) getFunc(decl *ast.FuncDecl) {
-	// http://golang.org/pkg/go/ast/#FuncDecl || godoc go/ast FuncDecl
-	//  Doc  *CommentGroup // associated documentation; or nil
-	//  Recv *FieldList    // receiver (methods); or nil (functions)
-	//  Name *Ident        // function/method name
-	//  Type *FuncType     // position of Func keyword, parameters and results
-	//  Body *BlockStmt    // function body; or nil (forward declaration)
+// === Utility
 
-	// Check empty functions
-	if len(decl.Body.List) == 0 {
+// Writes variables for both declarations and assignments.
+func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
+	var sign string
+	var isNew, isBitClear bool
+
+	// === Operator
+	switch operator {
+	case token.DEFINE:
+		isNew = true
+		tr.WriteString("var ")
+		sign = "="
+	case token.ASSIGN,
+		token.ADD_ASSIGN, token.SUB_ASSIGN, token.MUL_ASSIGN, token.QUO_ASSIGN,
+		token.REM_ASSIGN,
+		token.AND_ASSIGN, token.OR_ASSIGN, token.XOR_ASSIGN, token.SHL_ASSIGN,
+		token.SHR_ASSIGN:
+
+		sign = operator.String()
+	case token.AND_NOT_ASSIGN:
+		sign = "&="
+		isBitClear = true
+
+	default:
+		panic(fmt.Sprintf("operator unimplemented: %s", operator.String()))
+	}
+
+	// === Names
+	var _names        []string
+	var iValidNames   []int // index of variables which are not in blank
+	var nameIsPointer []bool
+
+	switch t := names.(type) {
+	case []*ast.Ident:
+		_names = make([]string, len(t))
+		nameIsPointer = make([]bool, len(t))
+
+		for i, v := range t {
+			expr := tr.getExpression(v)
+
+			_names[i] = expr.String()
+			nameIsPointer[i] = expr.isPointer
+		}
+	case []ast.Expr: // like avobe
+		_names = make([]string, len(t))
+		nameIsPointer = make([]bool, len(t))
+
+		for i, v := range t {
+			expr := tr.getExpression(v)
+
+			_names[i] = expr.String()
+			nameIsPointer[i] = expr.isPointer
+		}
+	default:
+		panic("unreachable")
+	}
+
+	// Check if there is any variable to use
+	for i, v := range _names {
+		if v != BLANK {
+			iValidNames = append(iValidNames, i)
+		}
+	}
+	if len(iValidNames) == 0 {
 		return
 	}
 
-	isFuncInit := false
-	tr.isFunc = true
-
-	// === Initialization to save variables created on this function
-	if decl.Name != nil { // discard literal functions
-		tr.funcLevel++
-		tr.blockLevel = 0
-
-		tr.vars[tr.funcLevel] = make(map[int][]string)
-		tr.pointers[tr.funcLevel] = make(map[int][]string)
-	}
-	// ===
-
-	tr.addLine(decl.Pos())
-	tr.addIfExported(decl.Name)
-
-	if decl.Name.Name != "init" {
-		tr.writeFunc(decl.Name, decl.Type)
-	} else {
-		isFuncInit = true
-		tr.WriteString("(function()" + SP)
+	if tr.isSwitch {
+		tr.varSwitch = _names[len(_names)-1]
 	}
 
-	tr.getStatement(decl.Body)
-	tr.isFunc = false
+	// === Function
+	if values != nil {
+		if call, ok := values[0].(*ast.CallExpr); ok {
 
-	if isFuncInit {
-		tr.WriteString("());")
+			// Function literal
+			if _, ok := call.Fun.(*ast.SelectorExpr); ok {
+				goto _noFunc
+			}
+
+			// Declaration of slice/array
+			fun := call.Fun.(*ast.Ident).Name
+			if fun == "make" || fun == "new" {
+				goto _noFunc
+			}
+
+			// === Assign variable to the output of a function
+			fun = tr.getExpression(call).String()
+
+			if len(_names) == 1 {
+				tr.WriteString(_names[0] + SP + sign + SP + fun + ";")
+				return
+			}
+			if len(iValidNames) == 1 {
+				i := iValidNames[0]
+				tr.WriteString(fmt.Sprintf("%s[%d];",
+					_names[i] + SP + sign + SP + fun, i))
+				return
+			}
+
+			// multiple variables
+			str := fmt.Sprintf("_%s", SP+sign+SP+fun)
+
+			for _, i := range iValidNames {
+				str += fmt.Sprintf(",%s_[%d]", SP+_names[i]+SP+sign+SP, i)
+			}
+
+			tr.WriteString(str + ";")
+			return
+		}
 	}
+
+_noFunc:
+	var valueIsPointer, skipSemicolon bool
+	isFirst := true
+
+	for _, i := range iValidNames {
+		name := _names[i]
+		value := ""
+
+		if isGlobal {
+			tr.addIfExported(name)
+		}
+
+		// === Name
+		if !isNew && !nameIsPointer[i] {
+			tr.assigned[tr.funcLevel][tr.blockLevel] = append(
+				tr.assigned[tr.funcLevel][tr.blockLevel], name)
+
+			name += tagPointer('A', tr.funcLevel, tr.blockLevel, name)
+		}
+
+		if isFirst {
+			tr.WriteString(name)
+			isFirst = false
+		} else {
+			tr.WriteString("," + SP + name)
+		}
+		tr.WriteString(SP + sign + SP)
+
+		// === Value
+		if values != nil {
+			valueOfValidName := values[i]
+
+			// If the expression is an anonymous function, then
+			// it is written in the main buffer.
+			expr := tr.newExpression(name)
+			expr.transform(valueOfValidName)
+			valueIsPointer = expr.isPointer
+
+			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
+				exprStr := expr.String()
+
+				if isBitClear {
+					exprStr = "~(" + exprStr + ")"
+				}
+
+				value = tr.initValue(type_, exprStr)
+			}
+
+			if expr.skipSemicolon {
+				skipSemicolon = true
+			}
+
+		} else { // Initialization explicit
+			value = tr.initValue(type_, "")
+		}
+
+		// The new variables could be addressed ahead
+		if valueIsPointer {
+			tr.addressed[tr.funcLevel][tr.blockLevel] = append(
+				tr.addressed[tr.funcLevel][tr.blockLevel], name)
+		} else if isNew {
+			value = tagPointer('L', tr.funcLevel, tr.blockLevel, name) +
+				value +
+				tagPointer('R', tr.funcLevel, tr.blockLevel, name)
+
+			tr.vars[tr.funcLevel][tr.blockLevel] = append(
+				tr.vars[tr.funcLevel][tr.blockLevel], name)
+		}
+
+		tr.WriteString(value)
+	}
+
+	if !isFirst && !skipSemicolon {
+		tr.WriteString(";")
+	}
+}
+
+// Returns the value, which is initialized if were necessary.
+func (tr *transform) initValue(type_ interface{}, value string) string {
+	var ident *ast.Ident
+	var typeIsPointer bool
+
+	switch typ := type_.(type) {
+	case nil:
+		return value
+	case *ast.Ident:
+		ident = typ
+	case *ast.StarExpr:
+		ident = typ.X.(*ast.Ident)
+		typeIsPointer = true
+	default:
+		panic(fmt.Sprintf("unexpected type of value: %T", typ))
+	}
+
+	if value == "" {
+		switch ident.Name {
+		case "bool":
+			value = "false"
+		case "string":
+			value = EMPTY
+		case "uint", "uint8", "uint16", "uint32", "uint64",
+			"int", "int8", "int16", "int32", "int64",
+			"float32", "float64",
+			"byte", "rune", "uintptr":
+			value = "0"
+		case "complex64", "complex128":
+			value = "(0+0i)"
+		default:
+			panic("unexpected value for initializate: " + ident.Name)
+		}
+	}
+
+	if typeIsPointer {
+		return "[" + value + "]"
+	}
+	return value
 }

@@ -62,6 +62,30 @@ The values must be initialized explicitly, else they will be "undefined".
 	if (s2 === "") { alert("empty string"); }
 
 
+## Numbers
+
+All JavaScript numbers are double floats (64 bits) but 11 bits are used to store
+the position of the fractional dot within the number. And one extra bit is used
+with the signed numbers.  
+So you can't actually do meaningful integer arithmetic on anything bigger than
+2^53.
+
+	// Maximum size for integers in JavaScript.
+	MAX_UINT_JS = 1<<53 - 1
+	MAX_INT_JS  = 1<<52 - 1
+
+http://www.jwz.org/blog/2010/10/every-day-i-learn-something-new-and-stupid/
+http://rx4ajax-jscore.com/ecmacore/datatype/number.html
+
+
+One soluction would be to checking if every integer variable fills in that
+capacity, but the effort is not worth the work since there would be to checking
+every binary operation related to it.  
+The best option is to use a JavaScript library which handles integers of 64 bits.
+
+https://github.com/jtobey/javascript-bignum
+
+
 ## Struct
 
 > A struct in an object-oriented environment is a "public class". Classes
@@ -98,30 +122,6 @@ To create a map with values initialized:
 	};
 
 + Loop: `for(var i in m1)`
-
-
-## Numbers
-
-All JavaScript numbers are double floats (64 bits) but 11 bits are used to store
-the position of the fractional dot within the number. And one extra bit is used
-with the signed numbers.  
-So you can't actually do meaningful integer arithmetic on anything bigger than
-2^53.
-
-	// Maximum size for integers in JavaScript.
-	MAX_UINT_JS = 1<<53 - 1
-	MAX_INT_JS  = 1<<52 - 1
-
-http://www.jwz.org/blog/2010/10/every-day-i-learn-something-new-and-stupid/
-http://rx4ajax-jscore.com/ecmacore/datatype/number.html
-
-
-One soluction would be to checking if every integer variable fills in that
-capacity, but the effort is not worth the work since there would be to checking
-every binary operation related to it.  
-The best option is to use a JavaScript library which handles integers of 64 bits.
-
-https://github.com/jtobey/javascript-bignum
 
 
 ## Testing

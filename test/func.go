@@ -159,15 +159,3 @@ func testPanic() {
 	panic("unreachable")
 	panic(fmt.Sprintf("not implemented: %s", "foo"))
 }
-
-/*
-function byReference4() {
-	var x = [3];
-	var f = function() {
-		x[0] = 4;
-	};
-	var y = x;
-
-	f();
-	console.log(y[0] + "\n");
-}*/

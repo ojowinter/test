@@ -64,6 +64,62 @@ var Function = map[string]string{
 	"rand.Float64": "Math.random",
 }
 
+// Imports
+//
+// http://golang.org/doc/go_spec.html#Import_declarations
+// https://developer.mozilla.org/en/JavaScript/Reference/Statements/import
+func (tr *transform) getImport(spec []ast.Spec) {
+
+	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
+	//  Doc     *CommentGroup // associated documentation; or nil
+	//  Name    *Ident        // local package name (including "."); or nil
+	//  Path    *BasicLit     // import path
+	//  Comment *CommentGroup // line comments; or nil
+	//  EndPos  token.Pos     // end of spec (overrides Path.Pos if nonzero)
+	for _, v := range spec {
+		iSpec := v.(*ast.ImportSpec)
+		path := strings.Replace(iSpec.Path.Value, "\"", "", -1)
+
+		// Core library
+		if !strings.Contains(path, ".") {
+			found := false
+			for _, v := range validImport {
+				if v == path {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				tr.addError("%s: import from core library", path)
+				continue
+			}
+		}
+
+		//import objectName.*;
+		//fmt.Println(iSpec.Name, pathDir)
+	}
+}
+
+// Checks if the Go library can be transformed to its equivalent in JavaScript.
+func (tr *transform) checkLib(selector *ast.SelectorExpr) (goName, jsName string, err error) {
+	var ok bool
+
+	goName = selector.X.(*ast.Ident).Name + "." + selector.Sel.Name
+
+	jsName, ok = Function[goName]
+	if !ok {
+		jsName, ok = Constant[goName]
+	}
+
+	if !ok {
+		return "", "", fmt.Errorf("%s: %q not supported in JS",
+			tr.fset.Position(selector.Sel.Pos()), goName)
+	}
+
+	return goName, jsName, nil
+}
+
 // Returns the arguments of a Go function, formatted for JS.
 func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 	var jsArgs string
@@ -89,24 +145,6 @@ func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 
 //
 // === Utility
-
-func (tr *transform) checkLib(selector *ast.SelectorExpr) (goName, jsName string, err error) {
-	var ok bool
-
-	goName = selector.X.(*ast.Ident).Name + "." + selector.Sel.Name
-
-	jsName, ok = Function[goName]
-	if !ok {
-		jsName, ok = Constant[goName]
-	}
-
-	if !ok {
-		return "", "", fmt.Errorf("%s: %q not supported in JS",
-			tr.fset.Position(selector.Sel.Pos()), goName)
-	}
-
-	return goName, jsName, nil
-}
 
 // Returns arguments of Print, Println.
 func (tr *transform) joinArgsPrint(args []ast.Expr, addLine bool) string {
@@ -151,7 +189,7 @@ var (
 	reVerbWidth = regexp.MustCompile(`%[0-9]+[.]?[0-9]*[bcdefgoqxEGUXsqxX]`)
 )
 
-const VERB = "{{v}}"
+const VERB = "<<V>>"
 
 // Returns arguments of Printf.
 func (tr *transform) joinArgsPrintf(args []ast.Expr) string {
