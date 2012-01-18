@@ -37,25 +37,16 @@ const (
 	IOTA = "<<iota>>"
 )
 
-var MaxMessage = 10// maximum number of errors and warnings to show
+var MaxMessage = 10 // maximum number of errors and warnings to show
 
 // Represents the code transformed to JavaScript.
 type transform struct {
 	line       int // actual line
-	funcLevel  int // number of function
-	blockLevel int // block level
 	hasError   bool
-	isFunc     bool
 
 	err      []error  // errors
 	warn     []string // warnings
 	exported []string // declarations to be exported
-
-	// New variables and pointers in each block, for each function
-	// { number of function: {number of block: variable name} }
-	vars      map[int]map[int][]string // any of them could be addressed
-	addressed map[int]map[int][]string
-	assigned  map[int]map[int][]string // assignment into a pointer
 
 	//slice map[string]string // for range; key: function name, value: slice name
 	//function string // actual function
@@ -63,23 +54,20 @@ type transform struct {
 	fset          *token.FileSet
 	*bytes.Buffer // sintaxis translated to JS
 	*dataStmt     // extra data for a statement
+
+	// New variables (or pointers) in each block, for each function.
+	// { Id of function: {Id of block: {variable name: is pointer} }}
+	vars map[int]map[int]map[string]bool // any of them could be addressed
 }
 
 func newTransform() *transform {
 	tr := &transform{
 		0,
-		0,
-		0,
-		false,
 		false,
 
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
 		make([]string, 0),
-
-		make(map[int]map[int][]string),
-		make(map[int]map[int][]string),
-		make(map[int]map[int][]string),
 
 		//make(map[string]string),
 		//"",
@@ -87,17 +75,13 @@ func newTransform() *transform {
 		token.NewFileSet(),
 		new(bytes.Buffer),
 		&dataStmt{},
+
+		make(map[int]map[int]map[string]bool),
 	}
 
 	// Global variables
-	tr.vars[0] = make(map[int][]string)
-	tr.addressed[0] = make(map[int][]string)
-	tr.assigned[0] = make(map[int][]string)
-
-	tr.vars[0][0] = make([]string, 0)
-	tr.addressed[0][0] = make([]string, 0)
-	tr.assigned[0][0] = make([]string, 0)
-
+	tr.vars[0] = make(map[int]map[string]bool) // funcId = 0
+	tr.vars[0][0] = make(map[string]bool)      // blockId = 0
 	return tr
 }
 
@@ -273,25 +257,20 @@ func Compile(filename string) error {
 	trans.WriteString(NL)
 
 	// === Write
-	name := strings.Replace(filename, path.Ext(filename), "", 1)
+	baseFilename := strings.Replace(filename, path.Ext(filename), "", 1)
 	str := trans.String()
 
-	trans.replaceBrackets(&str) // Variables addressed
-	
+	trans.replacePointers(&str) // Variables addressed
 
 	// Remove the tags in the other variables
 	str = reTagPointer.ReplaceAllString(str, "")
-/*println("Vars")
-for funcId, v := range trans.vars {
-	fmt.Println(funcId ,v)
-}*/
 
 	// Version to debug
 	deb := strings.Replace(str, NL, "\n", -1)
 	deb = strings.Replace(deb, TAB, "\t", -1)
 	deb = strings.Replace(deb, SP, " ", -1)
 
-	if err := ioutil.WriteFile(name+".js", []byte(deb), 0664); err != nil {
+	if err := ioutil.WriteFile(baseFilename+".js", []byte(deb), 0664); err != nil {
 		return err
 	}
 /*
@@ -300,7 +279,7 @@ for funcId, v := range trans.vars {
 	min = strings.Replace(min, TAB, "", -1)
 	min = strings.Replace(min, SP, "", -1)
 
-	if err := ioutil.WriteFile(name + ".min.js", []byte(min), 0664); err != nil {
+	if err := ioutil.WriteFile(baseFilename + ".min.js", []byte(min), 0664); err != nil {
 		return err
 	}*/
 

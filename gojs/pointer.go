@@ -20,7 +20,7 @@ import (
 
 To identify variables that could be addressed ahead, it is used the map:
 
-	{ number of function: {number of block: variable name} }
+	{number of function: {number of block: {variable name: is pointer?} }}
 
 In the generated code, it is added a tag before and after of each new variable
 but pointer. The tag uses the schema `{{side:funcId:blockId:varName}}`
@@ -32,90 +32,74 @@ but pointer. The tag uses the schema `{{side:funcId:blockId:varName}}`
 
 so, the variables addressed can be boxed (placed between brackets).
 
-It is also added the tag `{{A:funcId:blockId:varName}}` after of the variable
-name in the assignment of variables.
+It is also added the tag `{{P:funcId:blockId:varName}}` after of each variable
+name.
 */
 
 // To remove tags related to pointers
-var reTagPointer = regexp.MustCompile(`<<[LRA]:\d+:\d+:[^>]+>>`)
+var reTagPointer = regexp.MustCompile(`<<[LRP]:\d+:\d+:[^>]+>>`)
 
 // Returns a tag to identify pointers.
 func tagPointer(typ rune, funcId, blockId int, name string) string {
-	if typ != 'L' && typ != 'R' && typ != 'A' {
+	/*if typ != 'L' && typ != 'R' && typ != 'P' {
 		panic("invalid identifier for pointer: " + string(typ))
-	}
+	}*/
 
 	return fmt.Sprintf("<<%s:%d:%d:%s>>", string(typ), funcId, blockId, name)
 }
 
-// Checks if a variable name is in the list of pointers by addressing
-func (tr *transform) isPointer(str string) bool {
-	// Check from the last block until the first one.
-	for i := tr.blockLevel; i >= 0; i-- {
-		for _, name := range tr.addressed[tr.funcLevel][i] {
-			if name == str { // It is already marked
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// Appends a variable name to the list of pointers.
-func (tr *transform) addPointer(str string) {
-	if tr.isPointer(str) {
-		return
-	}
-
-	// Search the point where the variable was declared.
-	for i := tr.blockLevel; i >= 0; i-- {
-		for _, name := range tr.vars[tr.funcLevel][i] {
-			if name == str {
-				tr.addressed[tr.funcLevel][i] = append(tr.addressed[tr.funcLevel][i], name)
+// Search the point where the variable was declared for tag it as pointer.
+func (tr *transform) addPointer(name string) {
+	// In the actual function
+	if tr.funcId != 0 {
+		for block := tr.blockId; block >= 1; block-- {
+			if _, ok := tr.vars[tr.funcId][block][name]; ok {
+				tr.vars[tr.funcId][block][name] = true
 				return
 			}
 		}
 	}
 
 	// Finally, search in the global variables (funcId = 0).
-	for i := tr.blockLevel; i >= 0; i-- {
-		for _, name := range tr.vars[0][i] {
-			if name == str {
-				tr.addressed[0][i] = append(tr.addressed[0][i], name)
-				return
+	for block := tr.blockId; block >= 1; block-- {
+		if _, ok := tr.vars[0][block][name]; ok {
+			tr.vars[0][block][name] = true
+			return
+		}
+	}
+	//fmt.Printf("Function %d, block %d, name %s\n", tr.funcId, tr.blockId, name)
+	panic("addPointer: unreachable")
+}
+
+// Replaces tags related to variables addressed.
+func (tr *transform) replacePointers(str *string) {
+	// Replaces tags in variables that access to pointers.
+	toPointer := func(funcId, startBlock, endBlock int, varName string) {
+		for block := startBlock; block <= endBlock; block++ {
+			// Check if there is a variable named like the pointer in another block.
+			if block != startBlock {
+				if _, ok := tr.vars[funcId][block][varName]; ok {
+					break
+				}
 			}
+			pointer := tagPointer('P', funcId, block, varName)
+			*str = strings.Replace(*str, pointer, "[0]", -1)
 		}
 	}
 
-	panic("unreachable")
-}
+	for funcId, blocks := range tr.vars {
+		for blockId := 1; blockId <= len(blocks); blockId++ {
+			for name, isPointer := range tr.vars[funcId][blockId] {
+				if isPointer {
+					toPointer(funcId, blockId, len(blocks), name)
 
-// Replaces brackets in tags for variables addressed.
-func (tr *transform) replaceBrackets(str *string) {
-//println("Pointers")
-	for funcId, v := range tr.addressed {
-//fmt.Println(funcId, v)
-		for blockId, vars := range v {
-			for _, varName := range vars {
-				lBrack := tagPointer('L', funcId, blockId, varName)
-				rBrack := tagPointer('R', funcId, blockId, varName)
+					// Replace brackets around variables addressed.
+					lBrack := tagPointer('L', funcId, blockId, name)
+					rBrack := tagPointer('R', funcId, blockId, name)
 
-				*str = strings.Replace(*str, lBrack, "[", 1)
-				*str = strings.Replace(*str, rBrack, "]", 1)
-			}
-		}
-	}
-}
-
-// Replaces '[0]' in tags for assignment in variables addressed.
-func (tr *transform) replaceAssign(str *string) {
-//println("Assignment")
-	for funcId, v := range tr.assigned {
-//fmt.Println(funcId, v)
-		for blockId, vars := range v {
-			for _, varName := range vars {
-				assigned := tagPointer('A', funcId, blockId, varName)
-				*str = strings.Replace(*str, assigned, "[0]", 1)
+					*str = strings.Replace(*str, lBrack, "[", 1)
+					*str = strings.Replace(*str, rBrack, "]", 1)
+				}
 			}
 		}
 	}

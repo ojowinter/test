@@ -23,13 +23,15 @@ type expression struct {
 	tr            *transform
 	*bytes.Buffer // sintaxis translated
 
-	varName       string // variable name
-	funcName      string // function name
+	varName  string // variable name
+	funcName string // function name
+
+	//isFunc     bool // anonymous function
+	isNegative bool
+	isPointer  bool
+	isAddress  bool
+
 	useIota       bool
-	isNegative    bool
-	isAddress     bool
-	isPointer     bool
-	isFunc        bool // anonymous function
 	skipSemicolon bool
 	hasError      bool
 
@@ -55,7 +57,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
-		false,
+		//false,
 		false,
 		false,
 		false,
@@ -348,7 +350,6 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Type *FuncType  // function type
 	//  Body *BlockStmt // function body
 	case *ast.FuncLit:
-		e.isFunc = true
 		e.transform(typ.Type)
 		e.tr.getStatement(typ.Body)
 
@@ -357,6 +358,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Params  *FieldList // (incoming) parameters; or nil
 	//  Results *FieldList // (outgoing) results; or nil
 	case *ast.FuncType:
+		//e.isFunc = true
 		e.tr.writeFunc(nil, typ)
 
 	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
@@ -390,8 +392,10 @@ func (e *expression) transform(expr ast.Expr) {
 		default:
 			if e.isPointer { // `*x` => `x[0]`
 				name += "[0]"
-			} else if e.isAddress {
+			} else if e.isAddress { // `&x` => `x`
 				e.tr.addPointer(name)
+			} else {
+//				name += tagPointer('P', e.tr.funcId, e.tr.blockId, name)
 			}
 
 			e.WriteString(name)

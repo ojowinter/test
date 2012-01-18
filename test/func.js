@@ -147,7 +147,7 @@ function byReference3() {
 function byReference4() {
 	var x = [3];
 	var f = function() {
-		x = 4;
+		x[0] = 4;
 	};
 	var y = x;
 

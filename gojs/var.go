@@ -237,12 +237,12 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 // Writes variables for both declarations and assignments.
 func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
 	var sign string
-	var isNew, isBitClear bool
+	var isNewVar, isBitClear bool
 
 	// === Operator
 	switch operator {
 	case token.DEFINE:
-		isNew = true
+		isNewVar = true
 		tr.WriteString("var ")
 		sign = "="
 	case token.ASSIGN,
@@ -346,7 +346,9 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 	}
 
 _noFunc:
-	var valueIsPointer, skipSemicolon bool
+	var expr expression
+
+	typeIdent, typeIsPointer := infoType(type_)
 	isFirst := true
 
 	for _, i := range iValidNames {
@@ -358,11 +360,8 @@ _noFunc:
 		}
 
 		// === Name
-		if !isNew && !nameIsPointer[i] {
-			tr.assigned[tr.funcLevel][tr.blockLevel] = append(
-				tr.assigned[tr.funcLevel][tr.blockLevel], name)
-
-			name += tagPointer('A', tr.funcLevel, tr.blockLevel, name)
+		if !isNewVar {
+			name += tagPointer('P', tr.funcId, tr.blockId, name)
 		}
 
 		if isFirst {
@@ -381,7 +380,6 @@ _noFunc:
 			// it is written in the main buffer.
 			expr := tr.newExpression(name)
 			expr.transform(valueOfValidName)
-			valueIsPointer = expr.isPointer
 
 			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
 				exprStr := expr.String()
@@ -389,76 +387,65 @@ _noFunc:
 				if isBitClear {
 					exprStr = "~(" + exprStr + ")"
 				}
-
-				value = tr.initValue(type_, exprStr)
-			}
-
-			if expr.skipSemicolon {
-				skipSemicolon = true
+				value = exprStr
 			}
 
 		} else { // Initialization explicit
-			value = tr.initValue(type_, "")
+			value = initValue(typeIdent, typeIsPointer)
 		}
 
-		// The new variables could be addressed ahead
-		if valueIsPointer {
-			tr.addressed[tr.funcLevel][tr.blockLevel] = append(
-				tr.addressed[tr.funcLevel][tr.blockLevel], name)
-		} else if isNew {
-			value = tagPointer('L', tr.funcLevel, tr.blockLevel, name) +
-				value +
-				tagPointer('R', tr.funcLevel, tr.blockLevel, name)
+		if isNewVar {
+			tr.vars[tr.funcId][tr.blockId][name] = false
 
-			tr.vars[tr.funcLevel][tr.blockLevel] = append(
-				tr.vars[tr.funcLevel][tr.blockLevel], name)
+			// could be addressed ahead
+			if !expr.isPointer && !expr.isAddress && !typeIsPointer {
+				value = tagPointer('L', tr.funcId, tr.blockId, name) +
+					value +
+					tagPointer('R', tr.funcId, tr.blockId, name)
+			}
 		}
 
 		tr.WriteString(value)
 	}
 
-	if !isFirst && !skipSemicolon {
+	if !isFirst && !expr.skipSemicolon {
 		tr.WriteString(";")
 	}
 }
 
-// Returns the value, which is initialized if were necessary.
-func (tr *transform) initValue(type_ interface{}, value string) string {
-	var ident *ast.Ident
-	var typeIsPointer bool
-
-	switch typ := type_.(type) {
+// Returns the "*ast.Ident" of a type and a boolean indicating if it is a pointer.
+func infoType(typ interface{}) (typeIdent *ast.Ident, typeIsPointer bool) {
+	switch t := typ.(type) {
 	case nil:
-		return value
+		return nil, false
 	case *ast.Ident:
-		ident = typ
+		return t, false
 	case *ast.StarExpr:
-		ident = typ.X.(*ast.Ident)
-		typeIsPointer = true
-	default:
-		panic(fmt.Sprintf("unexpected type of value: %T", typ))
+		return t.X.(*ast.Ident), true
 	}
+	panic(fmt.Sprintf("unexpected type of value: %T", typ))
+}
 
-	if value == "" {
-		switch ident.Name {
-		case "bool":
-			value = "false"
-		case "string":
-			value = EMPTY
-		case "uint", "uint8", "uint16", "uint32", "uint64",
-			"int", "int8", "int16", "int32", "int64",
-			"float32", "float64",
-			"byte", "rune", "uintptr":
-			value = "0"
-		case "complex64", "complex128":
-			value = "(0+0i)"
-		default:
-			panic("unexpected value for initializate: " + ident.Name)
-		}
+// Returns the value initialized to zero according to its type.
+func initValue(typeIdent *ast.Ident, typeIsPointer bool) (value string) {
+	switch typeIdent.Name {
+	case "bool":
+		value = "false"
+	case "string":
+		value = EMPTY
+	case "uint", "uint8", "uint16", "uint32", "uint64",
+		"int", "int8", "int16", "int32", "int64",
+		"float32", "float64",
+		"byte", "rune", "uintptr":
+		value = "0"
+	case "complex64", "complex128":
+		value = "(0+0i)"
+	default:
+		panic("unexpected value for initialize: " + typeIdent.Name)
 	}
 
 	if typeIsPointer {
-		return "[" + value + "]"
+		value = "[" + value + "]"
 	}
-	return value
+	return
 }

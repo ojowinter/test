@@ -16,13 +16,13 @@ const DIR = "../test/"
 func init() {
 	MaxMessage = 100 // to show all errors
 }
-
+/*
 func TestConst(t *testing.T) { compile("const.go", t) }
 func TestVar(t *testing.T)   { compile("var.go", t) }
-func TestType(t *testing.T)  { compile("type.go", t) }
+func TestType(t *testing.T)  { compile("type.go", t) }*/
 func TestFunc(t *testing.T)  { compile("func.go", t) }
 //func TestOp(t *testing.T)    { compile("operator.go", t) }
-
+/*
 // == Warnings
 //
 // ../test/control.go:82:2: 'default' clause above 'case' clause in switch statement
@@ -66,7 +66,7 @@ func Example_stmt() { Compile(DIR + "error_stmt.go") }
 
 // === Helpers
 //
-
+*/
 //func TestHelper(t *testing.T) { compile("../helper/helper.go", t) }
 
 // * * *

@@ -32,16 +32,14 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	}
 
 	isFuncInit := false
-	tr.isFunc = true
 
 	// === Initialization to save variables created on this function
 	if decl.Name != nil { // discard literal functions
-		tr.funcLevel++
-		tr.blockLevel = 0
+		tr.funcTotal++
+		tr.funcId = tr.funcTotal
+		tr.blockId = 0
 
-		tr.vars[tr.funcLevel] = make(map[int][]string)
-		tr.addressed[tr.funcLevel] = make(map[int][]string)
-		tr.assigned[tr.funcLevel] = make(map[int][]string)
+		tr.vars[tr.funcId] = make(map[int]map[string]bool)
 	}
 	// ===
 
@@ -56,10 +54,15 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	}
 
 	tr.getStatement(decl.Body)
-	tr.isFunc = false
 
 	if isFuncInit {
 		tr.WriteString("());")
+	}
+
+	// At exiting of the function, it returns at the global scope.
+	if decl.Name != nil {
+		tr.funcId = 0
+		tr.blockId = 0
 	}
 }
 
@@ -139,7 +142,8 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 			continue
 		}
 
-		value := tr.initValue(list.Type, "")
+		typeIdent, typeIsPointer := infoType(list.Type)
+		value := initValue(typeIdent, typeIsPointer)
 
 		for _, v := range list.Names {
 			if !isFirst {

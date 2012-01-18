@@ -16,11 +16,15 @@ import (
 	"strings"
 )
 
-// Represents data for a statement.
+// Represents data for the statements.
 type dataStmt struct {
-	tabLevel int // tabulation level
-	lenCase  int // number of "case" statements
-	iCase    int // index in "case" statements
+	funcTotal int // number total of functions
+	funcId    int // number of function
+	blockId   int // number of block
+	tabLevel  int // tabulation level
+
+	lenCase int // number of "case" statements
+	iCase   int // index in "case" statements
 
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
@@ -57,7 +61,8 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  List   []Stmt
 	//  Rbrace token.Pos // position of "}"
 	case *ast.BlockStmt:
-		tr.blockLevel++
+		tr.blockId++
+		tr.vars[tr.funcId][tr.blockId] = make(map[string]bool)
 
 		if !tr.skipLbrace {
 			tr.WriteString("{")
@@ -95,7 +100,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		tr.WriteString("}")
-		tr.blockLevel--
+		tr.blockId--
 
 	// http://golang.org/pkg/go/ast/#BranchStmt || godoc go/ast BranchStmt
 	//  TokPos token.Pos   // position of Tok
