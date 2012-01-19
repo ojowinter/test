@@ -81,11 +81,13 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 				tr.tabLevel++
 			}
 
+			// Write tabulation
 			if tr.addLine(v.Pos()) {
 				tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 			} else if i == 0 {
 				tr.WriteString(SP)
 			}
+
 			tr.getStatement(v)
 
 			if !skipTab {

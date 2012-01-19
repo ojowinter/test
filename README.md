@@ -86,6 +86,9 @@ Then, for any value that is addressed, it is boxed in an array, i.e.:
 
 `var x *bool` to `var x = [false]`
 
+**Note:** the printing of an address in Go (`&x`) results into an hexadecimal
+address. Instead, in JavaScript with this emulation, it prints the value.
+
 #### Return of multiple values
 
 When a Go function returns more than one value then those values are put into an

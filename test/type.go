@@ -29,7 +29,7 @@ type (
 )
 
 func main() {
-	type Fa struct{
+	type Fa struct {
 		a int
 	}
 }

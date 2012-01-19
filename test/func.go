@@ -1,4 +1,4 @@
-package test
+package main
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ func simpleFunc() {
 func twoOuputValues() {
 	// Returns A+B and A*B in a single shot
 	SumAndProduct := func(A, B int) (int, int) {
-		return A+B, A*B
+		return A + B, A * B
 	}
 
 	x := 3
@@ -68,7 +68,7 @@ func resultVariable() {
 	}
 }
 
-func testReturn1() {
+func testReturn_1() {
 	MySqrt := func(f float64) (squareroot float64, ok bool) {
 		if f > 0 {
 			squareroot, ok = math.Sqrt(f), true
@@ -80,72 +80,87 @@ func testReturn1() {
 	fmt.Println(check) // true
 }
 
-func testReturn2(n int) (ok bool) {
+func testReturn_2(n int) (ok bool) {
 	if n > 0 {
 		ok = true
 	}
 	return
 }
 
-func parameterByValue() {
-	// Returns 1 plus its input parameter
-	var add = func(v int) int {
-		v = v + 1
-		return v
-	}
-
-	x := 3
-	fmt.Println("x = ", x) // "x = 3"
-
-	x1 := add(x)
-	fmt.Println("x+1 = ", x1) // "x+1 = 4"
-	fmt.Println("x = ", x)    // "x = 3"
-}
-
-func parameterByReference() {
-	add := func(v *int) int { // notice that we give it a pointer to an int
-		*v = *v + 1 // we dereference and change the value pointed by a
-		return *v
-	}
-
-	x := 3
-	fmt.Println("x = ", x) // "x = 3"
-
-	x1 := add(&x) // by passing the adress of x to it
-	fmt.Println("x+1 = ", x1) // "x+1 = 4"
-	fmt.Println("x = ", x)    // "x = 4"
-
-	x1 = add(&x)
-	fmt.Println("x+1 = ", x1) // "x+1 = 5"
-	fmt.Println("x = ", x)    // "x = 5"
-}
-
-func byReference2() {
-	add := func(v *int, i int) { *v += i }
-
-	value := 6
-	incr := 1
-
-	add(&value, incr)
-	fmt.Println(value) // 7
-
-	add(&value, incr)
-	fmt.Println(value) // 8
-}
-
-
-func byReference4() {
-	x := 3
-	f := func(){
-		x = 4
-	}
-	y := &x
-
-	f()
-	println(*y) // 4
-}
-
 func testPanic() {
 	panic("unreachable")
 	panic(fmt.Sprintf("not implemented: %s", "foo"))
 }
+
+func main() {
+	println("\n== singleLine()\n")
+	singleLine()
+
+	println("\n== simpleFunc()\n")
+	simpleFunc()
+
+	println("\n== twoOuputValues()\n")
+	twoOuputValues()
+
+	println("\n== resultVariable()\n")
+	resultVariable()
+
+	println("\n== testReturn_1()\n")
+	testReturn_1()
+
+	println("\n== testReturn_2(-1)\n")
+	println(testReturn_2(-1))
+
+	println("\n== testPanic()\n")
+	testPanic()
+}
+
+/*
+== singleLine()
+
+Hello world!
+== simpleFunc()
+
+max(3, 4) = 4
+max(3, 5) = 5
+max(4, 5) = 5
+
+== twoOuputValues()
+
+3 + 4 = 7
+3 * 4 = 12
+
+== resultVariable()
+
+Sorry, no square root for -2.000000
+Sorry, no square root for -1.000000
+Sorry, no square root for 0.000000
+The square root of 1.000000 is 1.000000
+The square root of 2.000000 is 1.414214
+The square root of 3.000000 is 1.732051
+The square root of 4.000000 is 2.000000
+The square root of 5.000000 is 2.236068
+The square root of 6.000000 is 2.449490
+The square root of 7.000000 is 2.645751
+The square root of 8.000000 is 2.828427
+The square root of 9.000000 is 3.000000
+The square root of 10.000000 is 3.162278
+
+== testReturn_1()
+
+true
+
+== testReturn_2(-1)
+
+false
+
+== testPanic()
+
+panic: unreachable
+
+goroutine 1 [running]:
+main.testPanic()
+	/home/neo/Público/Proyectos/Go/GoJscript/test/func.go:91 +0x47
+main.main()
+	/home/neo/Público/Proyectos/Go/GoJscript/test/func.go:115 +0x108
+*/

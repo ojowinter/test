@@ -5,27 +5,27 @@ function testIf() {
 
 
 	if (x > 10) {
-		alert("x is greater than 10\n");
+		console.log("x = " + x + " " + "is greater than 10\n");
 	} else {
-		alert("x is less than 10\n");
+		console.log("x = " + x + " " + "is less than 10\n");
 	}
 
 
 	var x = 12; if (x > 10) {
-		alert("x is greater than 10\n");
+		console.log("x = " + x + " " + "is greater than 10\n");
 	} else {
-		alert("x is less than 10\n");
+		console.log("x = " + x + " " + "is less than 10\n");
 	}
 
 
 	var i = 7;
 
 	if (i === 3) {
-		alert("i is equal to 3\n");
+		console.log("i = " + i + " " + "is equal to 3\n");
 	} else if (i < 3) {
-		alert("i is less than 3\n");
+		console.log("i = " + i + " " + "is less than 3\n");
 	} else {
-		alert("i is greater than 3\n");
+		console.log("i = " + i + " " + "is greater than 3\n");
 	}
 }
 
@@ -35,46 +35,46 @@ function testSwitch() {
 
 	switch (i) {
 	case 1:
-		alert("i is equal to 1\n"); break;
+		console.log("i = " + i + " " + "is equal to 1\n"); break;
 	case 2: case 3: case 4:
-		alert("i is equal to 2, 3 or 4\n"); break;
+		console.log("i = " + i + " " + "is equal to 2, 3 or 4\n"); break;
 	case 10:
-		alert("i is equal to 10\n"); break;
+		console.log("i = " + i + " " + "is equal to 10\n"); break;
 	default:
-		alert("All I know is that i is an integer\n");
+		console.log("All I know is that i is an integer\n");
 	}
 
 
-	switch (true) {
+	i = 6; switch (i) {
 	case i < 10:
-		alert("i is less than 10\n"); break;
+		console.log("i = " + i + " " + "is less than 10\n"); break;
 	case i > 10: case i < 0:
-		alert("i is either bigger than 10 or less than 0\n"); break;
+		console.log("i = " + i + " " + "is either bigger than 10 or less than 0\n"); break;
 	case i === 10:
-		alert("i is equal to 10\n"); break;
+		console.log("i = " + i + " " + "is equal to 10\n"); break;
 	default:
-		alert("This won't be printed anyway\n");
+		console.log("This won't be printed anyway\n");
 	}
 
 
-	var i = 6; switch (i) {
+	switch (i) {
 	case 4:
-		alert("was <= 4\n");
-		
+		console.log("was <= 4\n");
+		
 	case 5:
-		alert("was <= 5\n");
-		
+		console.log("was <= 5\n");
+		
 	case 6:
-		alert("was <= 6\n");
-		
+		console.log("was <= 6\n");
+		
 	case 7:
-		alert("was <= 7\n");
-		
+		console.log("was <= 7\n");
+		
 	case 8:
-		alert("was <= 8\n"); break;
+		console.log("was <= 8\n"); break;
 
 	default:
-		alert("default case\n");
+		console.log("default case\n");
 	}
 
 
@@ -96,48 +96,70 @@ function testFor() {
 	for (var i = 0; i < 10; i++) {
 		sum += i;
 	}
-	alert("sum is equal to  " + sum + "\n");
+	console.log("sum is equal to " + sum + "\n");
 
 
-	var sum = 1;
+	sum = 1;
 	for (; sum < 1000;) {
 		sum += sum;
 	}
-	alert("sum is equal to  " + sum + "\n");
+	console.log("sum is equal to " + sum + "\n");
 
 
-	var sum = 1;
+	sum = 1;
 	for (; sum < 1000;) {
 		sum += sum;
 	}
-	alert("sum is equal to  " + sum + "\n");
+	console.log("sum is equal to " + sum + "\n");
 
 
+	var i = 0;
 	for (;;) {
-		alert("I loop for ever!\n");
+		console.log("I loop for ever!\n");
+		i++;
+		if (i === 3) {
+			break;
+		}
 	}
 
 
+	console.log("break on 5: ");
 	for (var i = 10; i > 0; i--) {
 		if (i < 5) {
 			break;
 		}
-		alert(i + "\n");
+		console.log(i + " ");
 	}
 
 
+	console.log("\nskip 5: ");
 	for (var i = 10; i > 0; i--) {
 		if (i === 5) {
 			continue;
 		}
-		alert(i + "\n");
+		console.log(i + " ");
 	}
+	console.log();
 }
 
 function testRange() {
 	var s = [2, 3, 5];
 
 	var v; for (i in s) { v = s[i];
-		alert(i + " " + v + "\n");
+		console.log("key: " + i + " " + "value: " + v + "\n");
 	}
+}
+
+function main() {
+	console.log("\n== testIf()\n\n");
+	testIf();
+
+	console.log("\n== testSwitch()\n\n");
+	console.log(testSwitch() + "\n");
+
+	console.log("\n== testFor()\n\n");
+	testFor();
+
+	console.log("\n== testRange()\n\n");
+	testRange();
 }

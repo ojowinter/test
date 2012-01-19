@@ -8,6 +8,7 @@ var p = [0];
 (function() {
 	p[0] = i;
 	var helloPtr = hello;
+	console.log("helloPtr: " + helloPtr + "\n");
 }());
 
 function declaration() {
@@ -17,6 +18,7 @@ function declaration() {
 
 	p[0] = i;
 	var helloPtr = hello;
+	console.log("p:  " + p + " " + "\nhelloPtr:  " + helloPtr + "\n");
 }
 
 function showAddress() {
@@ -33,7 +35,7 @@ var b = [true];
 	console.log("Hexadecimal address of 'b' is: " + b + "\n");
 }
 
-function access() {
+function access_1() {
 	var hello = ["Hello, mina-san!"];
 
 	var helloPtr = [""];
@@ -73,16 +75,88 @@ function allocation() {
 	console.log("The double of this sum is: " + doubleSum[0] + "\n");
 }
 
+function parameterByValue() {
+
+	var add = function(v) {
+		v = v + 1;
+		return v;
+	};
+
+	var x = 3;
+	console.log("x =  " + x + "\n");
+
+	var x1 = add(x);
+	console.log("x+1 =  " + x1 + "\n");
+	console.log("x =  " + x + "\n");
+}
+
+function byReference_1() {
+	var add = function(v) {
+		v[0] = v[0] + 1;
+		return v[0];
+	};
+
+	var x = [3];
+	console.log("x =  " + x + "\n");
+
+	var x1 = add(x);
+	console.log("x+1 =  " + x1 + "\n");
+	console.log("x =  " + x + "\n");
+
+	x1 = add(x);
+	console.log("x+1 =  " + x1 + "\n");
+	console.log("x =  " + x + "\n");
+}
+
+function byReference_2() {
+	var add = function(v, i) { v[0] += i; };
+
+	var value = [6];
+	var incr = 1;
+
+	add(value, incr);
+	console.log(value + "\n");
+
+	add(value, incr);
+	console.log(value + "\n");
+}
+
+function byReference_3() {
+	var x = [3];
+	var f = function() {
+		x[0] = 4;
+	};
+	var y = x;
+
+	f();
+	console.log(y[0] + "\n");
+}
+
 function main() {
+	console.log("\n== declaration()\n\n");
+	declaration();
+
 	console.log("\n== showAddress()\n\n");
 	showAddress();
 
-	console.log("\n== access()\n\n");
-	access();
+	console.log("\n== access_1()\n\n");
+	access_1();
 
 	console.log("\n== access_2()\n\n");
 	access_2();
 
 	console.log("\n== allocation()\n\n");
 	allocation();
+
+	console.log("\n== parameterByValue()\n\n");
+	parameterByValue();
+
+	console.log("\n== byReference_1()\n\n");
+	byReference_1();
+
+	console.log("\n== byReference_2()\n\n");
+	byReference_2();
+
+	console.log("\n== byReference_3()\n\n");
+	byReference_3();
 }
