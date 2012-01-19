@@ -233,6 +233,9 @@ func (e *expression) transform(expr ast.Expr) {
 					e.transform(arg)
 				}
 
+			case *ast.Ident:
+				e.WriteString(initValue(argType, false))
+
 			default:
 				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
 			}

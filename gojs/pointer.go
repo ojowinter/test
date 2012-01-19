@@ -61,7 +61,7 @@ func (tr *transform) addPointer(name string) {
 	}
 
 	// Finally, search in the global variables (funcId = 0).
-	for block := tr.blockId; block >= 1; block-- {
+	for block := tr.blockId; block >= 0; block-- { // block until 0
 		if _, ok := tr.vars[0][block][name]; ok {
 			tr.vars[0][block][name] = true
 			return
@@ -74,7 +74,7 @@ func (tr *transform) addPointer(name string) {
 // Replaces tags related to variables addressed.
 func (tr *transform) replacePointers(str *string) {
 	// Replaces tags in variables that access to pointers.
-	toPointer := func(funcId, startBlock, endBlock int, varName string) {
+	replaceLocal := func(funcId, startBlock, endBlock int, varName string) {
 		for block := startBlock; block <= endBlock; block++ {
 			// Check if there is a variable named like the pointer in another block.
 			if block != startBlock {
@@ -87,11 +87,12 @@ func (tr *transform) replacePointers(str *string) {
 		}
 	}
 
+	// In each function
 	for funcId, blocks := range tr.vars {
-		for blockId := 1; blockId <= len(blocks); blockId++ {
+		for blockId := 0; blockId <= len(blocks); blockId++ {
 			for name, isPointer := range tr.vars[funcId][blockId] {
 				if isPointer {
-					toPointer(funcId, blockId, len(blocks), name)
+					replaceLocal(funcId, blockId, len(blocks), name)
 
 					// Replace brackets around variables addressed.
 					lBrack := tagPointer('L', funcId, blockId, name)
@@ -100,6 +101,34 @@ func (tr *transform) replacePointers(str *string) {
 					*str = strings.Replace(*str, lBrack, "[", 1)
 					*str = strings.Replace(*str, rBrack, "]", 1)
 				}
+			}
+		}
+	}
+
+	// === Global pointers
+	globalScope := 0
+
+	replaceGlobal := func(globVarName string) {
+		for funcId, blocks := range tr.vars {
+			if funcId == globalScope {
+				continue
+			}
+
+			for blockId := 1; blockId <= len(blocks); blockId++ {
+				if _, ok := tr.vars[funcId][blockId][globVarName]; ok {
+					continue
+				}
+
+				pointer := tagPointer('P', funcId, blockId, globVarName)
+				*str = strings.Replace(*str, pointer, "[0]", -1)
+			}
+		}
+	}
+
+	for globBlockId := 0; globBlockId <= len(tr.vars[globalScope]); globBlockId++ {
+		for globName, isPointer := range tr.vars[globalScope][globBlockId] {
+			if isPointer {
+				replaceGlobal(globName)
 			}
 		}
 	}

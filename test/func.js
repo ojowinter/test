@@ -133,16 +133,6 @@ function byReference2() {
 	alert(value + "\n");
 }
 
-function byReference3() {
-	var x = [3];
-	var y = x;
-
-	y[0]++;
-	console.log(x + "\n");
-
-	y[0]++;
-	console.log(x + "\n");
-}
 
 function byReference4() {
 	var x = [3];

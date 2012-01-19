@@ -346,9 +346,8 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 	}
 
 _noFunc:
-	var expr expression
-
 	typeIdent, typeIsPointer := infoType(type_)
+	expr := tr.newExpression(nil)
 	isFirst := true
 
 	for _, i := range iValidNames {
@@ -378,7 +377,7 @@ _noFunc:
 
 			// If the expression is an anonymous function, then
 			// it is written in the main buffer.
-			expr := tr.newExpression(name)
+			expr = tr.newExpression(name)
 			expr.transform(valueOfValidName)
 
 			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
@@ -395,9 +394,9 @@ _noFunc:
 		}
 
 		if isNewVar {
-			tr.vars[tr.funcId][tr.blockId][name] = false
+			tr.vars[tr.funcId][tr.blockId][name] = typeIsPointer
 
-			// could be addressed ahead
+			// Could be addressed ahead
 			if !expr.isPointer && !expr.isAddress && !typeIsPointer {
 				value = tagPointer('L', tr.funcId, tr.blockId, name) +
 					value +

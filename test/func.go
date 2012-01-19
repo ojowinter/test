@@ -133,16 +133,6 @@ func byReference2() {
 	fmt.Println(value) // 8
 }
 
-func byReference3() {
-	x := 3
-	y := &x
-
-	*y++
-	println(x) // 4
-
-	*y++
-	println(x) // 5
-}
 
 func byReference4() {
 	x := 3
