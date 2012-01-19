@@ -60,16 +60,16 @@ function testSwitch() {
 	switch (i) {
 	case 4:
 		console.log("was <= 4\n");
-		
+		
 	case 5:
 		console.log("was <= 5\n");
-		
+		
 	case 6:
 		console.log("was <= 6\n");
-		
+		
 	case 7:
 		console.log("was <= 7\n");
-		
+		
 	case 8:
 		console.log("was <= 8\n"); break;
 
