@@ -26,7 +26,7 @@ Go sintaxis not supported:
 + Complex numbers, integers of 64 bits.
 + Function type, interface type excepting the empty interface.
 + Channels, goroutines (could be transformed to [Web Workers][workers]).
-+ Built-in functions panic, recover.
++ Built-in function *recover()*.
 + Defer statement.
 + Goto, labels. (1) In JavaScript, the labels are restricted to "for" and
 "while" loops when they are called from "continue" and "break" directives so

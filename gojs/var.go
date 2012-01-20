@@ -22,7 +22,12 @@ import (
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
 func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
+	isMultipleLine := false
 	iotaExpr := make([]string, 0) // iota expressions
+
+	if len(spec) > 1 {
+		isMultipleLine = true
+	}
 
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
@@ -78,8 +83,11 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 			// === Write
 			if isFirst {
 				isFirst = false
-				tr.WriteString(fmt.Sprintf(
-					"const %s=%s", ident.Name+SP, SP+value))
+
+				if !isGlobal && isMultipleLine {
+					tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
+				}
+				tr.WriteString(fmt.Sprintf("const %s=%s", ident.Name+SP, SP+value))
 			} else {
 				tr.WriteString(fmt.Sprintf(",%s=%s", SP+ident.Name+SP, SP+value))
 			}
@@ -100,6 +108,12 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 //
 // TODO: use let for local variables
 func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
+	isMultipleLine := false
+
+	if len(spec) > 1 {
+		isMultipleLine = true
+	}
+
 	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
@@ -111,7 +125,8 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 
 		tr.addLine(vSpec.Pos())
 		// Pass token.DEFINE to know that it is a new variable
-		tr.writeVar(vSpec.Names, vSpec.Values, vSpec.Type, token.DEFINE, isGlobal)
+		tr.writeVar(vSpec.Names, vSpec.Values, vSpec.Type, token.DEFINE,
+			isGlobal, isMultipleLine)
 	}
 }
 
@@ -235,9 +250,13 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 // === Utility
 
 // Writes variables for both declarations and assignments.
-func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal bool) {
+func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal, isMultipleLine bool) {
 	var sign string
 	var isNewVar, isBitClear bool
+
+	if !isGlobal && isMultipleLine {
+		tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
+	}
 
 	// === Operator
 	switch operator {

@@ -1,7 +1,7 @@
 package test
 
 const Pi float64 = 3.14159265358979323846
-const Pi2 = Pi
+const pi2 = Pi
 const zero = 0.0 // untyped floating-point constant
 const (
 	size int32 = 1024
@@ -49,5 +49,10 @@ const (
 )
 
 func main() {
-	const Fa = 10
+	const F = 1
+
+	const (
+		Fa = 2
+		fb = 3
+	)
 }

@@ -51,7 +51,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Rhs    []Expr
 	case *ast.AssignStmt:
 		// There is not variable's type in the assignment.
-		tr.writeVar(typ.Lhs, typ.Rhs, nil, typ.Tok, false)
+		tr.writeVar(typ.Lhs, typ.Rhs, nil, typ.Tok, false, false)
 
 	// http://golang.org/doc/go_spec.html#Blocks
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/block

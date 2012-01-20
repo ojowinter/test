@@ -23,10 +23,10 @@ function declaration() {
 
 function showAddress() {
 	
-var i = [9];
-var hello = ["Hello world"];
-var pi = [3.14];
-var b = [true];
+	var i = [9];
+	var hello = ["Hello world"];
+	var pi = [3.14];
+	var b = [true];
 
 
 	console.log("Hexadecimal address of 'i' is: " + i + "\n");
