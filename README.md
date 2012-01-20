@@ -174,7 +174,7 @@ Ideas:
 
 *Copyright 2011  The "GoJscript" Authors*. See file AUTHORS and CONTRIBUTORS.  
 Unless otherwise noted, the source files are distributed under the
-*BSD 2-Clause License* found in the LICENSE file.
+*Apache License, version 2.0* found in the LICENSE file.
 
 
 * * *
