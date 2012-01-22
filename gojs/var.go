@@ -384,6 +384,7 @@ _noFunc:
 		if isGlobal {
 			tr.addIfExported(name)
 		}
+		tr.lastVarName = name
 
 		// === Name
 		if !isNewVar {

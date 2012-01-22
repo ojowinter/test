@@ -16,7 +16,7 @@ function Older(p1, p2) {
 	return [p2, p2.age - p1.age];
 }
 
-function main() {
+function testStruct() {
 	var tom = new person();
 
 	tom.name = "Tom", tom.age = 18;
@@ -36,5 +36,12 @@ function main() {
 
 
 	alert("Of " + bob.name + " and " + paul.name + ", " + bp_Older.name + " is older by " + bp_diff + " years\n");
+
+}
+
+function main() {
+	console.log("\n== testStruct()\n\n");
+	testStruct();
+
 
 }

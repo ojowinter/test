@@ -310,7 +310,7 @@ func (e *expression) transform(expr ast.Expr) {
 			if len(typ.Elts) != 0 {
 				// Specify the fields
 				if _, ok := typ.Elts[0].(*ast.KeyValueExpr); ok {
-					ident := e.tr.lastIdent
+					typeName := e.tr.lastVarName
 					useField = true
 					e.WriteString(")")
 
@@ -318,7 +318,7 @@ func (e *expression) transform(expr ast.Expr) {
 						kv := v.(*ast.KeyValueExpr)
 
 						e.WriteString(fmt.Sprintf(";%s.%s=%s",
-							SP + ident,
+							SP + typeName,
 							e.tr.getExpression(kv.Key).String() + SP,
 							SP + e.tr.getExpression(kv.Value).String(),
 						))
@@ -399,12 +399,9 @@ func (e *expression) transform(expr ast.Expr) {
 				name += "[0]"
 			} else if e.isAddress { // `&x` => `x`
 				e.tr.addPointer(name)
-			} else {
-//				name += tagPointer('P', e.tr.funcId, e.tr.blockId, name)
 			}
 
 			e.WriteString(name)
-			e.tr.lastIdent = name // for composite types
 		}
 
 	// http://golang.org/pkg/go/ast/#InterfaceType || godoc go/ast InterfaceType

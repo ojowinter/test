@@ -16,7 +16,7 @@ func Older(p1, p2 person) (person, int) {
 	return p2, p2.age - p1.age
 }
 
-func main() {
+func testStruct() {
 	var tom person
 
 	tom.name, tom.age = "Tom", 18
@@ -37,4 +37,11 @@ func main() {
 
 	fmt.Printf("Of %s and %s, %s is older by %d years\n",
 		bob.name, paul.name, bp_Older.name, bp_diff)
+}
+
+func main() {
+	println("\n== testStruct()\n")
+	testStruct()
+
+	
 }
