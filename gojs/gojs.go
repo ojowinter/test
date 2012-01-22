@@ -42,19 +42,18 @@ const (
 	IOTA = "<<iota>>"
 )
 
-var MaxMessage = 10 // maximum number of errors and warnings to show
+var (
+	// Maximum number of errors and warnings to show.
+	MaxMessage = 10
 
-// Represents the code transformed to JavaScript.
+	// A struct without any element occupies no space at all.
+	void struct{}
+)
+
+// Represents information about code being transformed to JavaScript.
 type transform struct {
-	line       int // actual line
-	hasError   bool
-
-	err      []error  // errors
-	warn     []string // warnings
-	exported []string // declarations to be exported
-
-	//slice map[string]string // for range; key: function name, value: slice name
-	//function string // actual function
+	line     int // actual line
+	hasError bool
 
 	fset          *token.FileSet
 	*bytes.Buffer // sintaxis translated to JS
@@ -62,7 +61,15 @@ type transform struct {
 
 	// New variables (or pointers) in each block, for each function.
 	// { Id of function: {Id of block: {variable name: is pointer} }}
-	vars map[int]map[int]map[string]bool // any of them could be addressed
+	vars  map[int]map[int]map[string]bool
+	types map[string]struct{} // custom types
+
+	err      []error  // errors
+	warn     []string // warnings
+	exported []string // declarations to be exported
+
+	//slice map[string]string // for range; key: function name, value: slice name
+	//function string // actual function
 }
 
 func newTransform() *transform {
@@ -70,18 +77,19 @@ func newTransform() *transform {
 		0,
 		false,
 
+		token.NewFileSet(),
+		new(bytes.Buffer),
+		&dataStmt{},
+
+		make(map[int]map[int]map[string]bool),
+		make(map[string]struct{}),
+
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
 		make([]string, 0),
 
 		//make(map[string]string),
 		//"",
-
-		token.NewFileSet(),
-		new(bytes.Buffer),
-		&dataStmt{},
-
-		make(map[int]map[int]map[string]bool),
 	}
 
 	// Global variables

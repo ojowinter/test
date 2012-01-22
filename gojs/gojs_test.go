@@ -26,6 +26,7 @@ func TestConst(t *testing.T)   { compile("const.go", t) }
 func TestVar(t *testing.T)     { compile("var.go", t) }
 func TestType(t *testing.T)    { compile("type.go", t) }
 func TestPointer(t *testing.T) { compile("pointer.go", t) }
+func TestCompo(t *testing.T)   { compile("composite.go", t) }
 func TestFunc(t *testing.T)    { compile("func.go", t) }
 //func TestOp(t *testing.T)      { compile("operator.go", t) }
 
@@ -79,6 +80,6 @@ func Example_stmt() { Compile(DIR + "error_stmt.go") }
 
 func compile(filename string, t *testing.T) {
 	if err := Compile(DIR + filename); err != nil {
-		t.Fatal("expected parse file: %s", err)
+		t.Fatalf("expected parse file: %s", err)
 	}
 }

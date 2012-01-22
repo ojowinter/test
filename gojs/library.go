@@ -106,25 +106,6 @@ func (tr *transform) getImport(spec []ast.Spec) {
 	}
 }
 
-// Checks if the Go library can be transformed to its equivalent in JavaScript.
-func (tr *transform) checkLib(selector *ast.SelectorExpr) (goName, jsName string, err error) {
-	var ok bool
-
-	goName = selector.X.(*ast.Ident).Name + "." + selector.Sel.Name
-
-	jsName, ok = Function[goName]
-	if !ok {
-		jsName, ok = Constant[goName]
-	}
-
-	if !ok {
-		return "", "", fmt.Errorf("%s: %q not supported in JS",
-			tr.fset.Position(selector.Sel.Pos()), goName)
-	}
-
-	return goName, jsName, nil
-}
-
 // Returns the arguments of a Go function, formatted for JS.
 func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 	var jsArgs string

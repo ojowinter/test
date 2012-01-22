@@ -39,7 +39,8 @@ type dataStmt struct {
 	isSwitch  bool
 	varSwitch string
 
-	results string // variables names that return must use
+	lastIdent string
+	results   string // variables names that return must use
 }
 
 // Transforms the Go statement.

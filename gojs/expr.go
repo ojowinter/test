@@ -74,25 +74,6 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 	}
 }
 
-// Returns the Go expression transformed to JavaScript.
-func (tr *transform) getExpression(expr ast.Expr) *expression {
-	e := tr.newExpression(nil)
-
-	e.transform(expr)
-	return e
-}
-
-// Returns the values of an array formatted like "[i0][i1]..."
-func (e *expression) printArray() string {
-	a := ""
-
-	for i := 0; i < len(e.valArray); i++ {
-		vArray := "i" + strconv.Itoa(i)
-		a = fmt.Sprintf("%s[%s]", a, vArray)
-	}
-	return a
-}
-
 // Transforms the Go expression.
 func (e *expression) transform(expr ast.Expr) {
 	switch typ := expr.(type) {
@@ -239,7 +220,7 @@ func (e *expression) transform(expr ast.Expr) {
 				}
 
 			case *ast.Ident:
-				e.WriteString(initValue(argType, false))
+				e.WriteString(e.tr.initValue(argType, false))
 
 			default:
 				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
@@ -303,7 +284,6 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Elts   []Expr    // list of composite elements; or nil
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
-
 		case *ast.ArrayType:
 			e.lenArray = len(typ.Elts) // for ellipsis
 			e.transform(typ.Type)
@@ -315,14 +295,39 @@ func (e *expression) transform(expr ast.Expr) {
 				} else {
 					e.WriteString(fmt.Sprintf(";%s=%s[", SP+e.varName+SP, SP))
 				}
-
-				for i, el := range typ.Elts {
-					if i != 0 {
-						e.WriteString("," + SP)
-					}
-					e.transform(el)
-				}
+				e.writeElts(typ.Elts)
 				e.WriteString("]")
+			}
+
+		case *ast.Ident: // Custom types
+			/*if _, ok := e.tr.types[compoType.Name]; !ok {
+				panic(fmt.Sprintf("type not valid: %s", compoType))
+			}*/
+
+			useField := false
+			e.WriteString("new " + typ.Type.(*ast.Ident).Name + "(")
+
+			if len(typ.Elts) != 0 {
+				// Specify the fields
+				if _, ok := typ.Elts[0].(*ast.KeyValueExpr); ok {
+					ident := e.tr.lastIdent
+					useField = true
+					e.WriteString(")")
+
+					for _, v := range typ.Elts {
+						kv := v.(*ast.KeyValueExpr)
+
+						e.WriteString(fmt.Sprintf(";%s.%s=%s",
+							SP + ident,
+							e.tr.getExpression(kv.Key).String() + SP,
+							SP + e.tr.getExpression(kv.Value).String(),
+						))
+					}
+				}
+			}
+			if !useField {
+				e.writeElts(typ.Elts)
+				e.WriteString(")")
 			}
 
 		case *ast.MapType:
@@ -331,16 +336,8 @@ func (e *expression) transform(expr ast.Expr) {
 				return
 			}
 
-			lenElts := len(typ.Elts) - 1
 			e.WriteString("{")
-
-			for i, el := range typ.Elts {
-				e.transform(el)
-
-				if i != lenElts {
-					e.WriteString("," + SP)
-				}
-			}
+			e.writeElts(typ.Elts)
 			e.WriteString("}")
 
 		default:
@@ -407,6 +404,7 @@ func (e *expression) transform(expr ast.Expr) {
 			}
 
 			e.WriteString(name)
+			e.tr.lastIdent = name // for composite types
 		}
 
 	// http://golang.org/pkg/go/ast/#InterfaceType || godoc go/ast InterfaceType
@@ -443,18 +441,42 @@ func (e *expression) transform(expr ast.Expr) {
 	// http://golang.org/pkg/go/ast/#SelectorExpr || godoc go/ast SelectorExpr
 	//   X   Expr   // expression
 	//   Sel *Ident // field selector
-	//
-	// 'X' have the import name, and 'Sel' the constant of function name.
 	case *ast.SelectorExpr:
-		goName, jsName, err := e.tr.checkLib(typ)
-		if err != nil {
-			e.tr.addError(err)
-			e.tr.hasError = true
-			break
+		isPkg := false
+		x := typ.X.(*ast.Ident).Name
+		goName := x + "." + typ.Sel.Name
+
+		// Check is the selector is a package
+		for _, v := range validImport {
+			if v == x {
+				isPkg = true
+				break
+			}
 		}
 
-		e.funcName = goName
-		e.WriteString(jsName)
+		// Check if it can be transformed to its equivalent in JavaScript.
+		if isPkg {
+			jsName, ok := Function[goName]
+			if !ok {
+				jsName, ok = Constant[goName]
+			}
+
+			if !ok {
+				e.tr.addError(fmt.Errorf("%s: %q not supported in JS",
+					e.tr.fset.Position(typ.Sel.Pos()), goName))
+				e.tr.hasError = true
+				break
+			}
+
+			e.funcName = goName
+			e.WriteString(jsName)
+		} else {
+			/*if _, ok := e.tr.types[x]; !ok {
+				panic("selector: " + x)
+			}*/
+
+			e.WriteString(goName)
+		}
 
 	// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword
@@ -503,5 +525,37 @@ func (e *expression) transform(expr ast.Expr) {
 
 	default:
 		panic(fmt.Sprintf("unimplemented: %T", expr))
+	}
+}
+
+//
+// === Utility
+
+// Returns the Go expression transformed to JavaScript.
+func (tr *transform) getExpression(expr ast.Expr) *expression {
+	e := tr.newExpression(nil)
+
+	e.transform(expr)
+	return e
+}
+
+// Returns the values of an array formatted like "[i0][i1]..."
+func (e *expression) printArray() string {
+	a := ""
+
+	for i := 0; i < len(e.valArray); i++ {
+		vArray := "i" + strconv.Itoa(i)
+		a = fmt.Sprintf("%s[%s]", a, vArray)
+	}
+	return a
+}
+
+// Writes the list of composite elements.
+func (e *expression) writeElts(elts []ast.Expr) {
+	for i, el := range elts {
+		if i != 0 {
+			e.WriteString("," + SP)
+		}
+		e.transform(el)
 	}
 }

@@ -148,7 +148,7 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 		}
 
 		typeIdent, typeIsPointer := infoType(list.Type)
-		value := initValue(typeIdent, typeIsPointer)
+		value := tr.initValue(typeIdent, typeIsPointer)
 
 		for _, v := range list.Names {
 			if !isFirst {

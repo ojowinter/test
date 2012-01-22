@@ -170,9 +170,6 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		}
 
 		switch typ := tSpec.Type.(type) {
-		default:
-			panic(fmt.Sprintf("unimplemented: %T", typ))
-
 		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
 		//  NamePos token.Pos // identifier position
 		//  Name    string    // identifier name
@@ -227,6 +224,8 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 					//!anonField = append(anonField, false)
 				}
 			}
+		default:
+			panic(fmt.Sprintf("unimplemented: %T", typ))
 		}
 
 		if tr.hasError {
@@ -234,6 +233,10 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		}
 		if isGlobal {
 			tr.addIfExported(tSpec.Name)
+		}
+		// Store the name of new types
+		if _, ok := tr.types[tSpec.Name.Name]; !ok {
+			tr.types[tSpec.Name.Name] = void
 		}
 
 		// === Write
@@ -414,7 +417,7 @@ _noFunc:
 			}
 
 		} else { // Initialization explicit
-			value = initValue(typeIdent, typeIsPointer)
+			value = tr.initValue(typeIdent, typeIsPointer)
 		}
 
 		if isNewVar {
@@ -450,7 +453,7 @@ func infoType(typ interface{}) (typeIdent *ast.Ident, typeIsPointer bool) {
 }
 
 // Returns the value initialized to zero according to its type.
-func initValue(typeIdent *ast.Ident, typeIsPointer bool) (value string) {
+func (tr *transform) initValue(typeIdent *ast.Ident, typeIsPointer bool) (value string) {
 	switch typeIdent.Name {
 	case "bool":
 		value = "false"
@@ -464,7 +467,13 @@ func initValue(typeIdent *ast.Ident, typeIsPointer bool) (value string) {
 	case "complex64", "complex128":
 		value = "(0+0i)"
 	default:
-		panic("unexpected value for initialize: " + typeIdent.Name)
+		value = typeIdent.Name
+
+		// Check custom types
+		if _, ok := tr.types[value]; !ok {
+			panic("unexpected value for initialize: " + value)
+		}
+		value = "new " + value + "()"
 	}
 
 	if typeIsPointer {
