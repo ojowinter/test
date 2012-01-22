@@ -39,9 +39,40 @@ function testStruct() {
 
 }
 
+
+function Older10(people) {
+	var older = people[0];
+
+
+	for (var index = 1; index < 10; index++) {
+		if (people[index] > older.age) {
+			older = people[index];
+		}
+	}
+	return older;
+}
+
+function testArray() {
+
+	var array = new Array(10);
+
+
+
+	array[1] = new person("Paul", 23);
+	array[2] = new person("Jim", 24);
+	array[3] = new person("Sam", 84);
+	array[4] = new person("Rob", 54);
+	array[8] = new person("Karl", 19);
+
+	var older = Older10(array);
+
+	console.log("The older of the group is: " + older.name + "\n");
+}
+
 function main() {
 	console.log("\n== testStruct()\n\n");
 	testStruct();
 
-
+	console.log("\n== testArray()\n\n");
+	testArray();
 }

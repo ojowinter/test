@@ -220,7 +220,8 @@ func (e *expression) transform(expr ast.Expr) {
 				}
 
 			case *ast.Ident:
-				e.WriteString(e.tr.initValue(argType, false))
+				value, _ := e.tr.initValue(argType, true)
+				e.WriteString(value)
 
 			default:
 				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
@@ -404,11 +405,23 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(name)
 		}
 
+	// http://golang.org/pkg/go/ast/#IndexExpr || godoc go/ast IndexExpr
+	// Represents an expression followed by an index.
+	//  X      Expr      // expression
+	//  Lbrack token.Pos // position of "["
+	//  Index  Expr      // index expression
+	//  Rbrack token.Pos // position of "]"
+	case *ast.IndexExpr:
+		e.transform(typ.X)
+		e.WriteString("[")
+		e.transform(typ.Index)
+		e.WriteString("]")
+
 	// http://golang.org/pkg/go/ast/#InterfaceType || godoc go/ast InterfaceType
 	//  Interface  token.Pos  // position of "interface" keyword
 	//  Methods    *FieldList // list of methods
 	//  Incomplete bool       // true if (source) methods are missing in the Methods list
-	case *ast.InterfaceType: // ToDo: review
+	case *ast.InterfaceType: // TODO: review
 
 	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
 	//  Key   Expr
@@ -440,7 +453,18 @@ func (e *expression) transform(expr ast.Expr) {
 	//   Sel *Ident // field selector
 	case *ast.SelectorExpr:
 		isPkg := false
-		x := typ.X.(*ast.Ident).Name
+		x := ""
+
+		switch t := typ.X.(type) {
+		case *ast.Ident:
+			x = t.Name
+		case *ast.IndexExpr:
+			e.transform(t)
+			return
+		default:
+			panic(fmt.Sprintf("'SelectorExpr': unimplemented: %T", t))
+		}
+
 		goName := x + "." + typ.Sel.Name
 
 		// Check is the selector is a package

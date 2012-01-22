@@ -373,8 +373,8 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 	}
 
 _noFunc:
-	typeIdent, typeIsPointer := infoType(type_)
 	expr := tr.newExpression(nil)
+	typeIsPointer := false
 	isFirst := true
 
 	for _, i := range iValidNames {
@@ -415,10 +415,12 @@ _noFunc:
 					exprStr = "~(" + exprStr + ")"
 				}
 				value = exprStr
+
+				_, typeIsPointer = tr.initValue(type_, false)
 			}
 
 		} else { // Initialization explicit
-			value = tr.initValue(typeIdent, typeIsPointer)
+			value, typeIsPointer = tr.initValue(type_, true)
 		}
 
 		if isNewVar {
@@ -440,22 +442,32 @@ _noFunc:
 	}
 }
 
-// Returns the "*ast.Ident" of a type and a boolean indicating if it is a pointer.
-func infoType(typ interface{}) (typeIdent *ast.Ident, typeIsPointer bool) {
+// Returns the value initialized to zero according to its type if "init", and a
+// boolean indicating if it is a pointer.
+func (tr *transform) initValue(typ interface{}, init bool) (value string, typeIsPointer bool) {
+	var ident *ast.Ident
+
 	switch t := typ.(type) {
 	case nil:
-		return nil, false
-	case *ast.Ident:
-		return t, false
-	case *ast.StarExpr:
-		return t.X.(*ast.Ident), true
-	}
-	panic(fmt.Sprintf("unexpected type of value: %T", typ))
-}
+		return "", false
+	case *ast.ArrayType:
+		value = "new Array(" + tr.getExpression(t.Len).String() + ")"
+		return value, false
 
-// Returns the value initialized to zero according to its type.
-func (tr *transform) initValue(typeIdent *ast.Ident, typeIsPointer bool) (value string) {
-	switch typeIdent.Name {
+	case *ast.Ident:
+		ident = t
+	case *ast.StarExpr:
+		ident = t.X.(*ast.Ident)
+		typeIsPointer = true
+	default:
+		panic(fmt.Sprintf("initValue(): unexpected type: %T", typ))
+	}
+
+	if !init {
+		return "", typeIsPointer
+	}
+
+	switch ident.Name {
 	case "bool":
 		value = "false"
 	case "string":
@@ -468,11 +480,11 @@ func (tr *transform) initValue(typeIdent *ast.Ident, typeIsPointer bool) (value 
 	case "complex64", "complex128":
 		value = "(0+0i)"
 	default:
-		value = typeIdent.Name
+		value = ident.Name
 
 		// Check custom types
 		if _, ok := tr.types[value]; !ok {
-			panic("unexpected value for initialize: " + value)
+			panic("initValue(): unexpected value: " + value)
 		}
 		value = "new " + value + "()"
 	}
