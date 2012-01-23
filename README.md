@@ -14,7 +14,8 @@ Advantages:
 + Allows many type errors to be caught early in the development cycle, due to
 static typing. (ToDo: compile to checking errors at time of compiling)
 
-+ The mathematical expressions are calculated at the translation stage. (ToDo)
++ The mathematical expressions in the constants are calculated at the
+translation stage. (ToDo)
 
 + The lines numbers in the unminified generated JavaScript match up with the
 lines numbers in the original source file.
@@ -32,41 +33,6 @@ Go sintaxis not supported:
 "while" loops when they are called from "continue" and "break" directives so
 its use is very limited, and (2) it is advised to [avoid its use][label].
 
-Status:
-
-	const					[OK]
-	itoa					[OK]
-	blank identifier		[OK]
-	var						[OK]
-	array					[OK]
-	slice					[OK]
-	ellipsis				[OK]
-	map						[OK]
-	empty interface			[OK]
-	check channel			[OK]
-	struct					[OK]
-	pointer					[OK]
-	imports					[OK]
-	functions				[OK]
-	assignments in func		[OK]
-	return					[OK]
-	if						[OK]
-	error for goroutine		[OK]
-	switch					[OK]
-	Comparison operators	[OK]
-	Assignment operators	[OK]
-	for						[OK]
-	range					[OK]
-	break, continue			[OK]
-	fallthrough				[OK]
-	JS functions			[OK]
-	goto, label				[OK]
-	anonymous function		[OK]
-	JS constants			[OK]
-	Return multiple values	[OK]
-	Modularity				[OK]
-	Functions init			[OK]
-	panic					[OK]
 
 **Note:** JavaScript can not actually do meaningful integer arithmetic on anything
 bigger than 2^53. Also bitwise logical operations only have defined results (per
@@ -75,6 +41,9 @@ By this reason, the integers of 64 bits are unsupported.
 
 [workers]: http://www.html5rocks.com/en/tutorials/workers/basics/
 [label]: https://developer.mozilla.org/en/JavaScript/Reference/Statements/label#Avoid_using_labels
+
+
+## Transformation
 
 #### Pointers
 
@@ -139,11 +108,6 @@ By example, for a package named *foo* with names exported *Add* and *Product*:
 	goinstall << DOWNLOAD URL >>
 
 
-## Configuration
-
-Nothing.
-
-
 ## Operating instructions
 
 << INSTRUCTIONS TO RUN THE PROGRAM >>
@@ -163,11 +127,69 @@ Ideas:
 + Implement the new JS API for HTML5, transforming it from Go functions. See
  both maps *Constant* and *Function* in file "gojs/library.go". But you must
  be sure that the API is already implemented in both browsers Firefox and Chrome.
++ The [Dart library](http://api.dartlang.org/) could be used like inspiration to
+ write web libraries, especially "dom" and "html".
 + JavaScript library to handle integers of 64 bits. Build it in Go since it
  can be transformed to JS ;)
-+ The [Clojure library](http://closure-library.googlecode.com/svn/docs/index.html)
- could be used like inspiration to write useful libraries (o to transform it
- from Go core library if it is possible).
+
+
+## Vision
+
+The great problem of the web developing is that there is one specification and
+multiple implementations with the result of that different browsers have
+different implementations for both DOM and JavaScript.  
+So the solution is obvious; one specification and one implementation. And here
+comes Go.
+
+Go it's a fast, statically typed, compiled language that feels like a
+dynamically typed, interpreted language. Its concurrency mechanisms make it easy
+to get the most out of multicore. The Go compilers support three instruction
+sets (AMD64, 386, ARM) and can target the FreeBSD, Linux, OS X, and Windows
+operating systems; which means that it can be run in whatever system where is
+running your browser.  
+Ago time I had the idea (by my past in Python) of use Go like if were a script
+language; the result was [GoNow](https://github.com/kless/GoNow) which compiles,
+caching the executable, to run it directly if the source code has not been
+changed. Now, to know if a web program has changed would not be so difficult if
+were used a convention in its name; i.e. with "foo-*12.21*.go" (12 for year, 21
+for month) can be got its date of releasing.
+
+I've done another little step with the building of
+[GoJscript](https://github.com/kless/GoJscript/), a compiler from Go to
+JavaScript, although it isn't finished but its development is very advanced.
+
+Now, I hope that somebody motivated contributes to get that Go been the next
+web language. It would be necessary:
+
++ A DOM library implemented in Go. References:
+
+	https://developer.mozilla.org/en/Gecko_DOM_Reference  
+	http://api.dartlang.org/dom.html  
+	http://api.dartlang.org/html.html
+
+Then, if we want to use web technology to build user interfaces in desktop
+applications:
+
++ A parser for HTML5
++ Another one for CSS3
++ Building of visual elements, using SVG (or CSS3?)
+
+Note that the great advantage of use HTML5/CSS3 is that (1) there are many
+designers that know how to use it, and (2) our work to get that it works in
+wathever platform (web, desktop, mobile) would be almost zero.
+
+
+## Credits
+
+Thanks to
+
++ Big Yuuta for licensing the examples of his awesome
+ [book](http://go-book.appspot.com/) for novices under public domain,
++ to the community of
+ [comp.lang.javascript news](http://www.rhinocerus.net/forum/lang-javascript/)
+ for solving me some doubts in that language,
++ to the community of the [Go group](http://groups.google.com/group/golang-nuts),
++ and to the creators and maintainers of [Go](http://golang.org/).
 
 
 ## Copyright and licensing

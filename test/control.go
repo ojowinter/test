@@ -179,11 +179,13 @@ i = 7 is greater than 3
 == testSwitch()
 
 i = 10 is equal to 10
-i = 6 is less than 10
+i = 5 is less than 10
+i is 5
+was <= 5
 was <= 6
 was <= 7
 was <= 8
-even
+odd
 
 == testFor()
 

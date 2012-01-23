@@ -46,8 +46,7 @@ var (
 	// Maximum number of errors and warnings to show.
 	MaxMessage = 10
 
-	// A struct without any element occupies no space at all.
-	void struct{}
+	void struct{} // A struct without any element occupies no space at all.
 )
 
 // Represents information about code being transformed to JavaScript.
