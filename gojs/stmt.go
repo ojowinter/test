@@ -36,9 +36,6 @@ type dataStmt struct {
 	skipLbrace     bool // left brace
 	skipSemicolon  bool
 
-	isSwitch  bool
-	varSwitch string
-
 	lastVarName string // for composite types
 	results     string // variables names that return must use
 }
@@ -358,27 +355,18 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	//  Tag    Expr       // tag expression; or nil
 	//  Body   *BlockStmt // CaseClauses only
 	case *ast.SwitchStmt:
-		tag := ""
-		tr.isSwitch = true
+		tag := "true"
 		tr.lenCase = len(typ.Body.List)
 		tr.iCase = 0
 
-		if typ.Init != nil {
-			tr.getStatement(typ.Init) // use isSwitch
+		if typ.Tag != nil {
+			tag = tr.getExpression(typ.Tag).String()
+		} else if typ.Init != nil {
+			tr.getStatement(typ.Init)
 			tr.WriteString(SP)
 		}
 
-		if typ.Tag != nil {
-			tag = tr.getExpression(typ.Tag).String()
-		} else if tr.varSwitch != "" {
-			tag = tr.varSwitch
-			tr.varSwitch = ""
-		} else {
-			tag = "true"
-		}
-
 		tr.WriteString(fmt.Sprintf("switch%s(%s)%s", SP, tag, SP))
-		tr.isSwitch = false
 		tr.getStatement(typ.Body)
 
 	// === Not supported

@@ -45,7 +45,7 @@ function testSwitch() {
 	}
 
 
-	i = 6; switch (i) {
+	i = 5; switch (true) {
 	case i < 10:
 		console.log("i = " + i + " " + "is less than 10\n"); break;
 	case i > 10: case i < 0:
@@ -54,6 +54,11 @@ function testSwitch() {
 		console.log("i = " + i + " " + "is equal to 10\n"); break;
 	default:
 		console.log("This won't be printed anyway\n");
+	}
+
+	switch (true) {
+	case i === 5:
+		console.log("i is 5\n");
 	}
 
 

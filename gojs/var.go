@@ -327,10 +327,6 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 		return
 	}
 
-	if tr.isSwitch {
-		tr.varSwitch = _names[len(_names)-1]
-	}
-
 	// === Function
 	if values != nil {
 		if call, ok := values[0].(*ast.CallExpr); ok {

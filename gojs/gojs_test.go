@@ -32,7 +32,7 @@ func TestCompo(t *testing.T)   { compile("composite.go", t) }
 
 // == Warnings
 //
-// ../test/control.go:82:2: 'default' clause above 'case' clause in switch statement
+// ../test/control.go:87:2: 'default' clause above 'case' clause in switch statement
 func Example_control() { Compile(DIR + "control.go") }
 
 // == Errors

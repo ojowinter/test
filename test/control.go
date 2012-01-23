@@ -45,7 +45,7 @@ func testSwitch() string {
 	}
 
 	// Without expression
-	switch i = 6; {
+	switch i = 5; {
 	case i < 10:
 		println("i =", i, "is less than 10")
 	case i > 10, i < 0:
@@ -54,6 +54,11 @@ func testSwitch() string {
 		println("i =", i, "is equal to 10")
 	default:
 		println("This won't be printed anyway")
+	}
+
+	switch {
+	case i == 5:
+		println("i is 5")
 	}
 
 	// With fallthrough
