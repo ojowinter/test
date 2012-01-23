@@ -460,6 +460,7 @@ func (e *expression) transform(expr ast.Expr) {
 			x = t.Name
 		case *ast.IndexExpr:
 			e.transform(t)
+			e.WriteString("." + typ.Sel.Name)
 			return
 		default:
 			panic(fmt.Sprintf("'SelectorExpr': unimplemented: %T", t))

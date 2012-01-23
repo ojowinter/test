@@ -181,15 +181,15 @@ wathever platform (web, desktop, mobile) would be almost zero.
 
 ## Credits
 
-Thanks to
+Thanks
 
-+ Big Yuuta for licensing the examples of his awesome
- [book](http://go-book.appspot.com/) for novices under public domain,
-+ to the community of
++ To Big Yuuta for licensing the examples of his awesome
+ [book](http://go-book.appspot.com/) for novices under public domain.
++ To the community of
  [comp.lang.javascript news](http://www.rhinocerus.net/forum/lang-javascript/)
- for solving me some doubts in that language,
-+ to the community of the [Go group](http://groups.google.com/group/golang-nuts),
-+ and to the creators and maintainers of [Go](http://golang.org/).
+ for solving me some doubts in that language.
++ To the community of the [Go group](http://groups.google.com/group/golang-nuts).
++ And to the creators and contributors of [Go](http://golang.org/).
 
 
 ## Copyright and licensing

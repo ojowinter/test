@@ -45,7 +45,7 @@ function Older10(people) {
 
 
 	for (var index = 1; index < 10; index++) {
-		if (people[index] > older.age) {
+		if (people[index].age > older.age) {
 			older = people[index];
 		}
 	}
