@@ -54,7 +54,7 @@ function Older10(people) {
 
 function testArray() {
 
-	var array = new Array(10);
+	var array = new Array(10); for (var t=0; t<10; t++){ array[t]=new person(); }
 
 
 

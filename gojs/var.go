@@ -412,11 +412,11 @@ _noFunc:
 				}
 				value = exprStr
 
-				_, typeIsPointer = tr.initValue(type_, false)
+				_, typeIsPointer = tr.initValue(false, type_)
 			}
 
 		} else { // Initialization explicit
-			value, typeIsPointer = tr.initValue(type_, true)
+			value, typeIsPointer = tr.initValue(true, type_)
 		}
 
 		if isNewVar {
@@ -433,22 +433,25 @@ _noFunc:
 		tr.WriteString(value)
 	}
 
-	if !isFirst && !expr.skipSemicolon {
+	if !isFirst && !expr.skipSemicolon && !tr.skipSemicolon {
 		tr.WriteString(";")
+	}
+	if tr.skipSemicolon {
+		tr.skipSemicolon = false
 	}
 }
 
 // Returns the value initialized to zero according to its type if "init", and a
 // boolean indicating if it is a pointer.
-func (tr *transform) initValue(typ interface{}, init bool) (value string, typeIsPointer bool) {
+func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIsPointer bool) {
 	var ident *ast.Ident
 
 	switch t := typ.(type) {
 	case nil:
 		return "", false
 	case *ast.ArrayType:
-		value = "new Array(" + tr.getExpression(t.Len).String() + ")"
-		return value, false
+		tr.skipSemicolon = true
+		return tr.getExpression(t).String(), false
 
 	case *ast.Ident:
 		ident = t

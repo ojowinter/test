@@ -35,13 +35,13 @@ type expression struct {
 	isNegative bool
 	isPointer  bool
 	isAddress  bool
+	isEllipsis bool
 
 	useIota       bool
 	skipSemicolon bool
 	hasError      bool
 
-	lenArray int      // store length of array; to use in case of ellipsis [...]
-	valArray []string // store the last values of an array
+	lenArray []string // the lengths of an array
 }
 
 // Initializes a new type of "expression".
@@ -69,7 +69,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		false,
 		false,
 		false,
-		0,
+		false,
 		make([]string, 0),
 	}
 }
@@ -89,39 +89,47 @@ func (e *expression) transform(expr ast.Expr) {
 				return
 			}
 		}
-
 		if typ.Len == nil { // slice
 			break
 		}
+		if _, ok := typ.Len.(*ast.Ellipsis); ok {
+			e.isEllipsis = true
+			break
+		}
 
-		if len(e.valArray) == 0 {
+		if len(e.lenArray) == 0 {
 			e.WriteString("new Array(")
-
-			if e.lenArray != 0 { // ellipsis
-				e.WriteString(strconv.Itoa(e.lenArray))
-			} else {
-				e.transform(typ.Len)
-			}
-
+			e.transform(typ.Len)
 			e.WriteString(")")
 		} else {
-			iArray := len(e.valArray) - 1        // index of array
+			iArray := len(e.lenArray) - 1        // index of array
 			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
 
 			e.WriteString(fmt.Sprintf(
 				";%sfor%s(var %s=0;%s<%s;%s++){%s=new Array(",
-				SP, SP, vArray, SP+vArray, e.valArray[iArray], SP+vArray,
+				SP, SP, vArray, SP+vArray, e.lenArray[iArray], SP+vArray,
 				SP+e.varName+e.printArray()))
 			e.transform(typ.Len)
 			e.WriteString(")")
 		}
 
-		if _, ok := typ.Elt.(*ast.ArrayType); ok {
+		switch t := typ.Elt.(type) {
+		case *ast.ArrayType: // multi-dimensional array
 			e.transform(typ.Elt)
-		} else if len(e.valArray) > 1 {
-			e.WriteString(";" + SP + strings.Repeat("}", len(e.valArray)-1))
-			e.skipSemicolon = true
+		case *ast.Ident, *ast.StarExpr: // the type is initialized
+			init, _ := e.tr.initValue(true, typ.Elt)
+
+			e.WriteString(fmt.Sprintf(";%sfor%s(var t=0;%st<%s;%st++){%s[t]=%s;%s}",
+				SP, SP, SP, e.tr.getExpression(typ.Len).String(), SP,
+				SP+e.tr.lastVarName, init, SP))
+
+			if len(e.lenArray) > 1 {
+				e.WriteString(strings.Repeat("}", len(e.lenArray)-1))
+			}
+		default:
+			panic(fmt.Sprintf("*expression.transform: type unimplemented: %T", t))
 		}
+		e.skipSemicolon = true
 
 	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
 	//  Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
@@ -135,7 +143,7 @@ func (e *expression) transform(expr ast.Expr) {
 		if e.isNegative {
 			sign = "-"
 		}
-		e.valArray = append(e.valArray, sign+typ.Value)
+		e.lenArray = append(e.lenArray, sign+typ.Value)
 
 	// http://golang.org/doc/go_spec.html#Comparison_operators
 	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Comparison_Operators
@@ -220,7 +228,7 @@ func (e *expression) transform(expr ast.Expr) {
 				}
 
 			case *ast.Ident:
-				value, _ := e.tr.initValue(argType, true)
+				value, _ := e.tr.initValue(true, argType)
 				e.WriteString(value)
 
 			default:
@@ -286,8 +294,14 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
 		case *ast.ArrayType:
-			e.lenArray = len(typ.Elts) // for ellipsis
 			e.transform(typ.Type)
+
+			if e.isEllipsis {
+				e.WriteString("[")
+				e.writeElts(typ.Elts)
+				e.WriteString("]")
+				break
+			}
 
 			// For arrays initialized
 			if len(typ.Elts) != 0 {
@@ -298,6 +312,8 @@ func (e *expression) transform(expr ast.Expr) {
 				}
 				e.writeElts(typ.Elts)
 				e.WriteString("]")
+
+				e.skipSemicolon = false
 			}
 
 		case *ast.Ident: // Custom types
@@ -346,6 +362,7 @@ func (e *expression) transform(expr ast.Expr) {
 		}
 
 	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
+	//  Ellipsis token.Pos // position of "..."
 	//  Elt      Expr      // ellipsis element type (parameter lists only); or nil
 	//case *ast.Ellipsis:
 
@@ -379,7 +396,7 @@ func (e *expression) transform(expr ast.Expr) {
 
 		// Undefined value in array / slice
 		case "_":
-			if len(e.valArray) == 0 {
+			if len(e.lenArray) == 0 {
 				e.WriteString(name)
 			}
 		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined
@@ -565,7 +582,7 @@ func (tr *transform) getExpression(expr ast.Expr) *expression {
 func (e *expression) printArray() string {
 	a := ""
 
-	for i := 0; i < len(e.valArray); i++ {
+	for i := 0; i < len(e.lenArray); i++ {
 		vArray := "i" + strconv.Itoa(i)
 		a = fmt.Sprintf("%s[%s]", a, vArray)
 	}

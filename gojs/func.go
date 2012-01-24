@@ -147,7 +147,7 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 			continue
 		}
 
-		value, _ := tr.initValue(list.Type, true)
+		value, _ := tr.initValue(true, list.Type)
 
 		for _, v := range list.Names {
 			if !isFirst {

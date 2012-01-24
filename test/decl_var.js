@@ -20,16 +20,16 @@ var o = "OMDB";
 
 
 
-var a1 = new Array(32);
-var a2 = new Array(2); for (var i0=0; i0<2; i0++){ a2[i0]=new Array(4); }
+var a1 = new Array(32); for (var t=0; t<32; t++){ a1[t]=0; }
+var a2 = new Array(2); for (var i0=0; i0<2; i0++){ a2[i0]=new Array(4); for (var t=0; t<4; t++){ a2[t]=0; }}
 
-var a4 = new Array(1000);
-var a5 = new Array(4);
-var a6 = new Array(3); for (var i0=0; i0<3; i0++){ a6[i0]=new Array(5); }
-var a7 = new Array(2); for (var i0=0; i0<2; i0++){ a7[i0]=new Array(2); for (var i1=0; i1<2; i1++){ a7[i0][i1]=new Array(2); }}
+var a4 = new Array(1000); for (var t=0; t<1000; t++){ a4[t]=[0]; }
+var a5 = new Array(4); for (var t=0; t<4; t++){ a5[t]=0; }
+var a6 = new Array(3); for (var i0=0; i0<3; i0++){ a6[i0]=new Array(5); for (var t=0; t<5; t++){ a6[t]=0; }}
+var a7 = new Array(2); for (var i0=0; i0<2; i0++){ a7[i0]=new Array(2); for (var i1=0; i1<2; i1++){ a7[i0][i1]=new Array(2); for (var t=0; t<2; t++){ a7[t]=0; }}}
 
-var b1 = new Array(4); b1 = [1, 2, 3, 4];
-var b2 = new Array(4); b2 = [1, , , 4];
+var b1 = new Array(32); for (var t=0; t<32; t++){ b1[t]=0; }; b1 = [1, 2, 3, 4];
+var b2 = new Array(4); for (var t=0; t<4; t++){ b2[t]=0; }; b2 = [1, , , 4];
 
 
 
@@ -39,7 +39,7 @@ var s2 = new Array(20);
 
 var s3 = [2, 4, 6];
 var s4 = [1, , 3];
-var s5 = new Array(3); s5 = ["a", "b", "c"];
+var s5 = ["a", "b", "c"];
 
 
 
