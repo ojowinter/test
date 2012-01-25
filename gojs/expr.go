@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"strconv"
 	"strings"
 )
 
@@ -581,7 +580,7 @@ func (e *expression) printArray() string {
 	a := ""
 
 	for i := 0; i < len(e.lenArray); i++ {
-		vArray := "i" + strconv.Itoa(i)
+		vArray := string('i' + i)
 		a = fmt.Sprintf("%s[%s]", a, vArray)
 	}
 	return a
@@ -589,8 +588,8 @@ func (e *expression) printArray() string {
 
 // Writes the loop for the last length of the array.
 func (e *expression) writeLoop() {
-	iArray := len(e.lenArray) - 1        // index of array
-	vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
+	iArray := len(e.lenArray) - 1  // index of array
+	vArray := string('i' + iArray) // variable's name for the loop
 
 	e.WriteString(fmt.Sprintf(";%sfor%s(var %s=0;%s<%s;%s++)",
 		SP, SP, vArray, SP+vArray, e.lenArray[iArray], SP+vArray))
