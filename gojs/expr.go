@@ -581,7 +581,7 @@ func (e *expression) printArray() string {
 
 	for i := 0; i < len(e.lenArray); i++ {
 		vArray := string('i' + i)
-		a = fmt.Sprintf("%s[%s]", a, vArray)
+		a += fmt.Sprintf("[%s]", vArray)
 	}
 	return a
 }

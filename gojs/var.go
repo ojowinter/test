@@ -139,21 +139,6 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 //
 // http://golang.org/doc/go_spec.html#Type_declarations
 func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
-	// Format fields
-	format := func(fields []string) (args, allFields string) {
-		for i, f := range fields {
-			if i == 0 {
-				args = f
-			} else {
-				args += "," + SP + f
-				allFields += SP
-			}
-
-			allFields += fmt.Sprintf("this.%s=%s;", f, f)
-		}
-		return
-	}
-
 	// http://golang.org/pkg/go/ast/#TypeSpec || godoc go/ast TypeSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Name    *Ident        // type name
@@ -162,6 +147,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
 		fields := make([]string, 0) // names of fields
+		initFields := "" // fields initialized
 		//!anonField := make([]bool, 0) // anonymous field
 
 		// Type checking
@@ -213,8 +199,10 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 					continue
 				}
 
-				for _, n := range field.Names {
-					name := n.Name
+				init, _ := tr.initValue(true, field.Type)
+
+				for _, v := range field.Names {
+					name := v.Name
 
 					if name == "_" {
 						continue
@@ -222,6 +210,11 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 
 					fields = append(fields, name)
 					//!anonField = append(anonField, false)
+
+					if initFields != "" {
+						initFields += "," + SP
+					}
+					initFields += init
 				}
 			}
 		default:
@@ -234,13 +227,11 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		if isGlobal {
 			tr.addIfExported(tSpec.Name)
 		}
-		// Store the name of new types
-		if _, ok := tr.types[tSpec.Name.Name]; !ok {
-			tr.types[tSpec.Name.Name] = void
-		}
+		// Store the name of new type with its values initialized
+		tr.types[tr.funcId][tr.blockId][tSpec.Name.Name] = initFields
 
 		// === Write
-		args, allFields := format(fields)
+		args, allFields := tr.getTypeFields(fields)
 
 		tr.addLine(tSpec.Pos())
 		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", tSpec.Name, args, SP))
@@ -456,14 +447,14 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 	case *ast.Ident:
 		ident = t
 	case *ast.StarExpr:
-		ident = t.X.(*ast.Ident)
-		typeIsPointer = true
+		tr.initIsPointer = true
+		return tr.initValue(init, t.X)
 	default:
 		panic(fmt.Sprintf("initValue(): unexpected type: %T", typ))
 	}
 
 	if !init {
-		return "", typeIsPointer
+		return "", tr.initIsPointer
 	}
 
 	switch ident.Name {
@@ -480,16 +471,49 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 		value = "(0+0i)"
 	default:
 		value = ident.Name
-
-		// Check custom types
-		if _, ok := tr.types[value]; !ok {
-			panic("initValue(): unexpected value: " + value)
-		}
-		value = "new " + value + "()"
+		value = fmt.Sprintf("new %s(%s)", value, tr.getInitType(value))
 	}
 
-	if typeIsPointer {
+	if tr.initIsPointer {
 		value = "[" + value + "]"
+		typeIsPointer = true
+		tr.initIsPointer = false
 	}
 	return
+}
+
+// Returns the fields of a custom type.
+func (tr *transform) getTypeFields(fields []string) (args, allFields string) {
+	for i, f := range fields {
+		if i == 0 {
+			args = f
+		} else {
+			args += "," + SP + f
+			allFields += SP
+		}
+
+		allFields += fmt.Sprintf("this.%s=%s;", f, f)
+	}
+	return
+}
+
+// Returns the initializations of a custom type.
+func (tr *transform) getInitType(name string) string {
+	// In the actual function
+	if tr.funcId != 0 {
+		for block := tr.blockId; block >= 1; block-- {
+			if _, ok := tr.types[tr.funcId][block][name]; ok {
+				return tr.types[tr.funcId][block][name]
+			}
+		}
+	}
+
+	// Finally, search in the global variables (funcId = 0).
+	for block := tr.blockId; block >= 0; block-- { // block until 0
+		if _, ok := tr.types[0][block][name]; ok {
+			return tr.types[0][block][name]
+		}
+	}
+	//fmt.Printf("Function %d, block %d, name %s\n", tr.funcId, tr.blockId, name)
+	panic("getInitType: type not found: " + name)
 }

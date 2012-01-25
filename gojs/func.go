@@ -45,6 +45,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		tr.blockId = 0
 
 		tr.vars[tr.funcId] = make(map[int]map[string]bool)
+		tr.types[tr.funcId] = make(map[int]map[string]string)
 	}
 	// ===
 

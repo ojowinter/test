@@ -42,12 +42,7 @@ const (
 	IOTA = "<<iota>>"
 )
 
-var (
-	// Maximum number of errors and warnings to show.
-	MaxMessage = 10
-
-	void struct{} // A struct without any element occupies no space at all.
-)
+var MaxMessage = 10 // Maximum number of errors and warnings to show.
 
 // Represents information about code being transformed to JavaScript.
 type transform struct {
@@ -58,10 +53,10 @@ type transform struct {
 	*bytes.Buffer // sintaxis translated to JS
 	*dataStmt     // extra data for a statement
 
-	// New variables (or pointers) in each block, for each function.
-	// { Id of function: {Id of block: {variable name: is pointer} }}
-	vars  map[int]map[int]map[string]bool
-	types map[string]struct{} // custom types
+	// New variables and custom types in each block, for each function.
+	// {Function Id: {Block id: {Name:
+	vars  map[int]map[int]map[string]bool   // is pointer?
+	types map[int]map[int]map[string]string // value initialized
 
 	err      []error  // errors
 	warn     []string // warnings
@@ -81,7 +76,7 @@ func newTransform() *transform {
 		&dataStmt{},
 
 		make(map[int]map[int]map[string]bool),
-		make(map[string]struct{}),
+		make(map[int]map[int]map[string]string),
 
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
@@ -94,6 +89,10 @@ func newTransform() *transform {
 	// Global variables
 	tr.vars[0] = make(map[int]map[string]bool) // funcId = 0
 	tr.vars[0][0] = make(map[string]bool)      // blockId = 0
+
+	tr.types[0] = make(map[int]map[string]string)
+	tr.types[0][0] = make(map[string]string)
+
 	return tr
 }
 

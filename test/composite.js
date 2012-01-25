@@ -17,7 +17,7 @@ function Older(p1, p2) {
 }
 
 function testStruct() {
-	var tom = new person();
+	var tom = new person("", 0);
 
 	tom.name = "Tom", tom.age = 18;
 
@@ -54,7 +54,7 @@ function Older10(people) {
 
 function testArray() {
 
-	var array = new Array(10); for (var i=0; i<10; i++){ array[i]=new person(); }
+	var array = new Array(10); for (var i=0; i<10; i++){ array[i]=new person("", 0); }
 
 
 
