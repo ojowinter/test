@@ -102,13 +102,8 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(typ.Len)
 			e.WriteString(")")
 		} else {
-			iArray := len(e.lenArray) - 1        // index of array
-			vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
-
-			e.WriteString(fmt.Sprintf(
-				";%sfor%s(var %s=0;%s<%s;%s++){%s=new Array(",
-				SP, SP, vArray, SP+vArray, e.lenArray[iArray], SP+vArray,
-				SP+e.varName+e.printArray()))
+			e.writeLoop()
+			e.WriteString(fmt.Sprintf("{%s%s=new Array(", SP+e.varName, e.printArray()))
 			e.transform(typ.Len)
 			e.WriteString(")")
 		}
@@ -117,11 +112,14 @@ func (e *expression) transform(expr ast.Expr) {
 		case *ast.ArrayType: // multi-dimensional array
 			e.transform(typ.Elt)
 		case *ast.Ident, *ast.StarExpr: // the type is initialized
-			init, _ := e.tr.initValue(true, typ.Elt)
+			init, isPointer := e.tr.initValue(true, typ.Elt)
+			if isPointer { // remove '[', ']'
+				init = init[1:len(init)-1]
+			}
 
-			e.WriteString(fmt.Sprintf(";%sfor%s(var t=0;%st<%s;%st++){%s[t]=%s;%s}",
-				SP, SP, SP, e.tr.getExpression(typ.Len).String(), SP,
-				SP+e.tr.lastVarName, init, SP))
+			e.writeLoop()
+			e.WriteString(fmt.Sprintf("{%s=%s;%s}",
+				SP+e.tr.lastVarName+e.printArray(), init, SP))
 
 			if len(e.lenArray) > 1 {
 				e.WriteString(strings.Repeat("}", len(e.lenArray)-1))
@@ -587,6 +585,15 @@ func (e *expression) printArray() string {
 		a = fmt.Sprintf("%s[%s]", a, vArray)
 	}
 	return a
+}
+
+// Writes the loop for the last length of the array.
+func (e *expression) writeLoop() {
+	iArray := len(e.lenArray) - 1        // index of array
+	vArray := "i" + strconv.Itoa(iArray) // variable's name for the loop
+
+	e.WriteString(fmt.Sprintf(";%sfor%s(var %s=0;%s<%s;%s++)",
+		SP, SP, vArray, SP+vArray, e.lenArray[iArray], SP+vArray))
 }
 
 // Writes the list of composite elements.

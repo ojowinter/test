@@ -23,7 +23,7 @@ var (
 	a1 = new([32]byte)
 	a2 = new([2][4]uint)
 	//a3 = [2*N] struct { x, y int32 }
-	a4 = [1000]*float64{}
+	a4 = [10]*float64{}
 	a5 = [4]byte{}
 	a6 = [3][5]int{}
 	a7 = [2][2][2]float64{} // same as [2]([2]([2]float64))

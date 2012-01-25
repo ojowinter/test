@@ -56,8 +56,8 @@ func testArray() {
 	// Declare an example array variable of 10 person called 'array'.
 	var array [10]person
 
-	// Initialize some of the elements of the array, the others ar by
-	// default set to person{"", 0}
+	// Initialize some of the elements of the array, the others are by default
+	// set to person{"", 0}
 	array[1] = person{"Paul", 23}
 	array[2] = person{"Jim", 24}
 	array[3] = person{"Sam", 84}
@@ -76,3 +76,15 @@ func main() {
 	println("\n== testArray()\n")
 	testArray()
 }
+
+/*
+== testStruct()
+
+Of Tom and Bob, Bob is older by 7 years
+Of Tom and Paul, Paul is older by 25 years
+Of Bob and Paul, Paul is older by 18 years
+
+== testArray()
+
+The older of the group is: Sam
+*/
