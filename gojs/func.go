@@ -24,7 +24,7 @@ import (
 // http://golang.org/doc/go_spec.html#Function_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/function
 func (tr *transform) getFunc(decl *ast.FuncDecl) {
-	// http://golang.org/pkg/go/ast/#FuncDecl || godoc go/ast FuncDecl
+	// godoc go/ast FuncDecl
 	//  Doc  *CommentGroup // associated documentation; or nil
 	//  Recv *FieldList    // receiver (methods); or nil (functions)
 	//  Name *Ident        // function/method name
@@ -72,17 +72,17 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	}
 }
 
-// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+// godoc go/ast FuncType
 //  Func    token.Pos  // position of "func" keyword
 //  Params  *FieldList // (incoming) parameters; or nil
 //  Results *FieldList // (outgoing) results; or nil
 
-// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
+// godoc go/ast FieldList
 //  Opening token.Pos // position of opening parenthesis/brace, if any
 //  List    []*Field  // field list; or nil
 //  Closing token.Pos // position of closing parenthesis/brace, if any
 
-// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
+// godoc go/ast Field
 //  Doc     *CommentGroup // associated documentation; or nil
 //  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
 //  Type    Expr          // field/method/parameter type

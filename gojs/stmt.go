@@ -48,7 +48,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#Arithmetic_operators
 	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Assignment_Operators
 	//
-	// http://golang.org/pkg/go/ast/#AssignStmt || godoc go/ast AssignStmt
+	// godoc go/ast AssignStmt
 	//  Lhs    []Expr
 	//  TokPos token.Pos   // position of Tok
 	//  Tok    token.Token // assignment token, DEFINE
@@ -60,7 +60,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#Blocks
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/block
 	//
-	// http://golang.org/pkg/go/ast/#BlockStmt || godoc go/ast BlockStmt
+	// godoc go/ast BlockStmt
 	//  Lbrace token.Pos // position of "{"
 	//  List   []Stmt
 	//  Rbrace token.Pos // position of "}"
@@ -109,7 +109,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.WriteString("}")
 		tr.blockId--
 
-	// http://golang.org/pkg/go/ast/#BranchStmt || godoc go/ast BranchStmt
+	// godoc go/ast BranchStmt
 	//  TokPos token.Pos   // position of Tok
 	//  Tok    token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
 	//  Label  *Ident      // label name; or nil
@@ -138,7 +138,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.addError("%s: goto directive", tr.fset.Position(typ.TokPos))
 		}
 
-	// http://golang.org/pkg/go/ast/#CaseClause || godoc go/ast CaseClause
+	// godoc go/ast CaseClause
 	//  Case  token.Pos // position of "case" or "default" keyword
 	//  List  []Expr    // list of expressions or types; nil means default case
 	//  Colon token.Pos // position of ":"
@@ -182,7 +182,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.WriteString(SP + "break;")
 		}
 
-	// http://golang.org/pkg/go/ast/#DeclStmt || godoc go/ast DeclStmt
+	// godoc go/ast DeclStmt
 	//  Decl Decl
 	case *ast.DeclStmt:
 		switch decl := typ.Decl.(type) {
@@ -201,7 +201,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			panic(fmt.Sprintf("unimplemented: %T", decl))
 		}
 
-	// http://golang.org/pkg/go/ast/#ExprStmt || godoc go/ast ExprStmt
+	// godoc go/ast ExprStmt
 	//  X Expr // expression
 	case *ast.ExprStmt:
 		tr.WriteString(tr.getExpression(typ.X).String() + ";")
@@ -209,7 +209,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#For_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for
 	//
-	// http://golang.org/pkg/go/ast/#ForStmt || godoc go/ast ForStmt
+	// godoc go/ast ForStmt
 	//  For  token.Pos // position of "for" keyword
 	//  Init Stmt      // initialization statement; or nil
 	//  Cond Expr      // condition; or nil
@@ -241,7 +241,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 	// http://golang.org/doc/go_spec.html#Go_statements
 	//
-	// http://golang.org/pkg/go/ast/#GoStmt || godoc go/ast GoStmt
+	// godoc go/ast GoStmt
 	//  Go   token.Pos // position of "go" keyword
 	//  Call *CallExpr
 	case *ast.GoStmt:
@@ -250,7 +250,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#If_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/if...else
 	//
-	// http://golang.org/pkg/go/ast/#IfStmt || godoc go/ast IfStmt
+	// godoc go/ast IfStmt
 	//  If   token.Pos // position of "if" keyword
 	//  Init Stmt      // initialization statement; or nil
 	//  Cond Expr      // condition
@@ -270,7 +270,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			tr.getStatement(typ.Else)
 		}
 
-	// http://golang.org/pkg/go/ast/#IncDecStmt || godoc go/ast IncDecStmt
+	// godoc go/ast IncDecStmt
 	//  X      Expr
 	//  TokPos token.Pos   // position of Tok
 	//  Tok    token.Token // INC or DEC
@@ -286,7 +286,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#For_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/for...in
 	//
-	// http://golang.org/pkg/go/ast/#RangeStmt || godoc go/ast RangeStmt
+	// godoc go/ast RangeStmt
 	//  For        token.Pos   // position of "for" keyword
 	//  Key, Value Expr        // Value may be nil
 	//  TokPos     token.Pos   // position of Tok
@@ -318,7 +318,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#Return_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/return
 	//
-	// http://golang.org/pkg/go/ast/#ReturnStmt || godoc go/ast ReturnStmt
+	// godoc go/ast ReturnStmt
 	//  Return  token.Pos // position of "return" keyword
 	//  Results []Expr    // result expressions; or nil
 	case *ast.ReturnStmt:
@@ -351,7 +351,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#Switch_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/switch
 	//
-	// http://golang.org/pkg/go/ast/#SwitchStmt || godoc go/ast SwitchStmt
+	// godoc go/ast SwitchStmt
 	//  Switch token.Pos  // position of "switch" keyword
 	//  Init   Stmt       // initialization statement; or nil
 	//  Tag    Expr       // tag expression; or nil
@@ -375,7 +375,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 
 	// http://golang.org/doc/go_spec.html#Defer_statements
 	//
-	// http://golang.org/pkg/go/ast/#DeferStmt || godoc go/ast DeferStmt
+	// godoc go/ast DeferStmt
 	//  Defer token.Pos // position of "defer" keyword
 	//  Call  *CallExpr
 	case *ast.DeferStmt:
@@ -384,7 +384,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	// http://golang.org/doc/go_spec.html#Labeled_statements
 	// https://developer.mozilla.org/en/JavaScript/Reference/Statements/label
 	//
-	// http://golang.org/pkg/go/ast/#LabeledStmt || godoc go/ast LabeledStmt
+	// godoc go/ast LabeledStmt
 	//  Label *Ident
 	//  Colon token.Pos // position of ":"
 	//  Stmt  Stmt

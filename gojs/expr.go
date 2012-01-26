@@ -77,7 +77,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 func (e *expression) transform(expr ast.Expr) {
 	switch typ := expr.(type) {
 
-	// http://golang.org/pkg/go/ast/#ArrayType || godoc go/ast ArrayType
+	// godoc go/ast ArrayType
 	//  Lbrack token.Pos // position of "["
 	//  Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
 	//  Elt    Expr      // element type
@@ -124,7 +124,7 @@ func (e *expression) transform(expr ast.Expr) {
 		}
 		e.skipSemicolon = true
 
-	// http://golang.org/pkg/go/ast/#BasicLit || godoc go/ast BasicLit
+	// godoc go/ast BasicLit
 	//  Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
 	//  Value    string      // literal string
 	case *ast.BasicLit:
@@ -141,7 +141,7 @@ func (e *expression) transform(expr ast.Expr) {
 	// http://golang.org/doc/go_spec.html#Comparison_operators
 	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Comparison_Operators
 	//
-	// http://golang.org/pkg/go/ast/#BinaryExpr || godoc go/ast BinaryExpr
+	// godoc go/ast BinaryExpr
 	//  X     Expr        // left operand
 	//  Op    token.Token // operator
 	//  Y     Expr        // right operand
@@ -157,7 +157,7 @@ func (e *expression) transform(expr ast.Expr) {
 		e.WriteString(SP + op + SP)
 		e.transform(typ.Y)
 
-	// http://golang.org/pkg/go/ast/#CallExpr || godoc go/ast CallExpr
+	// godoc go/ast CallExpr
 	//  Fun      Expr      // function expression
 	//  Args     []Expr    // function arguments; or nil
 	case *ast.CallExpr:
@@ -283,7 +283,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(fmt.Sprintf("%s(%s)", call, args))
 		}
 
-	// http://golang.org/pkg/go/ast/#ChanType || godoc go/ast ChanType
+	// godoc go/ast ChanType
 	//  Begin token.Pos // position of "chan" keyword or "<-" (whichever comes first)
 	//  Dir   ChanDir   // channel direction
 	//  Value Expr      // value type
@@ -292,7 +292,7 @@ func (e *expression) transform(expr ast.Expr) {
 		e.tr.hasError = true
 		return
 
-	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
+	// godoc go/ast CompositeLit
 	//  Type   Expr      // literal type; or nil
 	//  Lbrace token.Pos // position of "{"
 	//  Elts   []Expr    // list of composite elements; or nil
@@ -370,14 +370,14 @@ func (e *expression) transform(expr ast.Expr) {
 			panic(fmt.Sprintf("'CompositeLit' unimplemented: %s", compoType))
 		}
 
-	// http://golang.org/pkg/go/ast/#Ellipsis || godoc go/ast Ellipsis
+	// godoc go/ast Ellipsis
 	//  Ellipsis token.Pos // position of "..."
 	//  Elt      Expr      // ellipsis element type (parameter lists only); or nil
 	//case *ast.Ellipsis:
 
 	// http://golang.org/doc/go_spec.html#Function_literals
 	// https://developer.mozilla.org/en/JavaScript/Reference/Functions_and_function_scope#Function_constructor_vs._function_declaration_vs._function_expression
-	// http://golang.org/pkg/go/ast/#FuncLit || godoc go/ast FuncLit
+	// godoc go/ast FuncLit
 	//
 	//  Type *FuncType  // function type
 	//  Body *BlockStmt // function body
@@ -385,7 +385,7 @@ func (e *expression) transform(expr ast.Expr) {
 		e.transform(typ.Type)
 		e.tr.getStatement(typ.Body)
 
-	// http://golang.org/pkg/go/ast/#FuncType || godoc go/ast FuncType
+	// godoc go/ast FuncType
 	//  Func    token.Pos  // position of "func" keyword
 	//  Params  *FieldList // (incoming) parameters; or nil
 	//  Results *FieldList // (outgoing) results; or nil
@@ -393,7 +393,7 @@ func (e *expression) transform(expr ast.Expr) {
 		//e.isFunc = true
 		e.tr.writeFunc(nil, typ)
 
-	// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+	// godoc go/ast Ident
 	//  Name    string    // identifier name
 	case *ast.Ident:
 		name := typ.Name
@@ -431,7 +431,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(name)
 		}
 
-	// http://golang.org/pkg/go/ast/#IndexExpr || godoc go/ast IndexExpr
+	// godoc go/ast IndexExpr
 	// Represents an expression followed by an index.
 	//  X      Expr      // expression
 	//  Lbrack token.Pos // position of "["
@@ -443,13 +443,13 @@ func (e *expression) transform(expr ast.Expr) {
 		e.transform(typ.Index)
 		e.WriteString("]")
 
-	// http://golang.org/pkg/go/ast/#InterfaceType || godoc go/ast InterfaceType
+	// godoc go/ast InterfaceType
 	//  Interface  token.Pos  // position of "interface" keyword
 	//  Methods    *FieldList // list of methods
 	//  Incomplete bool       // true if (source) methods are missing in the Methods list
 	case *ast.InterfaceType: // TODO: review
 
-	// http://golang.org/pkg/go/ast/#KeyValueExpr || godoc go/ast KeyValueExpr
+	// godoc go/ast KeyValueExpr
 	//  Key   Expr
 	//  Colon token.Pos // position of ":"
 	//  Value Expr
@@ -458,7 +458,7 @@ func (e *expression) transform(expr ast.Expr) {
 		e.WriteString(":" + SP)
 		e.transform(typ.Value)
 
-	// http://golang.org/pkg/go/ast/#MapType || godoc go/ast MapType
+	// godoc go/ast MapType
 	//  Map   token.Pos // position of "map" keyword
 	//  Key   Expr
 	//  Value Expr
@@ -467,14 +467,14 @@ func (e *expression) transform(expr ast.Expr) {
 		e.tr.getExpression(typ.Key)
 		e.tr.getExpression(typ.Value)
 
-	// http://golang.org/pkg/go/ast/#ParenExpr || godoc go/ast ParenExpr
+	// godoc go/ast ParenExpr
 	//  Lparen token.Pos // position of "("
 	//  X      Expr      // parenthesized expression
 	//  Rparen token.Pos // position of ")"
 	case *ast.ParenExpr:
 		e.transform(typ.X)
 
-	// http://golang.org/pkg/go/ast/#SelectorExpr || godoc go/ast SelectorExpr
+	// godoc go/ast SelectorExpr
 	//   X   Expr   // expression
 	//   Sel *Ident // field selector
 	case *ast.SelectorExpr:
@@ -526,20 +526,20 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(goName)
 		}
 
-	// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
+	// godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword
 	//  Fields     *FieldList // list of field declarations
 	//  Incomplete bool       // true if (source) fields are missing in the Fields list
 	case *ast.StructType:
 
-	// http://golang.org/pkg/go/ast/#StarExpr || godoc go/ast StarExpr
+	// godoc go/ast StarExpr
 	//  Star token.Pos // position of "*"
 	//  X    Expr      // operand
 	case *ast.StarExpr:
 		e.isPointer = true
 		e.transform(typ.X)
 
-	// http://golang.org/pkg/go/ast/#UnaryExpr || godoc go/ast UnaryExpr
+	// godoc go/ast UnaryExpr
 	//  OpPos token.Pos   // position of Op
 	//  Op    token.Token // operator
 	//  X     Expr        // operand

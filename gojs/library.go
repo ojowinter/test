@@ -75,7 +75,7 @@ var Function = map[string]string{
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/import
 func (tr *transform) getImport(spec []ast.Spec) {
 
-	// http://golang.org/pkg/go/ast/#ImportSpec || godoc go/ast ImportSpec
+	// godoc go/ast ImportSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Name    *Ident        // local package name (including "."); or nil
 	//  Path    *BasicLit     // import path

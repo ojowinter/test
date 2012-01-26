@@ -34,7 +34,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 		isMultipleLine = true
 	}
 
-	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
+	// godoc go/ast ValueSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Names   []*Ident      // value names (len(Names) > 0)
 	//  Type    Expr          // value type; or nil
@@ -119,7 +119,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 		isMultipleLine = true
 	}
 
-	// http://golang.org/pkg/go/ast/#ValueSpec || godoc go/ast ValueSpec
+	// godoc go/ast ValueSpec
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
@@ -139,7 +139,7 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 //
 // http://golang.org/doc/go_spec.html#Type_declarations
 func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
-	// http://golang.org/pkg/go/ast/#TypeSpec || godoc go/ast TypeSpec
+	// godoc go/ast TypeSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
 	//  Name    *Ident        // type name
 	//  Type    Expr          // *Ident, *ParenExpr, *SelectorExpr, *StarExpr, or any of the *XxxTypes
@@ -156,13 +156,13 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		}
 
 		switch typ := tSpec.Type.(type) {
-		// http://golang.org/pkg/go/ast/#Ident || godoc go/ast Ident
+		// godoc go/ast Ident
 		//  NamePos token.Pos // identifier position
 		//  Name    string    // identifier name
 		//  Obj     *Object   // denoted object; or nil
 		case *ast.Ident:
 
-		// http://golang.org/pkg/go/ast/#StructType || godoc go/ast StructType
+		// godoc go/ast StructType
 		//  Struct     token.Pos  // position of "struct" keyword
 		//  Fields     *FieldList // list of field declarations
 		//  Incomplete bool       // true if (source) fields are missing in the Fields list
@@ -171,7 +171,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 				panic("list of fields incomplete ???")
 			}
 
-			// http://golang.org/pkg/go/ast/#FieldList || godoc go/ast FieldList
+			// godoc go/ast FieldList
 			//  Opening token.Pos // position of opening parenthesis/brace, if any
 			//  List    []*Field  // field list; or nil
 			//  Closing token.Pos // position of closing parenthesis/brace, if any
@@ -182,7 +182,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 					continue
 				}
 
-				// http://golang.org/pkg/go/ast/#Field || godoc go/ast Field
+				// godoc go/ast Field
 				//  Doc     *CommentGroup // associated documentation; or nil
 				//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
 				//  Type    Expr          // field/method/parameter type

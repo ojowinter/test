@@ -15,7 +15,6 @@ var m = 0      // m has type int
 var n = 3.0    // n has type float64
 var o = "OMDB" // o has type string
 
-//var A, B = complexSqrt(-1)
 //var _, found = entries[name] // map lookup; only interested in "found"
 
 // Array

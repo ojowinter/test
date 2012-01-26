@@ -19,7 +19,6 @@ var o = "OMDB";
 
 
 
-
 var a1 = []; for (var i=0; i<32; i++){ a1[i]=0; }
 var a2 = []; for (var i=0; i<2; i++){ a2[i]=[]; for (var j=0; j<4; j++){ a2[i][j]=0; }}
 

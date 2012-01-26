@@ -188,7 +188,7 @@ func Compile(filename string) error {
 	parse.ParseFile(fset, "b.go", nil, 0)
 	*/
 
-	// http://golang.org/pkg/go/ast/#File || godoc go/ast File
+	// godoc go/ast File
 	//  Doc        *CommentGroup   // associated documentation; or nil
 	//  Package    token.Pos       // position of "package" keyword
 	//  Name       *Ident          // package name
@@ -219,7 +219,7 @@ func Compile(filename string) error {
 		case *ast.FuncDecl:
 			trans.getFunc(decl.(*ast.FuncDecl))
 
-		// http://golang.org/pkg/go/ast/#GenDecl || godoc go/ast GenDecl
+		// godoc go/ast GenDecl
 		//  Tok    token.Token   // IMPORT, CONST, TYPE, VAR
 		//  Specs  []Spec
 		case *ast.GenDecl:
