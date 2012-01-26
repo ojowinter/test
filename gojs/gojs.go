@@ -96,6 +96,14 @@ func newTransform() *transform {
 	return tr
 }
 
+// Returns the Go expression transformed to JavaScript.
+func (tr *transform) getExpression(expr ast.Expr) *expression {
+	e := tr.newExpression(nil)
+
+	e.transform(expr)
+	return e
+}
+
 // Returns the line number.
 func (tr *transform) getLine(pos token.Pos) int {
 	// -1 because it was inserted a line (the header)

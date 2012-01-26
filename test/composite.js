@@ -54,7 +54,7 @@ function Older10(people) {
 
 function testArray() {
 
-	var array = new Array(10); for (var i=0; i<10; i++){ array[i]=new person("", 0); }
+	var array = []; for (var i=0; i<10; i++){ array[i]=new person("", 0); }
 
 
 
@@ -71,7 +71,7 @@ function testArray() {
 
 function initializeArray() {
 
-	var array = new Array(10); for (var i=0; i<10; i++){ array[i]=new person("", 0); } array = [
+	var array1 = []; for (var i=0; i<10; i++){ array1[i]=new person("", 0); } array1 = [
 		new person("", 0),
 		new person("Paul", 23),
 		new person("Jim", 24),
@@ -83,6 +83,26 @@ function initializeArray() {
 		new person("Karl", 10),
 		new person("", 0)
 	];
+
+
+	var array2 = [
+		new person("", 0),
+		new person("Paul", 23),
+		new person("Jim", 24),
+		new person("Sam", 84),
+		new person("Rob", 54),
+		new person("", 0),
+		new person("", 0),
+		new person("", 0),
+		new person("Karl", 10),
+		new person("", 0)];
+
+	if (array1 === array2) {
+		console.log("array1 and array2 are equal\n");
+	}
+
+
+
 }
 
 function main() {

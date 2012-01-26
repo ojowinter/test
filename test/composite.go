@@ -71,7 +71,7 @@ func testArray() {
 
 func initializeArray() {
 	// Declare and initialize an array A of 10 person.
-	array := [10]person{
+	array1 := [10]person{
 		person{"", 0},
 		person{"Paul", 23},
 		person{"Jim", 24},
@@ -83,6 +83,26 @@ func initializeArray() {
 		person{"Karl", 10},
 		person{"", 0},
 	}
+
+	// Declare and initialize an array of 10 persons, but let the compiler guess the size.
+	array2 := [...]person{ // Substitute '...' instead of an integer size.
+		person{"", 0},
+		person{"Paul", 23},
+		person{"Jim", 24},
+		person{"Sam", 84},
+		person{"Rob", 54},
+		person{"", 0},
+		person{"", 0},
+		person{"", 0},
+		person{"Karl", 10},
+		person{"", 0}}
+
+	if array1 == array2 {
+		println("array1 and array2 are equal")
+	}
+/*	if len(array1) == len(array2) {
+		println("array1 and array2 have the same length")
+	}*/
 }
 
 func main() {
@@ -106,4 +126,8 @@ Of Bob and Paul, Paul is older by 18 years
 == testArray()
 
 The older of the group is: Sam
+
+== initializeArray()
+
+array1 and array2 are equal
 */

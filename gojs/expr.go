@@ -96,16 +96,12 @@ func (e *expression) transform(expr ast.Expr) {
 			break
 		}
 
-		if len(e.lenArray) == 0 {
-			e.WriteString("new Array(")
-			e.transform(typ.Len)
-			e.WriteString(")")
-		} else {
+		if len(e.lenArray) != 0 {
 			e.writeLoop()
-			e.WriteString(fmt.Sprintf("{%s%s=new Array(", SP+e.varName, e.printArray()))
-			e.transform(typ.Len)
-			e.WriteString(")")
+			e.WriteString(fmt.Sprintf("{%s%s=", SP+e.varName, e.printArray()))
 		}
+		e.WriteString("[]")
+		e.addLenArray(typ.Len)
 
 		switch t := typ.Elt.(type) {
 		case *ast.ArrayType: // multi-dimensional array
@@ -134,13 +130,13 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.BasicLit:
 		e.WriteString(typ.Value)
 
-		// === Add the value
+		/*// === Add the value
 		sign := ""
 
 		if e.isNegative {
 			sign = "-"
 		}
-		e.lenArray = append(e.lenArray, sign+typ.Value)
+		e.lenArray = append(e.lenArray, sign+typ.Value)*/
 
 	// http://golang.org/doc/go_spec.html#Comparison_operators
 	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Comparison_Operators
@@ -201,12 +197,23 @@ func (e *expression) transform(expr ast.Expr) {
 			switch argType := typ.Args[0].(type) {
 			// For slice
 			case *ast.ArrayType:
-				e.WriteString("new Array(")
-				e.transform(typ.Args[len(typ.Args)-1]) // capacity
-				e.WriteString(")")
+				length := e.tr.getExpression(typ.Args[1]).String()
+				// TODO: add capacity
+				//capacity := 0
 
-			// The second argument (in Args), if any, is the capacity which
-			// is not useful in JS since it is dynamic.
+				/*if len(typ.Args) == 3 {
+					capacity = e.tr.getExpression(typ.Args[-1]).String()
+				}*/
+
+				init, _ := e.tr.initValue(true, argType.Elt)
+
+				e.WriteString("[]")
+				e.lenArray = append(e.lenArray, length)
+				e.writeLoop()
+				e.WriteString(fmt.Sprintf("{%s=%s;%s}",
+					SP+e.tr.lastVarName+e.printArray(), init, SP))
+				e.skipSemicolon = true
+
 			case *ast.MapType:
 				e.WriteString("{}") // or "new Object()"
 
@@ -572,12 +579,9 @@ func (e *expression) transform(expr ast.Expr) {
 //
 // === Utility
 
-// Returns the Go expression transformed to JavaScript.
-func (tr *transform) getExpression(expr ast.Expr) *expression {
-	e := tr.newExpression(nil)
-
-	e.transform(expr)
-	return e
+// Appends a new length of array.
+func (e *expression) addLenArray(expr ast.Expr) {
+	e.lenArray = append(e.lenArray, e.tr.getExpression(expr).String())
 }
 
 // Returns the values of an array formatted like "[i][j]..."
