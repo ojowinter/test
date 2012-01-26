@@ -287,7 +287,9 @@ func (e *expression) transform(expr ast.Expr) {
 
 	// http://golang.org/pkg/go/ast/#CompositeLit || godoc go/ast CompositeLit
 	//  Type   Expr      // literal type; or nil
+	//  Lbrace token.Pos // position of "{"
 	//  Elts   []Expr    // list of composite elements; or nil
+	//  Rbrace token.Pos // position of "}"
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
 		case *ast.ArrayType:
@@ -295,43 +297,45 @@ func (e *expression) transform(expr ast.Expr) {
 
 			if e.isEllipsis {
 				e.WriteString("[")
-				e.writeElts(typ.Elts)
+				e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
 				e.WriteString("]")
 				break
 			}
 
 			// For arrays initialized
 			if len(typ.Elts) != 0 {
-				if compoType.Len == nil {
-					e.WriteString("[")
-				} else {
-					e.WriteString(fmt.Sprintf(";%s=%s[", SP+e.varName+SP, SP))
+				if compoType.Len != nil {
+					e.WriteString(fmt.Sprintf("%s=%s", SP+e.varName+SP, SP))
 				}
-				e.writeElts(typ.Elts)
+				e.WriteString("[")
+				e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
 				e.WriteString("]")
 
 				e.skipSemicolon = false
 			}
 
 		case *ast.Ident: // Custom types
-			/*if _, ok := e.tr.types[compoType.Name]; !ok {
-				panic(fmt.Sprintf("type not valid: %s", compoType))
-			}*/
-
 			useField := false
-			e.WriteString("new " + typ.Type.(*ast.Ident).Name + "(")
+			e.WriteString("new " + typ.Type.(*ast.Ident).Name)
 
 			if len(typ.Elts) != 0 {
 				// Specify the fields
 				if _, ok := typ.Elts[0].(*ast.KeyValueExpr); ok {
 					typeName := e.tr.lastVarName
 					useField = true
-					e.WriteString(")")
 
-					for _, v := range typ.Elts {
+					e.WriteString("()")
+
+					for i, v := range typ.Elts {
 						kv := v.(*ast.KeyValueExpr)
 
-						e.WriteString(fmt.Sprintf(";%s.%s=%s",
+						if i != 0 {
+							e.WriteString(",")
+						} else {
+							e.WriteString(";")
+						}
+
+						e.WriteString(fmt.Sprintf("%s.%s=%s",
 							SP + typeName,
 							e.tr.getExpression(kv.Key).String() + SP,
 							SP + e.tr.getExpression(kv.Value).String(),
@@ -340,7 +344,8 @@ func (e *expression) transform(expr ast.Expr) {
 				}
 			}
 			if !useField {
-				e.writeElts(typ.Elts)
+				e.WriteString("(")
+				e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
 				e.WriteString(")")
 			}
 
@@ -351,7 +356,7 @@ func (e *expression) transform(expr ast.Expr) {
 			}
 
 			e.WriteString("{")
-			e.writeElts(typ.Elts)
+			e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
 			e.WriteString("}")
 
 		default:
@@ -575,7 +580,7 @@ func (tr *transform) getExpression(expr ast.Expr) *expression {
 	return e
 }
 
-// Returns the values of an array formatted like "[i0][i1]..."
+// Returns the values of an array formatted like "[i][j]..."
 func (e *expression) printArray() string {
 	a := ""
 
@@ -596,11 +601,35 @@ func (e *expression) writeLoop() {
 }
 
 // Writes the list of composite elements.
-func (e *expression) writeElts(elts []ast.Expr) {
+func (e *expression) writeElts(elts []ast.Expr, Lbrace, Rbrace token.Pos) {
+	firstPos := e.tr.getLine(Lbrace)
+	posOldElt := firstPos
+	posNewElt := 0
+
 	for i, el := range elts {
+		posNewElt = e.tr.getLine(el.Pos())
+
 		if i != 0 {
-			e.WriteString("," + SP)
+			e.WriteString(",")
 		}
+
+		if posNewElt != posOldElt {
+			e.WriteString(strings.Repeat(NL, posNewElt - posOldElt))
+			e.WriteString(strings.Repeat(TAB, e.tr.tabLevel + 1))
+		} else if i != 0 { // in the same line
+			e.WriteString(SP)
+		}
+
 		e.transform(el)
+		posOldElt = posNewElt
 	}
+
+	// The Right brace
+	posNewElt = e.tr.getLine(Rbrace)
+	if posNewElt != posOldElt {
+		e.WriteString(strings.Repeat(NL, posNewElt - posOldElt))
+		e.WriteString(strings.Repeat(TAB, e.tr.tabLevel))
+	}
+
+	e.tr.line += posNewElt - firstPos // update the global position
 }

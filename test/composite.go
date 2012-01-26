@@ -69,12 +69,31 @@ func testArray() {
 	println("The older of the group is:", older.name)
 }
 
+func initializeArray() {
+	// Declare and initialize an array A of 10 person.
+	array := [10]person{
+		person{"", 0},
+		person{"Paul", 23},
+		person{"Jim", 24},
+		person{"Sam", 84},
+		person{"Rob", 54},
+		person{"", 0},
+		person{"", 0},
+		person{"", 0},
+		person{"Karl", 10},
+		person{"", 0},
+	}
+}
+
 func main() {
 	println("\n== testStruct()\n")
 	testStruct()
 
 	println("\n== testArray()\n")
 	testArray()
+
+	println("\n== initializeArray()\n")
+	initializeArray()
 }
 
 /*

@@ -18,7 +18,7 @@ function declaration() {
 
 	p[0] = i;
 	var helloPtr = hello;
-	console.log("p:  " + p + " " + "\nhelloPtr:  " + helloPtr + "\n");
+	console.log("p:  " + p + " " + "\nhelloPtr: " + helloPtr + "\n");
 }
 
 function showAddress() {
@@ -83,11 +83,11 @@ function parameterByValue() {
 	};
 
 	var x = 3;
-	console.log("x =  " + x + "\n");
+	console.log("x = " + x + "\n");
 
 	var x1 = add(x);
-	console.log("x+1 =  " + x1 + "\n");
-	console.log("x =  " + x + "\n");
+	console.log("x+1 = " + x1 + "\n");
+	console.log("x = " + x + "\n");
 }
 
 function byReference_1() {
@@ -97,15 +97,15 @@ function byReference_1() {
 	};
 
 	var x = [3];
-	console.log("x =  " + x + "\n");
+	console.log("x = " + x + "\n");
 
 	var x1 = add(x);
-	console.log("x+1 =  " + x1 + "\n");
-	console.log("x =  " + x + "\n");
+	console.log("x+1 = " + x1 + "\n");
+	console.log("x = " + x + "\n");
 
 	x1 = add(x);
-	console.log("x+1 =  " + x1 + "\n");
-	console.log("x =  " + x + "\n");
+	console.log("x+1 = " + x1 + "\n");
+	console.log("x = " + x + "\n");
 }
 
 function byReference_2() {

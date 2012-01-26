@@ -18,7 +18,7 @@ func declaration() {
 
 	p = &i
 	helloPtr := &hello
-	println("p: ", p, "\nhelloPtr: ", helloPtr)
+	println("p: ", p, "\nhelloPtr:", helloPtr)
 }
 
 func showAddress() {
@@ -83,11 +83,11 @@ func parameterByValue() {
 	}
 
 	x := 3
-	println("x = ", x) // "x = 3"
+	println("x =", x) // "x = 3"
 
 	x1 := add(x)
-	println("x+1 = ", x1) // "x+1 = 4"
-	println("x = ", x)    // "x = 3"
+	println("x+1 =", x1) // "x+1 = 4"
+	println("x =", x)    // "x = 3"
 }
 
 func byReference_1() {
@@ -97,15 +97,15 @@ func byReference_1() {
 	}
 
 	x := 3
-	println("x = ", x) // "x = 3"
+	println("x =", x) // "x = 3"
 
 	x1 := add(&x)             // by passing the adress of x to it
-	println("x+1 = ", x1) // "x+1 = 4"
-	println("x = ", x)    // "x = 4"
+	println("x+1 =", x1) // "x+1 = 4"
+	println("x =", x)    // "x = 4"
 
 	x1 = add(&x)
-	println("x+1 = ", x1) // "x+1 = 5"
-	println("x = ", x)    // "x = 5"
+	println("x+1 =", x1) // "x+1 = 5"
+	println("x =", x)    // "x = 5"
 }
 
 func byReference_2() {
@@ -162,19 +162,19 @@ func main() {
 }
 
 /*
-helloPtr: 0x427ff8
+helloPtr: 0x428038
 
 == declaration()
 
-p:  0x7f58fb084f5c 
-helloPtr:  0x7f58fb084f68
+p:  0x7feaabc2af5c 
+helloPtr: 0x7feaabc2af68
 
 == showAddress()
 
-Hexadecimal address of 'i' is: 0x7f58fb084f68
-Hexadecimal address of 'hello' is: 0x7f58fb084f70
-Hexadecimal address of 'pi' is: 0x7f58fb084f6c
-Hexadecimal address of 'b' is: 0x7f58fb084f67
+Hexadecimal address of 'i' is: 0x7feaabc2af68
+Hexadecimal address of 'hello' is: 0x7feaabc2af70
+Hexadecimal address of 'pi' is: 0x7feaabc2af6c
+Hexadecimal address of 'b' is: 0x7feaabc2af67
 
 == access_1()
 
@@ -195,17 +195,17 @@ The double of this sum is: 90
 
 == parameterByValue()
 
-x =  3
-x+1 =  4
-x =  3
+x = 3
+x+1 = 4
+x = 3
 
 == byReference_1()
 
-x =  3
-x+1 =  4
-x =  4
-x+1 =  5
-x =  5
+x = 3
+x+1 = 4
+x = 4
+x+1 = 5
+x = 5
 
 == byReference_2()
 

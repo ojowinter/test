@@ -22,7 +22,7 @@ function testStruct() {
 	tom.name = "Tom", tom.age = 18;
 
 
-	var bob = new person(); bob.age = 25; bob.name = "Bob";
+	var bob = new person(); bob.age = 25, bob.name = "Bob";
 	var paul = new person("Paul", 43);
 
 	var _ = Older(tom, bob), tb_Older = _[0], tb_diff = _[1];
@@ -69,10 +69,29 @@ function testArray() {
 	console.log("The older of the group is: " + older.name + "\n");
 }
 
+function initializeArray() {
+
+	var array = new Array(10); for (var i=0; i<10; i++){ array[i]=new person("", 0); } array = [
+		new person("", 0),
+		new person("Paul", 23),
+		new person("Jim", 24),
+		new person("Sam", 84),
+		new person("Rob", 54),
+		new person("", 0),
+		new person("", 0),
+		new person("", 0),
+		new person("Karl", 10),
+		new person("", 0)
+	];
+}
+
 function main() {
 	console.log("\n== testStruct()\n\n");
 	testStruct();
 
 	console.log("\n== testArray()\n\n");
 	testArray();
+
+	console.log("\n== initializeArray()\n\n");
+	initializeArray();
 }

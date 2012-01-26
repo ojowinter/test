@@ -28,8 +28,8 @@ var a5 = new Array(4); for (var i=0; i<4; i++){ a5[i]=0; }
 var a6 = new Array(3); for (var i=0; i<3; i++){ a6[i]=new Array(5); for (var j=0; j<5; j++){ a6[i][j]=0; }}
 var a7 = new Array(2); for (var i=0; i<2; i++){ a7[i]=new Array(2); for (var j=0; j<2; j++){ a7[i][j]=new Array(2); for (var k=0; k<2; k++){ a7[i][j][k]=0; }}}
 
-var b1 = new Array(32); for (var i=0; i<32; i++){ b1[i]=0; }; b1 = [1, 2, 3, 4];
-var b2 = new Array(4); for (var i=0; i<4; i++){ b2[i]=0; }; b2 = [1, , , 4];
+var b1 = new Array(32); for (var i=0; i<32; i++){ b1[i]=0; } b1 = [1, 2, 3, 4];
+var b2 = new Array(4); for (var i=0; i<4; i++){ b2[i]=0; } b2 = [1, , , 4];
 
 
 
@@ -46,16 +46,16 @@ var s5 = ["a", "b", "c"];
 
 var m1 = {};
 var m2 = {};
-var m3 = {1: "first", 2: "second", 3: "third"};
-
-
-
-
-var m4 = {1: "first", 2: 2, 3: 3};
-
-
-
-
+var m3 = {
+	1: "first",
+	2: "second",
+	3: "third"
+};
+var m4 = {
+	1: "first",
+	2: 2,
+	3: 3
+};
 
 
 
