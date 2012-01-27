@@ -1,5 +1,5 @@
-GoJscript
-=========
+GoScript
+========
 
 Compiles transforming Go into JavaScript so you can continue using a clean and
 concise sintaxis.  
@@ -155,7 +155,7 @@ were used a convention in its name; i.e. with "foo-*12.21*.go" (12 for year, 21
 for month) can be got its date of releasing.
 
 I've done another little step with the building of
-[GoJscript](https://github.com/kless/GoJscript/), a compiler from Go to
+[GoScript](https://github.com/kless/GoScript/), a compiler from Go to
 JavaScript, although it isn't finished but its development is very advanced.
 
 Now, I hope that somebody motivated contributes to get that Go been the next
@@ -194,7 +194,7 @@ Thanks
 
 ## Copyright and licensing
 
-*Copyright 2011  The "GoJscript" Authors*. See file AUTHORS and CONTRIBUTORS.  
+*Copyright 2011  The "GoScript" Authors*. See file AUTHORS and CONTRIBUTORS.  
 Unless otherwise noted, the source files are distributed under the
 *Apache License, version 2.0* found in the LICENSE file.
 

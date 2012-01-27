@@ -160,7 +160,7 @@ panic: unreachable
 
 goroutine 1 [running]:
 main.testPanic()
-	/home/neo/Público/Proyectos/Go/GoJscript/test/func.go:91 +0x47
+	/home/neo/Público/Proyectos/Go/GoScript/test/func.go:91 +0x47
 main.main()
-	/home/neo/Público/Proyectos/Go/GoJscript/test/func.go:115 +0x108
+	/home/neo/Público/Proyectos/Go/GoScript/test/func.go:115 +0x108
 */

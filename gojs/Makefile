@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=github.com/kless/GoJscript/gojs
+TARG=github.com/kless/GoScript/gojs
 GOFILES=\
 	expr.go\
 	func.go\

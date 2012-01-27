@@ -6,7 +6,7 @@ import fmt "fmt" // Package implementing formatted I/O.
 import (
 	"os"
 
-	"github.com/kless/GoJscript/gojscript"
+	"github.com/kless/GoScript/gojscript"
 )
 
 var (
