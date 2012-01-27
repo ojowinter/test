@@ -146,9 +146,6 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 	//  Comment *CommentGroup // line comments; or nil
 	for _, s := range spec {
 		tSpec := s.(*ast.TypeSpec)
-		fields := make([]string, 0) // names of fields
-		initFields := "" // fields initialized
-		//!anonField := make([]bool, 0) // anonymous field
 
 		// Type checking
 		if tr.getExpression(tSpec.Type).hasError {
@@ -166,28 +163,36 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		//  Struct     token.Pos  // position of "struct" keyword
 		//  Fields     *FieldList // list of field declarations
 		//  Incomplete bool       // true if (source) fields are missing in the Fields list
+		//
+		// godoc go/ast FieldList
+		//  Opening token.Pos // position of opening parenthesis/brace, if any
+		//  List    []*Field  // field list; or nil
+		//  Closing token.Pos // position of closing parenthesis/brace, if any
 		case *ast.StructType:
 			if typ.Incomplete {
 				panic("list of fields incomplete ???")
 			}
 
-			// godoc go/ast FieldList
-			//  Opening token.Pos // position of opening parenthesis/brace, if any
-			//  List    []*Field  // field list; or nil
-			//  Closing token.Pos // position of closing parenthesis/brace, if any
+			var fieldNames, fieldLines, fieldsInit string
+			//!anonField := make([]bool, 0) // anonymous field
+
+			firstPos := tr.getLine(typ.Fields.Opening)
+			posOldField := firstPos
+			posNewField := 0
+			isFirst := true
+
+			// godoc go/ast Field
+			//  Doc     *CommentGroup // associated documentation; or nil
+			//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
+			//  Type    Expr          // field/method/parameter type
+			//  Tag     *BasicLit     // field tag; or nil
+			//  Comment *CommentGroup // line comments; or nil
 			for _, field := range typ.Fields.List {
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					tr.addError("%s: function type in struct",
 						tr.fset.Position(field.Pos()))
 					continue
 				}
-
-				// godoc go/ast Field
-				//  Doc     *CommentGroup // associated documentation; or nil
-				//  Names   []*Ident      // field/method/parameter names; or nil if anonymous field
-				//  Type    Expr          // field/method/parameter type
-				//  Tag     *BasicLit     // field tag; or nil
-				//  Comment *CommentGroup // line comments; or nil
 
 				// Type checking
 				if tr.getExpression(field.Type).hasError {
@@ -203,20 +208,57 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 
 				for _, v := range field.Names {
 					name := v.Name
-
 					if name == "_" {
 						continue
 					}
 
-					fields = append(fields, name)
+					if !isFirst {
+						fieldNames += "," + SP
+						fieldsInit += "," + SP
+					}
+					fieldNames += name
+					fieldsInit += init
 					//!anonField = append(anonField, false)
 
-					if initFields != "" {
-						initFields += "," + SP
+					// === Printing of fields
+					posNewField = tr.getLine(v.Pos())
+
+					if posNewField != posOldField {
+						fieldLines += strings.Repeat(NL, posNewField - posOldField)
+						fieldLines += strings.Repeat(TAB, tr.tabLevel + 1)
+					} else {
+						fieldLines += SP
 					}
-					initFields += init
+					fieldLines += fmt.Sprintf("this.%s=%s;", name, name)
+					posOldField = posNewField
+					// ===
+
+					if isFirst {
+						isFirst = false
+					}
 				}
 			}
+
+			// The right brace
+			posNewField = tr.getLine(typ.Fields.Closing)
+
+			if posNewField != posOldField {
+				fieldLines += strings.Repeat(NL, posNewField - posOldField)
+				fieldLines += strings.Repeat(TAB, tr.tabLevel)
+			} else {
+				fieldLines += SP
+			}
+
+			// Write
+			tr.addLine(tSpec.Pos())
+			tr.WriteString(fmt.Sprintf(
+				"function %s(%s)%s{%s}", tSpec.Name, fieldNames, SP, fieldLines))
+
+			// Store the name of new type with its values initialized
+			tr.types[tr.funcId][tr.blockId][tSpec.Name.Name] = fieldsInit
+
+			tr.line += posNewField - firstPos // update the global position
+
 		default:
 			panic(fmt.Sprintf("unimplemented: %T", typ))
 		}
@@ -226,21 +268,6 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 		}
 		if isGlobal {
 			tr.addIfExported(tSpec.Name)
-		}
-		// Store the name of new type with its values initialized
-		tr.types[tr.funcId][tr.blockId][tSpec.Name.Name] = initFields
-
-		// === Write
-		args, allFields := tr.getTypeFields(fields)
-
-		tr.addLine(tSpec.Pos())
-		tr.WriteString(fmt.Sprintf("function %s(%s)%s{", tSpec.Name, args, SP))
-
-		if len(allFields) != 0 {
-			tr.WriteString(allFields)
-			tr.WriteString("}")
-		} else {
-			tr.WriteString("}") //! empty struct
 		}
 	}
 }

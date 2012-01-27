@@ -628,7 +628,7 @@ func (e *expression) writeElts(elts []ast.Expr, Lbrace, Rbrace token.Pos) {
 		posOldElt = posNewElt
 	}
 
-	// The Right brace
+	// The right brace
 	posNewElt = e.tr.getLine(Rbrace)
 	if posNewElt != posOldElt {
 		e.WriteString(strings.Repeat(NL, posNewElt - posOldElt))

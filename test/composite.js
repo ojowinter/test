@@ -3,10 +3,10 @@
 
 
 
-function person(name, age) {this.name=name; this.age=age;}
-
-
-
+function person(name, age) {
+	this.name=name;
+	this.age=age;
+}
 
 
 function Older(p1, p2) {
