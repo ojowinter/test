@@ -97,13 +97,27 @@ function initializeArray() {
 		new person("Karl", 10),
 		new person("", 0)];
 
-	if (array1 === array2) {
-		console.log("array1 and array2 are equal\n");
+
+
+
+	if (array1.length === array2.length) {
+		console.log("array1 and array2 have the same length: ");
 	}
-
-
-
+	if (array1.length === 10) {
+		console.log("10\n");
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
 
 function main() {
 	console.log("\n== testStruct()\n\n");
@@ -114,4 +128,7 @@ function main() {
 
 	console.log("\n== initializeArray()\n\n");
 	initializeArray();
+
+
+
 }

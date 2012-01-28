@@ -246,12 +246,14 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(typ.Args[0])
 
 		case "print", "println":
-			e.WriteString(fmt.Sprintf("%s(%s)",
-				Function[call], e.tr.GetArgs(call, typ.Args)))
+			e.WriteString(fmt.Sprintf("console.log(%s)", e.tr.GetArgs(call, typ.Args)))
+
+		case "len":
+			e.WriteString(fmt.Sprintf("%s.length", e.tr.getExpression(typ.Args[0])))
 
 		case "panic":
-			e.WriteString(fmt.Sprintf("%s(%s)",
-				Function[call], e.tr.getExpression(typ.Args[0])))
+			e.WriteString(fmt.Sprintf("throw new Error(%s)",
+				e.tr.getExpression(typ.Args[0])))
 
 		// === Not supported
 		case "recover", "complex":
@@ -266,7 +268,7 @@ func (e *expression) transform(expr ast.Expr) {
 			return
 
 		// === Not implemented
-		case "append", "cap", "close", "copy", "delete", "len", "uintptr":
+		case "append", "cap", "close", "copy", "delete", "uintptr":
 			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
 
 		// Defined functions

@@ -3,7 +3,7 @@
 var test = {}; (function() {
 
 
-function s0() { }
+function s0() {}
 
 
 function s1(a, b, f, A) {

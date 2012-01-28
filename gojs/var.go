@@ -249,6 +249,11 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 				fieldLines += SP
 			}
 
+			// Empty structs
+			if fieldLines == SP {
+				fieldLines = ""
+			}
+
 			// Write
 			tr.addLine(tSpec.Pos())
 			tr.WriteString(fmt.Sprintf(

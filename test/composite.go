@@ -97,12 +97,26 @@ func initializeArray() {
 		person{"Karl", 10},
 		person{"", 0}}
 
-	if array1 == array2 {
+	/*if array1 == array2 {
 		println("array1 and array2 are equal")
-	}
-/*	if len(array1) == len(array2) {
-		println("array1 and array2 have the same length")
 	}*/
+	if len(array1) == len(array2) {
+		print("array1 and array2 have the same length: ")
+	}
+	if len(array1) == 10 {
+		println("10")
+	}
+}
+
+func multiArray() {
+	// declare and initialize an array of 2 arrays of 4 ints
+//	doubleArray := [2][4]int {[4]int{1,2,3,4}, [4]int{5,6,7,8}}
+
+	// simplify the previous declaration, with the '...' syntax
+//	doubleArray2 := [2][4]int {[...]int{1,2,3,4}, [...]int{5,6,7,8}}
+
+	// super simpification!
+//	doubleArray3 := [2][4]int {{1,2,3,4}, {5,6,7,8}}
 }
 
 func main() {
@@ -114,6 +128,9 @@ func main() {
 
 	println("\n== initializeArray()\n")
 	initializeArray()
+
+//	println("\n== multiArray()\n")
+//	multiArray()
 }
 
 /*
@@ -129,5 +146,5 @@ The older of the group is: Sam
 
 == initializeArray()
 
-array1 and array2 are equal
+array1 and array2 have the same length: 10
 */
