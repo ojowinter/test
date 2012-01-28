@@ -30,11 +30,11 @@ type expression struct {
 	varName  string // variable name
 	funcName string // function name
 
-	//isFunc     bool // anonymous function
-	isAddress  bool
-	isEllipsis bool
-	isNegative bool
-	isPointer  bool
+	//isFunc      bool // anonymous function
+	isAddress   bool
+	isEllipsis  bool
+	isInitArray bool // initialization of array
+	isPointer   bool
 
 	useIota       bool
 	skipSemicolon bool
@@ -65,7 +65,6 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
-		//false,
 		false,
 		false,
 		false,
@@ -137,14 +136,6 @@ func (e *expression) transform(expr ast.Expr) {
 		e.WriteString(typ.Value)
 		e.isBasicLit = true
 
-		/*// === Add the value
-		sign := ""
-
-		if e.isNegative {
-			sign = "-"
-		}
-		e.lenArray = append(e.lenArray, sign+typ.Value)*/
-
 	// http://golang.org/doc/go_spec.html#Comparison_operators
 	// https://developer.mozilla.org/en/JavaScript/Reference/Operators/Comparison_Operators
 	//
@@ -173,7 +164,7 @@ func (e *expression) transform(expr ast.Expr) {
 		x := e.tr.getExpression(typ.X)
 		y := e.tr.getExpression(typ.Y)
 
-		// JavaScript only allows to compare basic literals.
+		// JavaScript only compares basic literals.
 		if isOpEq && !x.isBasicLit && !x.returnBasicLit && !y.isBasicLit && !y.returnBasicLit {
 			stringify = true
 		}
@@ -339,7 +330,9 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
 		case *ast.ArrayType:
-			e.transform(typ.Type)
+			if !e.isInitArray {
+				e.transform(typ.Type)
+			}
 
 			if e.isEllipsis {
 				e.WriteString("[")
@@ -350,8 +343,9 @@ func (e *expression) transform(expr ast.Expr) {
 
 			// For arrays initialized
 			if len(typ.Elts) != 0 {
-				if compoType.Len != nil {
+				if !e.isInitArray && compoType.Len != nil {
 					e.WriteString(fmt.Sprintf("%s=%s", SP+e.varName+SP, SP))
+					e.isInitArray = true
 				}
 				e.WriteString("[")
 				e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
@@ -405,8 +399,13 @@ func (e *expression) transform(expr ast.Expr) {
 			e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
 			e.WriteString("}")
 
+		case nil:
+			e.WriteString("[")
+			e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
+			e.WriteString("]")
+
 		default:
-			panic(fmt.Sprintf("'CompositeLit' unimplemented: %s", compoType))
+			panic(fmt.Sprintf("'CompositeLit' unimplemented: %T", compoType))
 		}
 
 	// godoc go/ast Ellipsis
@@ -587,8 +586,6 @@ func (e *expression) transform(expr ast.Expr) {
 		op := typ.Op.String()
 
 		switch typ.Op {
-		case token.SUB:
-			e.isNegative = true
 		// Bitwise complement
 		case token.XOR:
 			op = "~"
@@ -655,7 +652,6 @@ func (e *expression) writeElts(elts []ast.Expr, Lbrace, Rbrace token.Pos) {
 		if i != 0 {
 			e.WriteString(",")
 		}
-
 		if posNewElt != posOldElt {
 			e.WriteString(strings.Repeat(NL, posNewElt - posOldElt))
 			e.WriteString(strings.Repeat(TAB, e.tr.tabLevel + 1))

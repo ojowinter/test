@@ -108,16 +108,24 @@ function initializeArray() {
 	}
 }
 
+function multiArray() {
+
+	var doubleArray_1 = []; for (var i=0; i<2; i++){ doubleArray_1[i]=[]; for (var j=0; j<4; j++){ doubleArray_1[i][j]=0; }} doubleArray_1 = [[1, 2, 3, 4], [5, 6, 7, 8]];
 
 
+	var doubleArray_2 = []; for (var i=0; i<2; i++){ doubleArray_2[i]=[]; for (var j=0; j<4; j++){ doubleArray_2[i][j]=0; }} doubleArray_2 = [
+		[1, 2, 3, 4], [5, 6, 7, 8]];
 
 
+	var doubleArray_3 = []; for (var i=0; i<2; i++){ doubleArray_3[i]=[]; for (var j=0; j<4; j++){ doubleArray_3[i][j]=0; }} doubleArray_3 = [
+		[1, 2, 3, 4],
+		[5, 6, 7, 8]
+	];
 
-
-
-
-
-
+	if (JSON.stringify(doubleArray_1) === JSON.stringify(doubleArray_2) && JSON.stringify(doubleArray_2) === JSON.stringify(doubleArray_3)) {
+		console.log("The three multi-dimensional arrays are equal\n");
+	}
+}
 
 function main() {
 	console.log("\n== testStruct()\n\n");
@@ -129,6 +137,6 @@ function main() {
 	console.log("\n== initializeArray()\n\n");
 	initializeArray();
 
-
-
+	console.log("\n== multiArray()\n\n");
+	multiArray();
 }
