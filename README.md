@@ -45,6 +45,27 @@ By this reason, the integers of 64 bits are unsupported.
 
 ## Transformation
 
+#### Comparison
+
+In JavaScript, when objects are compared then the identity is checked, no
+comparison of properties or elements is done.
+
+One way without a custom comparison function is to compare its string
+representations, but using the JSON object.  
+Here there is an example that shows the why:
+
+	var a = [1, [1, 1], 1], b = [[1, 1], [1, 1]];
+
+	console.log("String() => a: \"" + String(a) + "\" b: \"" + String(b) + "\"")
+	if (String(a) === String(b)) { console.log("String(): equals"); }
+
+	console.log("JSON() => a: \"" + JSON.stringify(a) + "\" b: \"" + JSON.stringify(b) + "\"")
+	if (JSON.stringify(a) === JSON.stringify(b)) { console.log("JSON(): equals"); }
+
+		String() => a: "1,1,1,1" b: "1,1,1,1"
+		String(): equals
+		JSON() => a: "[1,[1,1],1]" b: "[[1,1],[1,1]]"
+
 #### Pointers
 
 In JavaScript, the array is the only object that can be referenced. So:

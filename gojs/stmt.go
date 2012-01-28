@@ -31,6 +31,7 @@ type dataStmt struct {
 	lenCase int // number of "case" statements
 	iCase   int // index in "case" statements
 
+	isConst        bool
 	initIsPointer  bool // the value initialized is a pointer?
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?

@@ -33,6 +33,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 	if len(spec) > 1 {
 		isMultipleLine = true
 	}
+	tr.isConst = true
 
 	// godoc go/ast ValueSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
@@ -103,6 +104,8 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 			tr.WriteString(";")
 		}
 	}
+
+	tr.isConst = false
 }
 
 // Variables

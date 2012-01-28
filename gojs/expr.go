@@ -31,14 +31,18 @@ type expression struct {
 	funcName string // function name
 
 	//isFunc     bool // anonymous function
-	isNegative bool
-	isPointer  bool
 	isAddress  bool
 	isEllipsis bool
+	isNegative bool
+	isPointer  bool
 
 	useIota       bool
 	skipSemicolon bool
 	hasError      bool
+
+	// To handle comparisons
+	isBasicLit     bool
+	returnBasicLit bool
 
 	lenArray []string // the lengths of an array
 }
@@ -62,6 +66,8 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		id,
 		"",
 		//false,
+		false,
+		false,
 		false,
 		false,
 		false,
@@ -129,6 +135,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Value    string      // literal string
 	case *ast.BasicLit:
 		e.WriteString(typ.Value)
+		e.isBasicLit = true
 
 		/*// === Add the value
 		sign := ""
@@ -147,15 +154,43 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
 		op := typ.Op.String()
+		isOpEq := false
 
 		switch typ.Op {
 		case token.EQL:
 			op += "="
+			isOpEq = true
 		}
 
-		e.transform(typ.X)
+		if e.tr.isConst {
+			e.transform(typ.X)
+			e.WriteString(SP + op + SP)
+			e.transform(typ.Y)
+			break
+		}
+
+		stringify := false
+		x := e.tr.getExpression(typ.X)
+		y := e.tr.getExpression(typ.Y)
+
+		// JavaScript only allows to compare basic literals.
+		if isOpEq && !x.isBasicLit && !x.returnBasicLit && !y.isBasicLit && !y.returnBasicLit {
+			stringify = true
+		}
+
+		if stringify {
+			e.WriteString("JSON.stringify(" + x.String() + ")")
+		} else {
+			e.WriteString(x.String())
+		}
+
 		e.WriteString(SP + op + SP)
-		e.transform(typ.Y)
+
+		if stringify {
+			e.WriteString("JSON.stringify(" + y.String() + ")")
+		} else {
+			e.WriteString(y.String())
+		}
 
 	// godoc go/ast CallExpr
 	//  Fun      Expr      // function expression
@@ -244,12 +279,14 @@ func (e *expression) transform(expr ast.Expr) {
 			"int", "int8", "int16", "int32",
 			"float32", "float64", "byte", "rune", "string":
 			e.transform(typ.Args[0])
+			e.returnBasicLit = true
 
 		case "print", "println":
 			e.WriteString(fmt.Sprintf("console.log(%s)", e.tr.GetArgs(call, typ.Args)))
 
 		case "len":
 			e.WriteString(fmt.Sprintf("%s.length", e.tr.getExpression(typ.Args[0])))
+			e.returnBasicLit = true
 
 		case "panic":
 			e.WriteString(fmt.Sprintf("throw new Error(%s)",

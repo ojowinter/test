@@ -97,14 +97,14 @@ func initializeArray() {
 		person{"Karl", 10},
 		person{"", 0}}
 
-	/*if array1 == array2 {
-		println("array1 and array2 are equal")
-	}*/
 	if len(array1) == len(array2) {
 		print("array1 and array2 have the same length: ")
 	}
 	if len(array1) == 10 {
 		println("10")
+	}
+	if array1 == array2 {
+		println("array1 and array2 are equals")
 	}
 }
 
@@ -147,4 +147,5 @@ The older of the group is: Sam
 == initializeArray()
 
 array1 and array2 have the same length: 10
+array1 and array2 are equals
 */
