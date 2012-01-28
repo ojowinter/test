@@ -33,7 +33,7 @@ type expression struct {
 	//isFunc      bool // anonymous function
 	isAddress   bool
 	isEllipsis  bool
-	isInitArray bool // initialization of array
+	isInitArray bool // initialization of array?
 	isPointer   bool
 
 	useIota       bool
@@ -563,6 +563,24 @@ func (e *expression) transform(expr ast.Expr) {
 
 			e.WriteString(goName)
 		}
+
+	// godoc go/ast SliceExpr
+	//  X      Expr      // expression
+	//  Lbrack token.Pos // position of "["
+	//  Low    Expr      // begin of slice range; or nil
+	//  High   Expr      // end of slice range; or nil
+	//  Rbrack token.Pos // position of "]"
+	case *ast.SliceExpr:
+		slice := "0"
+
+		if typ.Low != nil {
+			slice = typ.Low.(*ast.BasicLit).Value
+		}
+		if typ.High != nil {
+			slice += "," + typ.High.(*ast.BasicLit).Value
+		}
+
+		e.WriteString(fmt.Sprintf("%s.slice(%s)", typ.X.(*ast.Ident), slice))
 
 	// godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword

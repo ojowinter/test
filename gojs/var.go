@@ -476,8 +476,11 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 	case nil:
 		return "", false
 	case *ast.ArrayType:
-		tr.skipSemicolon = true
-		return tr.getExpression(t).String(), false
+		if t.Len != nil {
+			tr.skipSemicolon = true
+			return tr.getExpression(t).String(), false
+		}
+		return "[]", false
 
 	case *ast.Ident:
 		ident = t

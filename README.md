@@ -45,6 +45,14 @@ By this reason, the integers of 64 bits are unsupported.
 
 ## Transformation
 
+#### Initialization
+
+The values are initialized explicitly like Go does, else they would be
+"undefined".
+
+	var s1; if (s1 === undefined) { alert("s1 is of value 'undefined'"); }
+	var s2 = ""; if (s2 === "") { alert("s2 is an empty string"); }
+
 #### Comparison
 
 In JavaScript, when objects are compared then the identity is checked, no

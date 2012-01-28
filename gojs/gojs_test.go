@@ -28,6 +28,7 @@ func TestStruct(t *testing.T)  { compile("decl_struct.go", t) }
 func TestPointer(t *testing.T) { compile("pointer.go", t) }
 func TestFunc(t *testing.T)    { compile("func.go", t) }
 func TestCompo(t *testing.T)   { compile("composite.go", t) }
+func TestSlice(t *testing.T)   { compile("slice.go", t) }
 //func TestOp(t *testing.T)      { compile("operator.go", t) }
 
 // == Warnings
