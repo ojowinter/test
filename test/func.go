@@ -29,9 +29,9 @@ func simpleFunc() {
 	max_xy := max(x, y) // calling max(x, y)
 	max_xz := max(x, z) // calling max(x, z)
 
-	fmt.Printf("max(%d, %d) = %d\n", x, y, max_xy)
-	fmt.Printf("max(%d, %d) = %d\n", x, z, max_xz)
-	fmt.Printf("max(%d, %d) = %d\n", y, z, max(y, z)) // just call it here
+	print(fmt.Sprintf("max(%d, %d) = %d\n", x, y, max_xy))
+	print(fmt.Sprintf("max(%d, %d) = %d\n", x, z, max_xz))
+	print(fmt.Sprintf("max(%d, %d) = %d\n", y, z, max(y, z))) // just call it here
 }
 
 func twoOuputValues() {
@@ -44,8 +44,8 @@ func twoOuputValues() {
 	y := 4
 	xPLUSy, xTIMESy := SumAndProduct(x, y)
 
-	fmt.Printf("%d + %d = %d\n", x, y, xPLUSy)  // 3 + 4 = 7
-	fmt.Printf("%d * %d = %d\n", x, y, xTIMESy) // 3 * 4 = 12
+	print(fmt.Sprintf("%d + %d = %d\n", x, y, xPLUSy))  // 3 + 4 = 7
+	print(fmt.Sprintf("%d * %d = %d\n", x, y, xTIMESy)) // 3 * 4 = 12
 }
 
 func resultVariable() {
@@ -61,9 +61,9 @@ func resultVariable() {
 	for i := -2.0; i <= 10; i++ {
 		sqroot, ok := MySqrt(i)
 		if ok {
-			fmt.Printf("The square root of %f is %f\n", i, sqroot)
+			print(fmt.Sprintf("The square root of %f is %f\n", i, sqroot))
 		} else {
-			fmt.Printf("Sorry, no square root for %f\n", i)
+			print(fmt.Sprintf("Sorry, no square root for %f\n", i))
 		}
 	}
 }
@@ -77,7 +77,7 @@ func testReturn_1() {
 	}
 
 	_, check := MySqrt(5)
-	fmt.Println(check) // true
+	println(check) // true
 }
 
 func testReturn_2(n int) (ok bool) {

@@ -29,9 +29,9 @@ function simpleFunc() {
 	var max_xy = max(x, y);
 	var max_xz = max(x, z);
 
-	alert("max(" + x + ", " + y + ") = " + max_xy + "\n");
-	alert("max(" + x + ", " + z + ") = " + max_xz + "\n");
-	alert("max(" + y + ", " + z + ") = " + max(y, z) + "\n");
+	console.log("max(" + x + ", " + y + ") = " + max_xy + "\n");
+	console.log("max(" + x + ", " + z + ") = " + max_xz + "\n");
+	console.log("max(" + y + ", " + z + ") = " + max(y, z) + "\n");
 }
 
 function twoOuputValues() {
@@ -44,8 +44,8 @@ function twoOuputValues() {
 	var y = 4;
 	var _ = SumAndProduct(x, y), xPLUSy = _[0], xTIMESy = _[1];
 
-	alert("" + x + " + " + y + " = " + xPLUSy + "\n");
-	alert("" + x + " * " + y + " = " + xTIMESy + "\n");
+	console.log("" + x + " + " + y + " = " + xPLUSy + "\n");
+	console.log("" + x + " * " + y + " = " + xTIMESy + "\n");
 }
 
 function resultVariable() {
@@ -61,9 +61,9 @@ function resultVariable() {
 	for (var i = -2.0; i <= 10; i++) {
 		var _ = MySqrt(i), sqroot = _[0], ok = _[1];
 		if (ok) {
-			alert("The square root of " + i + " is " + sqroot + "\n");
+			console.log("The square root of " + i + " is " + sqroot + "\n");
 		} else {
-			alert("Sorry, no square root for " + i + "\n");
+			console.log("Sorry, no square root for " + i + "\n");
 		}
 	}
 }
@@ -77,7 +77,7 @@ function testReturn_1() {
 	};
 
 	var check = MySqrt(5)[1];
-	alert(check + "\n");
+	console.log(check + "\n");
 }
 
 function testReturn_2(n) { var ok = false;

@@ -29,14 +29,14 @@ func testStruct() {
 	tp_Older, tp_diff := Older(tom, paul)
 	bp_Older, bp_diff := Older(bob, paul)
 
-	fmt.Printf("Of %s and %s, %s is older by %d years\n",
-		tom.name, bob.name, tb_Older.name, tb_diff)
+	print(fmt.Sprintf("Of %s and %s, %s is older by %d years\n",
+		tom.name, bob.name, tb_Older.name, tb_diff))
 
-	fmt.Printf("Of %s and %s, %s is older by %d years\n",
-		tom.name, paul.name, tp_Older.name, tp_diff)
+	print(fmt.Sprintf("Of %s and %s, %s is older by %d years\n",
+		tom.name, paul.name, tp_Older.name, tp_diff))
 
-	fmt.Printf("Of %s and %s, %s is older by %d years\n",
-		bob.name, paul.name, bp_Older.name, bp_diff)
+	print(fmt.Sprintf("Of %s and %s, %s is older by %d years\n",
+		bob.name, paul.name, bp_Older.name, bp_diff))
 }
 
 // Return the older person in a group of 10 persons.

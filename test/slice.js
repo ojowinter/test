@@ -9,23 +9,108 @@ function shortHand() {
 	var a_slice = [], b_slice = [];
 
 	console.log("=== Slicing\n");
-	a_slice = array.slice(4,8);console.log(a_slice + "\n");
-	a_slice = array.slice(6,7);console.log(a_slice + "\n");
+	a_slice = array.slice(4,8);
+	console.log(a_slice + "\n");
+	a_slice = array.slice(6,7);
+	console.log(a_slice + "\n");
 
 	console.log("\n=== Shorthands\n");
-	a_slice = array.slice(0,3);console.log(a_slice + "\n");
-	a_slice = array.slice(5);console.log(a_slice + "\n");
-	a_slice = array.slice(0);console.log(a_slice + "\n");
+	a_slice = array.slice(0,3);
+	console.log(a_slice + "\n");
+	a_slice = array.slice(5);
+	console.log(a_slice + "\n");
+	a_slice = array.slice(0);
+	console.log(a_slice + "\n");
 
 	console.log("\n=== Slice of a slice\n");
-	a_slice = array.slice(3,7);console.log(a_slice + "\n");
-	b_slice = a_slice.slice(1,3);console.log(b_slice + "\n");
-	b_slice = a_slice.slice(0,3);console.log(b_slice + "\n");
-	b_slice = a_slice.slice(0);console.log(b_slice + "\n");
+	a_slice = array.slice(3,7);
+	console.log(a_slice + "\n");
+	b_slice = a_slice.slice(1,3);
+	console.log(b_slice + "\n");
+	b_slice = a_slice.slice(0,3);
+	console.log(b_slice + "\n");
+	b_slice = a_slice.slice(0);
+	console.log(b_slice + "\n");
+}
+
+
+function Max(slice) {
+	var max = slice[0];
+	for (var index = 1; index < slice.length; index++) {
+		if (slice[index] > max) {
+			max = slice[index];
+		}
+	}
+	return max;
+}
+
+function useFunc() {
+
+	var A1 = []; for (var i=0; i<10; i++){ A1[i]=0; } A1 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	var A2 = []; for (var i=0; i<4; i++){ A2[i]=0; } A2 = [1, 2, 3, 4];
+	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
+
+
+	var slice = [];
+
+	slice = A1.slice(0);
+	console.log("The biggest value of A1 is " + Max(slice) + "\n");
+	slice = A2.slice(0);
+	console.log("The biggest value of A2 is " + Max(slice) + "\n");
+	slice = A3.slice(0);
+	console.log("The biggest value of A3 is " + Max(slice) + "\n");
+}
+
+function PrintByteSlice(name, slice) {
+	var s = "" + name + " is : [";
+	for (var index = 0; index < slice.length - 1; index++) {
+		s += "" + slice[index] + ",";
+	}
+	s += "" + slice[slice.length - 1] + "]";
+
+	console.log(s + "\n");
+}
+
+function reference() {
+
+	var A = []; for (var i=0; i<10; i++){ A[i]=0; } A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+
+
+	var slice1 = A.slice(3,7);
+	var slice2 = A.slice(5);
+	var slice3 = slice1.slice(0,2);
+
+
+	console.log("=== First content of A and the slices\n");
+	PrintByteSlice("A", A.slice(0));
+	PrintByteSlice("slice1", slice1);
+	PrintByteSlice("slice2", slice2);
+	PrintByteSlice("slice3", slice3);
+
+
+	A[4] = 'E';
+	console.log("\n=== Content of A and the slices, after changing 'e' to 'E' in array A\n");
+	PrintByteSlice("A", A.slice(0));
+	PrintByteSlice("slice1", slice1);
+	PrintByteSlice("slice2", slice2);
+	PrintByteSlice("slice3", slice3);
+
+
+	slice2[1] = 'G';
+	console.log("\n=== Content of A and the slices, after changing 'g' to 'G' in slice2\n");
+	PrintByteSlice("A", A.slice(0));
+	PrintByteSlice("slice1", slice1);
+	PrintByteSlice("slice2", slice2);
+	PrintByteSlice("slice3", slice3);
 }
 
 function main() {
 	console.log("\n== shortHand()\n\n");
 	shortHand();
 
+	console.log("\n== useFunc()\n\n");
+	useFunc();
+
+	console.log("\n== reference()\n\n");
+	reference();
 }

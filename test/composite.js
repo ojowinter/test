@@ -29,13 +29,13 @@ function testStruct() {
 	var _ = Older(tom, paul), tp_Older = _[0], tp_diff = _[1];
 	var _ = Older(bob, paul), bp_Older = _[0], bp_diff = _[1];
 
-	alert("Of " + tom.name + " and " + bob.name + ", " + tb_Older.name + " is older by " + tb_diff + " years\n");
+	console.log("Of " + tom.name + " and " + bob.name + ", " + tb_Older.name + " is older by " + tb_diff + " years\n");
 
 
-	alert("Of " + tom.name + " and " + paul.name + ", " + tp_Older.name + " is older by " + tp_diff + " years\n");
+	console.log("Of " + tom.name + " and " + paul.name + ", " + tp_Older.name + " is older by " + tp_diff + " years\n");
 
 
-	alert("Of " + bob.name + " and " + paul.name + ", " + bp_Older.name + " is older by " + bp_diff + " years\n");
+	console.log("Of " + bob.name + " and " + paul.name + ", " + bp_Older.name + " is older by " + bp_diff + " years\n");
 
 }
 
