@@ -25,11 +25,14 @@ func init() {
 func TestConst(t *testing.T)   { compile("decl_const.go", t) }
 func TestVar(t *testing.T)     { compile("decl_var.go", t) }
 func TestStruct(t *testing.T)  { compile("decl_struct.go", t) }
+//func TestOp(t *testing.T)      { compile("operator.go", t) }
+
 func TestPointer(t *testing.T) { compile("pointer.go", t) }
 func TestFunc(t *testing.T)    { compile("func.go", t) }
 func TestCompo(t *testing.T)   { compile("composite.go", t) }
 func TestSlice(t *testing.T)   { compile("slice.go", t) }
-//func TestOp(t *testing.T)      { compile("operator.go", t) }
+//func TestMap(t *testing.T)     { compile("map.go", t) }
+func TestMethod(t *testing.T)  { compile("method.go", t) }
 
 // == Warnings
 //

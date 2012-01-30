@@ -104,15 +104,38 @@ func reference() {
 	PrintByteSlice("slice3", slice3)
 }
 
+func resize() {
+	var slice []int
+
+	println("=== Before calling make")
+	if slice == nil {
+		println("slice == nil")
+	}
+	println("len(slice) ==", len(slice))
+	println("cap(slice) ==", cap(slice))
+
+	// Let's allocate the underlying array:
+	println("=== After calling make")
+	slice = make([]int, 4)
+	println(fmt.Sprintf("slice == %v", slice))
+	println("len(slice) ==", len(slice))
+	println("cap(slice) ==", cap(slice))
+
+	// Let's change things:
+	println("=== Let's change some of its elements: slice[1], slice[3] = 2, 3")
+	slice[1], slice[3] = 2, 3
+	println(fmt.Sprintf("slice == %v", slice))
+}
+
 func main() {
 	println("\n== shortHand()\n")
 	shortHand()
-
 	println("\n== useFunc()\n")
 	useFunc()
-
 	println("\n== reference()\n")
 	reference()
+	println("\n== resize()\n")
+	resize()
 }
 
 /*
@@ -159,4 +182,16 @@ slice1 is : ['d','E','f','G']
 slice2 is : ['f','G','h','i','j']
 slice3 is : ['d','E']
 
+== resize()
+
+=== Before calling make
+slice == nil
+len(slice) == 0
+cap(slice) == 0
+=== After calling make
+slice == [0 0 0 0]
+len(slice) == 4
+cap(slice) == 4
+=== Let's change some of its elements: slice[1], slice[3] = 2, 3
+slice == [0 2 0 3]
 */

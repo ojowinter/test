@@ -104,13 +104,36 @@ function reference() {
 	PrintByteSlice("slice3", slice3);
 }
 
+function resize() {
+	var slice = [];
+
+	console.log("=== Before calling make\n");
+	if (slice === undefined) {
+		console.log("slice == nil\n");
+	}
+	console.log("len(slice) == " + slice.length + "\n");
+	console.log("cap(slice) == " + 'cap' + "\n");
+
+
+	console.log("=== After calling make\n");
+	slice = []; for (var i=0; i<4; i++){ slice[i]=0; }
+	console.log("slice == " + slice + "\n");
+	console.log("len(slice) == " + slice.length + "\n");
+	console.log("cap(slice) == " + 'cap' + "\n");
+
+
+	console.log("=== Let's change some of its elements: slice[1], slice[3] = 2, 3\n");
+	slice[1] = 2, slice[3] = 3;
+	console.log("slice == " + slice + "\n");
+}
+
 function main() {
 	console.log("\n== shortHand()\n\n");
 	shortHand();
-
 	console.log("\n== useFunc()\n\n");
 	useFunc();
-
 	console.log("\n== reference()\n\n");
 	reference();
+	console.log("\n== resize()\n\n");
+	resize();
 }

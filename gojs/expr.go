@@ -279,6 +279,9 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(fmt.Sprintf("%s.length", e.tr.getExpression(typ.Args[0])))
 			e.returnBasicLit = true
 
+		case "cap":
+			e.WriteString("'cap'")
+
 		case "panic":
 			e.WriteString(fmt.Sprintf("throw new Error(%s)",
 				e.tr.getExpression(typ.Args[0])))
@@ -296,7 +299,7 @@ func (e *expression) transform(expr ast.Expr) {
 			return
 
 		// === Not implemented
-		case "append", "cap", "close", "copy", "delete", "uintptr":
+		case "append", "close", "copy", "delete", "uintptr":
 			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
 
 		// Defined functions
@@ -429,7 +432,7 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Results *FieldList // (outgoing) results; or nil
 	case *ast.FuncType:
 		//e.isFunc = true
-		e.tr.writeFunc(nil, typ)
+		e.tr.writeFunc(nil, nil, typ)
 
 	// godoc go/ast Ident
 	//  Name    string    // identifier name
@@ -449,6 +452,7 @@ func (e *expression) transform(expr ast.Expr) {
 		// https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/undefined
 		case "nil":
 			e.WriteString("undefined")
+			e.isBasicLit = true
 
 		// Not supported
 		case "int64", "uint64", "complex64", "complex128":
@@ -522,6 +526,9 @@ func (e *expression) transform(expr ast.Expr) {
 		switch t := typ.X.(type) {
 		case *ast.Ident:
 			x = t.Name
+			if e.tr.recvVar != "" && x == e.tr.recvVar {
+				x = "this"
+			}
 		case *ast.IndexExpr:
 			e.transform(t)
 			e.WriteString("." + typ.Sel.Name)

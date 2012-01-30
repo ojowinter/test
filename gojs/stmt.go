@@ -40,6 +40,7 @@ type dataStmt struct {
 
 	lastVarName string // for composite types
 	results     string // variables names that return must use
+	recvVar     string // receiver variable (in methods)
 }
 
 // Transforms the Go statement.

@@ -36,7 +36,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		return
 	}
 
-	isFuncInit := false
+	isFuncInit := false // function init()
 
 	// === Initialization to save variables created on this function
 	if decl.Name != nil { // discard literal functions
@@ -53,7 +53,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	tr.addIfExported(decl.Name)
 
 	if decl.Name.Name != "init" {
-		tr.writeFunc(decl.Name, decl.Type)
+		tr.writeFunc(decl.Recv, decl.Name, decl.Type)
 	} else {
 		isFuncInit = true
 		tr.WriteString("(function()" + SP)
@@ -69,6 +69,9 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 	if decl.Name != nil {
 		tr.funcId = 0
 		tr.blockId = 0
+	}
+	if decl.Recv != nil {
+		tr.recvVar = ""
 	}
 }
 
@@ -90,8 +93,14 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 //  Comment *CommentGroup // line comments; or nil
 
 // Writes the function declaration.
-func (tr *transform) writeFunc(name *ast.Ident, typ *ast.FuncType) {
-	if name != nil {
+func (tr *transform) writeFunc(recv *ast.FieldList, name *ast.Ident, typ *ast.FuncType) {
+	if recv != nil { // method
+		field := recv.List[0]
+		tr.recvVar = field.Names[0].Name
+
+		tr.WriteString(fmt.Sprintf("%s.prototype.%s%s=%sfunction(%s)%s",
+			field.Type, name,SP, SP, joinParams(typ), SP))
+	} else if name != nil {
 		tr.WriteString(fmt.Sprintf("function %s(%s)%s", name, joinParams(typ), SP))
 	} else { // Literal function
 		tr.WriteString(fmt.Sprintf("function(%s)%s", joinParams(typ), SP))
