@@ -135,28 +135,20 @@ function byReference_3() {
 function main() {
 	console.log("\n== declaration()\n\n");
 	declaration();
-
 	console.log("\n== showAddress()\n\n");
 	showAddress();
-
 	console.log("\n== access_1()\n\n");
 	access_1();
-
 	console.log("\n== access_2()\n\n");
 	access_2();
-
 	console.log("\n== allocation()\n\n");
 	allocation();
-
 	console.log("\n== parameterByValue()\n\n");
 	parameterByValue();
-
 	console.log("\n== byReference_1()\n\n");
 	byReference_1();
-
 	console.log("\n== byReference_2()\n\n");
 	byReference_2();
-
 	console.log("\n== byReference_3()\n\n");
 	byReference_3();
 }

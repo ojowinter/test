@@ -40,6 +40,8 @@ function testStruct() {
 }
 
 
+
+
 function Older10(people) {
 	var older = people[0];
 
@@ -68,6 +70,8 @@ function testArray() {
 
 	console.log("The older of the group is: " + older.name + "\n");
 }
+
+
 
 function initializeArray() {
 
@@ -108,6 +112,8 @@ function initializeArray() {
 	}
 }
 
+
+
 function multiArray() {
 
 	var doubleArray_1 = []; for (var i=0; i<2; i++){ doubleArray_1[i]=[]; for (var j=0; j<4; j++){ doubleArray_1[i][j]=0; }} doubleArray_1 = [[1, 2, 3, 4], [5, 6, 7, 8]];
@@ -127,16 +133,15 @@ function multiArray() {
 	}
 }
 
+
+
 function main() {
 	console.log("\n== testStruct()\n\n");
 	testStruct();
-
 	console.log("\n== testArray()\n\n");
 	testArray();
-
 	console.log("\n== initializeArray()\n\n");
 	initializeArray();
-
 	console.log("\n== multiArray()\n\n");
 	multiArray();
 }

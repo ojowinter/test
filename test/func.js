@@ -95,22 +95,16 @@ function testPanic() {
 function main() {
 	console.log("\n== singleLine()\n\n");
 	singleLine();
-
 	console.log("\n== simpleFunc()\n\n");
 	simpleFunc();
-
 	console.log("\n== twoOuputValues()\n\n");
 	twoOuputValues();
-
 	console.log("\n== resultVariable()\n\n");
 	resultVariable();
-
 	console.log("\n== testReturn_1()\n\n");
 	testReturn_1();
-
 	console.log("\n== testReturn_2(-1)\n\n");
 	console.log(testReturn_2(-1) + "\n");
-
 	console.log("\n== testPanic()\n\n");
 	testPanic();
 }

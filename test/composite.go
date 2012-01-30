@@ -39,6 +39,8 @@ func testStruct() {
 		bob.name, paul.name, bp_Older.name, bp_diff))
 }
 
+// * * *
+
 // Return the older person in a group of 10 persons.
 func Older10(people [10]person) person {
 	older := people[0] // The first one is the older for now.
@@ -68,6 +70,8 @@ func testArray() {
 
 	println("The older of the group is:", older.name)
 }
+
+// * * *
 
 func initializeArray() {
 	// Declare and initialize an array A of 10 person.
@@ -108,6 +112,8 @@ func initializeArray() {
 	}
 }
 
+// * * *
+
 func multiArray() {
 	// declare and initialize an array of 2 arrays of 4 ints
 	doubleArray_1 := [2][4]int{[4]int{1, 2, 3, 4}, [4]int{5, 6, 7, 8}}
@@ -127,16 +133,15 @@ func multiArray() {
 	}
 }
 
+// * * *
+
 func main() {
 	println("\n== testStruct()\n")
 	testStruct()
-
 	println("\n== testArray()\n")
 	testArray()
-
 	println("\n== initializeArray()\n")
 	initializeArray()
-
 	println("\n== multiArray()\n")
 	multiArray()
 }

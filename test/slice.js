@@ -34,6 +34,8 @@ function shortHand() {
 }
 
 
+
+
 function Max(slice) {
 	var max = slice[0];
 	for (var index = 1; index < slice.length; index++) {
@@ -60,6 +62,8 @@ function useFunc() {
 	slice = A3.slice(0);
 	console.log("The biggest value of A3 is " + Max(slice) + "\n");
 }
+
+
 
 function PrintByteSlice(name, slice) {
 	var s = "" + name + " is : [";
@@ -104,6 +108,8 @@ function reference() {
 	PrintByteSlice("slice3", slice3);
 }
 
+
+
 function resize() {
 	var slice = [];
 
@@ -126,6 +132,8 @@ function resize() {
 	slice[1] = 2, slice[3] = 3;
 	console.log("slice == " + slice + "\n");
 }
+
+
 
 function main() {
 	console.log("\n== shortHand()\n\n");

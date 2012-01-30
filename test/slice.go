@@ -33,6 +33,8 @@ func shortHand() {
 	println(string(b_slice))
 }
 
+// * * *
+
 // Return the biggest value in a slice of ints.
 func Max(slice []int) int { // The input parameter is a slice of ints.
 	max := slice[0] // The first element is the max for now.
@@ -60,6 +62,8 @@ func useFunc() {
 	slice = A3[:] // Take all A3 elements.
 	println("The biggest value of A3 is", Max(slice))
 }
+
+// * * *
 
 func PrintByteSlice(name string, slice []byte) {
 	s := fmt.Sprintf("%s is : [", name)
@@ -104,6 +108,8 @@ func reference() {
 	PrintByteSlice("slice3", slice3)
 }
 
+// * * *
+
 func resize() {
 	var slice []int
 
@@ -126,6 +132,8 @@ func resize() {
 	slice[1], slice[3] = 2, 3
 	println(fmt.Sprintf("slice == %v", slice))
 }
+
+// * * *
 
 func main() {
 	println("\n== shortHand()\n")

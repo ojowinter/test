@@ -526,7 +526,7 @@ func (e *expression) transform(expr ast.Expr) {
 		switch t := typ.X.(type) {
 		case *ast.Ident:
 			x = t.Name
-			if e.tr.recvVar != "" && x == e.tr.recvVar {
+			if x == e.tr.recvVar {
 				x = "this"
 			}
 		case *ast.IndexExpr:

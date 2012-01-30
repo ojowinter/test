@@ -158,13 +158,10 @@ function testRange() {
 function main() {
 	console.log("\n== testIf()\n\n");
 	testIf();
-
 	console.log("\n== testSwitch()\n\n");
 	console.log(testSwitch() + "\n");
-
 	console.log("\n== testFor()\n\n");
 	testFor();
-
 	console.log("\n== testRange()\n\n");
 	testRange();
 }

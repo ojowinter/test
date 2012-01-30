@@ -158,13 +158,10 @@ func testRange() {
 func main() {
 	println("\n== testIf()\n")
 	testIf()
-
 	println("\n== testSwitch()\n")
 	println(testSwitch())
-
 	println("\n== testFor()\n")
 	testFor()
-
 	println("\n== testRange()\n")
 	testRange()
 }

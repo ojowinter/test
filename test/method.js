@@ -6,6 +6,19 @@ function Rectangle(width, height) {
 	this.width=width; this.height=height;
 }
 
+function area(r) {
+	return r.width * r.height;
+}
+
+function noMethod() {
+	var r1 = new Rectangle(12, 2);
+	var r2 = new Rectangle(9, 4);
+	console.log("Area of r1 is: " + area(r1) + "\n");
+	console.log("Area of r2 is: " + area(r2) + "\n");
+}
+
+
+
 Rectangle.prototype.area = function() {
 	return this.width * this.height;
 }
@@ -18,23 +31,11 @@ Circle.prototype.area = function() {
 	return this.radius * this.radius * Math.PI;
 }
 
-function noMethod() {
-	var area = function(r) {
-		return r.width * r.height;
-	};
-
-	var r1 = new Rectangle(12, 2);
-	var r2 = new Rectangle(9, 4);
-	console.log("Area of r1 is: " + area(r1) + "\n");
-	console.log("Area of r2 is: " + area(r2) + "\n");
-}
-
-function test_1() {
+function method() {
 	var r1 = new Rectangle(12, 2);
 	var r2 = new Rectangle(9, 4);
 	var c1 = new Circle(10);
 	var c2 = new Circle(25);
-
 
 	console.log("Area of r1 is: " + r1.area() + "\n");
 	console.log("Area of r2 is: " + r2.area() + "\n");
@@ -42,9 +43,51 @@ function test_1() {
 	console.log("Area of c2 is: " + c2.area() + "\n");
 }
 
+
+
+function SliceOfints(t) { this.t=t; }
+function AgesByNames(t) { this.t=t; }
+
+SliceOfints.prototype.sum = function() {
+	var sum = 0;
+	var value; for (_ in s) { value = s[_];
+		sum += value;
+	}
+	return sum;
+}
+
+AgesByNames.prototype.older = function() {
+	var a = 0;
+	var n = "";
+	var value; for (key in people) { value = people[key];
+		if (value > a) {
+			a = value;
+			n = key;
+		}
+	}
+	return n;
+}
+
+function withNamedType() {
+	var s = new SliceOfints(1, 2, 3, 4, 5);
+	var folks = new AgesByNames(); folks."Bob" = 36, folks."Mike" = 44, folks."Jane" = 30, folks."Popey" = 100;
+
+
+
+
+
+
+	console.log("The sum of ints in the slice s is: " + s.sum() + "\n");
+	console.log("The older in the map folks is: " + folks.older() + "\n");
+}
+
+
+
 function main() {
 	console.log("\n== noMethod()\n\n");
 	noMethod();
-	console.log("\n== test_1()\n\n");
-	test_1();
+	console.log("\n== method()\n\n");
+	method();
+	console.log("\n== withNamedType()\n\n");
+	withNamedType();
 }

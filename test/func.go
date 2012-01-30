@@ -95,22 +95,16 @@ func testPanic() {
 func main() {
 	println("\n== singleLine()\n")
 	singleLine()
-
 	println("\n== simpleFunc()\n")
 	simpleFunc()
-
 	println("\n== twoOuputValues()\n")
 	twoOuputValues()
-
 	println("\n== resultVariable()\n")
 	resultVariable()
-
 	println("\n== testReturn_1()\n")
 	testReturn_1()
-
 	println("\n== testReturn_2(-1)\n")
 	println(testReturn_2(-1))
-
 	println("\n== testPanic()\n")
 	testPanic()
 }

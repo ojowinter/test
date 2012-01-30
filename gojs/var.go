@@ -268,7 +268,9 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 			tr.line += posNewField - firstPos // update the global position
 
 		default:
-			panic(fmt.Sprintf("unimplemented: %T", typ))
+			tr.addLine(tSpec.Pos())
+			tr.WriteString(fmt.Sprintf("function %s(t)%s{%sthis.t=t;%s}",
+				tSpec.Name, SP, SP, SP))
 		}
 
 		if tr.hasError {

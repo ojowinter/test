@@ -135,28 +135,20 @@ func byReference_3() {
 func main() {
 	println("\n== declaration()\n")
 	declaration()
-
 	println("\n== showAddress()\n")
 	showAddress()
-
 	println("\n== access_1()\n")
 	access_1()
-
 	println("\n== access_2()\n")
 	access_2()
-
 	println("\n== allocation()\n")
 	allocation()
-
 	println("\n== parameterByValue()\n")
 	parameterByValue()
-
 	println("\n== byReference_1()\n")
 	byReference_1()
-
 	println("\n== byReference_2()\n")
 	byReference_2()
-
 	println("\n== byReference_3()\n")
 	byReference_3()
 }
