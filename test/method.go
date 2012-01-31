@@ -1,20 +1,25 @@
 package main
 
-import "math"
+import ("fmt"; "math")
 
 type Rectangle struct {
 	width, height float64
 }
 
-func area(r Rectangle) float64 {
-	return r.width * r.height
-}
-
 func noMethod() {
+	area := func(r Rectangle) float64 {
+		return r.width * r.height
+	}
+
 	r1 := Rectangle{12, 2}
-	r2 := Rectangle{9, 4}
-	println("Area of r1 is:", area(r1))
-	println("Area of r2 is:", area(r2))
+
+	// Checking
+	if area(r1) == 24 && area(Rectangle{9, 4}) == 36 {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] Area of r1 is:", area(r1))
+		fmt.Println("\tArea of \"Rectangle{9, 4}\" is:", area(Rectangle{9, 4}))
+	}
 }
 
 // * * *
@@ -37,10 +42,20 @@ func method() {
 	c1 := Circle{10}
 	c2 := Circle{25}
 
-	println("Area of r1 is:", r1.area())
-	println("Area of r2 is:", r2.area())
-	println("Area of c1 is:", c1.area())
-	println("Area of c2 is:", c2.area())
+	// Checking
+	if r1.area() == 24 && r2.area() == 36 {
+		println("[OK] rectangle")
+	} else {
+		fmt.Println("[Error] Area of r1 is:", r1.area())
+		fmt.Println("\tArea of r2 is:", r2.area())
+	}
+
+	if c1.area() == 314.1592653589793 && c2.area() == 1963.4954084936207 {
+		println("[OK] circle")
+	} else {
+		fmt.Println("[Error] Area of c1 is:", c1.area())
+		fmt.Println("\tArea of c2 is:", c2.area())
+	}
 }
 
 // * * *
@@ -77,32 +92,27 @@ func withNamedType() {
 		"Popey": 100,
 	}
 
-	println("The sum of ints in the slice s is:", s.sum())
-	println("The older in the map folks is:", folks.older())
+	// Checking
+	if s.sum() == 15 {
+		println("[OK] sum")
+	} else {
+		fmt.Println("[Error] The sum of ints in the slice s is:", s.sum())
+	}
+
+	if folks.older() == "Popey" {
+		println("[OK] older")
+	} else {
+		fmt.Println("[Error] The older in the map folks is:", folks.older())
+	}
 }
 
 // * * *
 
 func main() {
-	println("\n== noMethod()\n")
+	println("\n== noMethod")
 	noMethod()
-	println("\n== method()\n")
+	println("\n== method")
 	method()
-	println("\n== withNamedType()\n")
+	println("\n== withNamedType")
 	withNamedType()
 }
-
-/*
-== noMethod()
-
-Area of r1 is: +2.400000e+001
-Area of r2 is: +3.600000e+001
-
-== test_1()
-
-Area of r1 is: +2.400000e+001
-Area of r2 is: +3.600000e+001
-Area of c1 is: +3.141593e+002
-Area of c2 is: +1.963495e+003
-
-*/

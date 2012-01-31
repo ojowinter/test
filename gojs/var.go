@@ -421,7 +421,6 @@ _noFunc:
 		} else {
 			tr.WriteString("," + SP + name)
 		}
-		tr.WriteString(SP + sign + SP)
 
 		// === Value
 		if values != nil {
@@ -445,6 +444,10 @@ _noFunc:
 
 		} else { // Initialization explicit
 			value, typeIsPointer = tr.initValue(true, type_)
+		}
+
+		if value != "" {
+			tr.WriteString(SP + sign + SP)
 		}
 
 		if isNewVar {
@@ -483,6 +486,8 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 			return tr.getExpression(t).String(), false
 		}
 		return "[]", false
+	case *ast.MapType:
+		return "", false
 
 	case *ast.Ident:
 		ident = t

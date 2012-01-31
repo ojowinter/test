@@ -5,13 +5,23 @@
 
 
 
-function singleLine() { console.log("Hello world!"); }
-
 var x = 10;
 
 (function() {
 	x = 13;
 }());
+
+function testInit() {
+	var code = "";
+	if (x === 13) {
+		code = "OK";
+	} else {
+		code = "Error";
+	}
+	console.log("[" + code + "]\n");
+}
+
+function singleLine() { console.log("[OK]\n"); }
 
 function simpleFunc() {
 
@@ -27,11 +37,30 @@ function simpleFunc() {
 	var z = 5;
 
 	var max_xy = max(x, y);
+
+	if (max_xy === 4) {
+		console.log("[OK] x,y\n");
+	} else {
+		alert("[Error] max(" + x + ", " + y + ") = " + max_xy + "\n");
+	}
+
+
 	var max_xz = max(x, z);
 
-	console.log("max(" + x + ", " + y + ") = " + max_xy + "\n");
-	console.log("max(" + x + ", " + z + ") = " + max_xz + "\n");
-	console.log("max(" + y + ", " + z + ") = " + max(y, z) + "\n");
+	if (max_xz === 5) {
+		console.log("[OK] x,z\n");
+	} else {
+		alert("[Error] max(" + x + ", " + z + ") = " + max_xz + "\n");
+	}
+
+
+
+	if (max(y, z) === 5) {
+		console.log("[OK] y,z\n");
+	} else {
+		alert("[Error] max(" + y + ", " + z + ") = " + max(y, z) + "\n");
+	}
+
 }
 
 function twoOuputValues() {
@@ -44,8 +73,14 @@ function twoOuputValues() {
 	var y = 4;
 	var _ = SumAndProduct(x, y), xPLUSy = _[0], xTIMESy = _[1];
 
-	console.log("" + x + " + " + y + " = " + xPLUSy + "\n");
-	console.log("" + x + " * " + y + " = " + xTIMESy + "\n");
+
+	if (xPLUSy === 7 && xTIMESy === 12) {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error] " + x + " + " + y + " = " + xPLUSy + "\t");
+		alert("" + x + " * " + y + " = " + xTIMESy + "\n");
+	}
+
 }
 
 function resultVariable() {
@@ -58,17 +93,40 @@ function resultVariable() {
 		return [s, ok];
 	};
 
+	var results = {
+		1: 1,
+		2: 1.4142135623730951,
+		3: 1.7320508075688772,
+		4: 2,
+		5: 2.23606797749979,
+		6: 2.449489742783178,
+		7: 2.6457513110645907,
+		8: 2.8284271247461903,
+		9: 3,
+		10: 3.1622776601683795
+	};
+
+	var err = false;
 	for (var i = -2.0; i <= 10; i++) {
 		var _ = MySqrt(i), sqroot = _[0], ok = _[1];
 		if (ok) {
-			console.log("The square root of " + i + " is " + sqroot + "\n");
+			if (sqroot != results[i]) {
+				alert("[Error] The square root of " + i + " is " + sqroot + "\n");
+				err = true;
+			}
 		} else {
-			console.log("Sorry, no square root for " + i + "\n");
+			if (i != -2.0 && i != -1.0 && i != 0) {
+				alert("[Error] The square root for " + i + " should not be run\n");
+				err = true;
+			}
 		}
+	}
+	if (!err) {
+		console.log("[OK]\n");
 	}
 }
 
-function testReturn_1() {
+function testReturn() {
 	var MySqrt = function(f) { var squareroot = 0, ok = false;
 		if (f > 0) {
 			squareroot = Math.sqrt(f), ok = true;
@@ -77,14 +135,23 @@ function testReturn_1() {
 	};
 
 	var check = MySqrt(5)[1];
-	console.log(check + "\n");
-}
 
-function testReturn_2(n) { var ok = false;
-	if (n > 0) {
-		ok = true;
+
+	var code = "";
+	if (check) {
+		code = "OK";
+	} else {
+		code = "Error";
 	}
-	return ok;
+	console.log("[" + code + "]\n");
+
+	var ok = MySqrt(0)[1]; if (!ok) {
+		code = "OK";
+	} else {
+		code = "Error";
+	}
+	console.log("[" + code + "]\n");
+
 }
 
 function testPanic() {
@@ -93,18 +160,18 @@ function testPanic() {
 }
 
 function main() {
-	console.log("\n== singleLine()\n\n");
+	console.log("\n== testInit\n");
+	testInit();
+	console.log("\n== singleLine\n");
 	singleLine();
-	console.log("\n== simpleFunc()\n\n");
+	console.log("\n== simpleFunc\n");
 	simpleFunc();
-	console.log("\n== twoOuputValues()\n\n");
+	console.log("\n== twoOuputValues\n");
 	twoOuputValues();
-	console.log("\n== resultVariable()\n\n");
+	console.log("\n== resultVariable\n");
 	resultVariable();
-	console.log("\n== testReturn_1()\n\n");
-	testReturn_1();
-	console.log("\n== testReturn_2(-1)\n\n");
-	console.log(testReturn_2(-1) + "\n");
-	console.log("\n== testPanic()\n\n");
+	console.log("\n== testReturn\n");
+	testReturn();
+	console.log("\n== testPanic\n");
 	testPanic();
 }

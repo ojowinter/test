@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Global declaration of a pointer
 var i int
 var hello string
@@ -44,10 +46,20 @@ func access_1() {
 	i := 6
 	iPtr := &i
 
-	println("The string \"hello\" is:", hello)                      // Hello, mina-san!
-	println("The string pointed to by \"helloPtr\" is:", *helloPtr) // idem
-	println("The value of \"i\" is:", i)                            // 6
-	println("The value pointed to by \"iPtr\" is:", *iPtr)          // idem
+	// Checking
+	if hello == "Hello, mina-san!" && *helloPtr == "Hello, mina-san!" {
+		println("[OK] string")
+	} else {
+		fmt.Printf("[Error] The string \"hello\" is: %v\n", hello)
+		fmt.Printf("\tThe string pointed to by \"helloPtr\" is: %v\n", *helloPtr)
+	}
+
+	if i == 6 && *iPtr == 6 {
+		println("[OK] int")
+	} else {
+		fmt.Printf("[Error] The value of \"i\" is: %v\n", i)
+		fmt.Printf("\tThe value pointed to by \"iPtr\" is: %v\n", *iPtr)
+	}
 }
 
 func access_2() {
@@ -55,10 +67,21 @@ func access_2() {
 	y := &x
 
 	*y++
-	println("x is:", x) // 4
+	// Checking
+	if x == 4 {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] x is:", x)
+	}
+	//==
 
 	*y++
-	println("x is:", x) // 5
+	// Checking
+	if x == 5 {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] x is:", x)
+	}
 }
 
 func allocation() {
@@ -71,8 +94,13 @@ func allocation() {
 	doubleSum = new(int) // allocate memory for an int and make doubleSum point to it
 	*doubleSum = sum * 2 // use the allocated memory, by dereferencing doubleSum
 
-	println("The sum of numbers from 0 to 10 is:", sum) // 45
-	println("The double of this sum is:", *doubleSum)   // 90
+	// Checking
+	if sum == 45 && *doubleSum == 90 {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] The sum of numbers from 0 to 10 is: %v\n", sum)
+		fmt.Printf("\tThe double of this sum is: %v\n", *doubleSum)
+	}
 }
 
 func parameterByValue() {
@@ -83,11 +111,15 @@ func parameterByValue() {
 	}
 
 	x := 3
-	println("x =", x) // "x = 3"
-
 	x1 := add(x)
-	println("x+1 =", x1) // "x+1 = 4"
-	println("x =", x)    // "x = 3"
+
+	// Checking
+	if x1 == 4 && x == 3 {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] x+1 = %v\n", x1)
+		fmt.Printf("\tx = %v\n", x)
+	}
 }
 
 func byReference_1() {
@@ -97,15 +129,26 @@ func byReference_1() {
 	}
 
 	x := 3
-	println("x =", x) // "x = 3"
 
 	x1 := add(&x)             // by passing the adress of x to it
-	println("x+1 =", x1) // "x+1 = 4"
-	println("x =", x)    // "x = 4"
+	// Checking
+	if x1 == 4 && x == 4 {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] x+1 = %v\n", x1)
+		fmt.Printf("\tx = %v\n", x)
+	}
+	//==
 
 	x1 = add(&x)
-	println("x+1 =", x1) // "x+1 = 5"
-	println("x =", x)    // "x = 5"
+	// Checking
+	if x1 == 5 && x == 5 {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] x+1 = %v\n", x1)
+		fmt.Printf("\tx = %v\n", x)
+	}
+	//==
 }
 
 func byReference_2() {
@@ -115,10 +158,22 @@ func byReference_2() {
 	incr := 1
 
 	add(&value, incr)
-	println(value) // 7
+	// Checking
+	if value == 7 {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] value = %v\n", value)
+	}
+	//==
 
 	add(&value, incr)
-	println(value) // 8
+	// Checking
+	if value == 8 {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] value = %v\n", value)
+	}
+	//==
 }
 
 func byReference_3() {
@@ -129,27 +184,31 @@ func byReference_3() {
 	y := &x
 
 	f()
-	println(*y) // 4
+	if *y == 4 {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] y = ", *y)
+	}
 }
 
 func main() {
-	println("\n== declaration()\n")
+	println("\n== declaration")
 	declaration()
-	println("\n== showAddress()\n")
+	println("\n== showAddress")
 	showAddress()
-	println("\n== access_1()\n")
+	println("\n== access_1")
 	access_1()
-	println("\n== access_2()\n")
+	println("\n== access_2")
 	access_2()
-	println("\n== allocation()\n")
+	println("\n== allocation")
 	allocation()
-	println("\n== parameterByValue()\n")
+	println("\n== parameterByValue")
 	parameterByValue()
-	println("\n== byReference_1()\n")
+	println("\n== byReference_1")
 	byReference_1()
-	println("\n== byReference_2()\n")
+	println("\n== byReference_2")
 	byReference_2()
-	println("\n== byReference_3()\n")
+	println("\n== byReference_3")
 	byReference_3()
 }
 
@@ -168,43 +227,4 @@ Hexadecimal address of 'hello' is: 0x7feaabc2af70
 Hexadecimal address of 'pi' is: 0x7feaabc2af6c
 Hexadecimal address of 'b' is: 0x7feaabc2af67
 
-== access_1()
-
-The string "hello" is: Hello, mina-san!
-The string pointed to by "helloPtr" is: Hello, mina-san!
-The value of "i" is: 6
-The value pointed to by "iPtr" is: 6
-
-== access_2()
-
-x is: 4
-x is: 5
-
-== allocation()
-
-The sum of numbers from 0 to 10 is: 45
-The double of this sum is: 90
-
-== parameterByValue()
-
-x = 3
-x+1 = 4
-x = 3
-
-== byReference_1()
-
-x = 3
-x+1 = 4
-x = 4
-x+1 = 5
-x = 5
-
-== byReference_2()
-
-7
-8
-
-== byReference_3()
-
-4
 */

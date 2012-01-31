@@ -103,7 +103,7 @@ func (tr *transform) writeFunc(recv *ast.FieldList, name *ast.Ident, typ *ast.Fu
 	} else if name != nil {
 		tr.WriteString(fmt.Sprintf("function %s(%s)%s", name, joinParams(typ), SP))
 	} else { // Literal function
-		tr.WriteString(fmt.Sprintf("function(%s)%s", joinParams(typ), SP))
+		tr.WriteString(fmt.Sprintf("%s=%sfunction(%s)%s", SP, SP, joinParams(typ), SP))
 	}
 
 	// Return multiple values

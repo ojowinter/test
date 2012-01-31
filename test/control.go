@@ -1,97 +1,95 @@
 package main
 
+import "fmt"
+
 func testIf() {
 	x := 5
+	code := ""
 
 	// Simple
 	if x > 10 {
-		println("x =", x, "is greater than 10")
+		code = "Error"
 	} else {
-		println("x =", x, "is less than 10")
+		code = "OK"
 	}
+	println("[" + code + "] simple")
 
 	// Leading initial short
 	if x := 12; x > 10 {
-		println("x =", x, "is greater than 10")
+		code = "OK"
 	} else {
-		println("x =", x, "is less than 10")
+		code = "Error"
 	}
+	println("[" + code + "] with statement")
 
 	// Multiple if/else
 	i := 7
 
 	if i == 3 {
-		println("i =", i, "is equal to 3")
+		code = "Error"
 	} else if i < 3 {
-		println("i =", i, "is less than 3")
+		code = "Error"
 	} else {
-		println("i =", i, "is greater than 3")
+		code = "OK"
 	}
+	println("[" + code + "] multiple")
 }
 
-func testSwitch() string {
+func testSwitch() {
 	i := 10
+	code := ""
 
 	// Simple
 	switch i {
-	case 1:
-		println("i =", i, "is equal to 1")
-	case 2, 3, 4:
-		println("i =", i, "is equal to 2, 3 or 4")
-	case 10:
-		println("i =", i, "is equal to 10")
 	default:
-		println("All I know is that i is an integer")
+		code = "Error"
+	case 1:
+		code = "Error"
+	case 2, 3, 4:
+		code = "Error"
+	case 10:
+		code = "OK"
 	}
+	println("[" + code + "] simple")
 
 	// Without expression
 	switch i = 5; {
 	case i < 10:
-		println("i =", i, "is less than 10")
+		code = "OK"
 	case i > 10, i < 0:
-		println("i =", i, "is either bigger than 10 or less than 0")
+		code = "Error"
 	case i == 10:
-		println("i =", i, "is equal to 10")
+		code = "Error"
 	default:
-		println("This won't be printed anyway")
+		code = "Error"
 	}
+	println("[" + code + "] with statement")
 
 	switch {
 	case i == 5:
-		println("i is 5")
+		code = "OK"
 	}
+	println("[" + code + "] without expression")
 
 	// With fallthrough
 	switch i {
 	case 4:
-		println("was <= 4")
+		code = "Error"
 		fallthrough
 	case 5:
-		println("was <= 5")
+		code = "Error"
 		fallthrough
 	case 6:
-		println("was <= 6")
+		code = "Error"
 		fallthrough
 	case 7:
-		println("was <= 7")
-		fallthrough
+		code = "OK"
 	case 8:
-		println("was <= 8")
-		//fallthrough
+		code = "Error"
 	default:
-		println("default case")
+		code = "Error"
 	}
-
-	// With return
-	switch i {
-	default:
-	case 1, 3, 5, 7, 9:
-		return "odd"
-	case 2, 4, 6, 8:
-		return "even"
-	}
-
-	return ""
+	println("[" + code + "] with fallthrough")
 }
 
 func testFor() {
@@ -101,50 +99,94 @@ func testFor() {
 	for i := 0; i < 10; i++ {
 		sum += i
 	}
-	println("sum is equal to", sum)
+	// Checking
+	code := ""
+	if sum == 45 {
+		code = "OK"
+	} else {
+		code = "Error"
+	}
+	println("[" + code + "] simple")
+	//==
 
 	// Expression1 and expression3 are omitted here
 	sum = 1
-	for sum < 1000 {
+	for ; sum < 1000; {
 		sum += sum
 	}
-	println("sum is equal to", sum)
+	// Checking
+	if sum == 1024 {
+		code = "OK"
+	} else {
+		code = "Error"
+	}
+	println("[" + code + "] 2 expressions omitted")
+	//==
 
 	// Expression1 and expression3 are omitted here, and semicolons gone
 	sum = 1
 	for sum < 1000 {
 		sum += sum
 	}
-	println("sum is equal to", sum)
+	// Checking
+	if sum == 1024 {
+		code = "OK"
+	} else {
+		code = "Error"
+	}
+	println("[" + code + "] 2 expressions omitted, no semicolons")
+	//==
 
 	// Infinite loop (limited to show the output), no semicolons at all
 	i := 0
+	s := ""
 	for {
-		println("I loop for ever!")
 		i++
 		if i == 3 {
+			s = fmt.Sprintf("%d", i)
 			break
 		}
 	}
+	// Checking
+	if s == "3" {
+		code = "OK"
+	} else {
+		code = "Error"
+	}
+	println("[" + code + "] infinite loop")
+	//==
 
 	// break
-	print("break on 5: ")
+	s = ""
 	for i := 10; i > 0; i-- {
 		if i < 5 {
 			break
 		}
-		print(i, " ")
+		s += fmt.Sprintf("%d ", i)
 	}
+	// Checking
+	if s == "10 9 8 7 6 5 " {
+		println("[OK] break")
+	} else {
+		fmt.Printf("[Error] value in break: %s\n", s)
+	}
+	//==
 
 	// continue
-	print("\nskip 5: ")
+	s = ""
 	for i := 10; i > 0; i-- {
 		if i == 5 {
 			continue
 		}
-		print(i, " ")
+		s += fmt.Sprintf("%d ", i)
 	}
-	println()
+	// Checking
+	if s == "10 9 8 7 6 4 3 2 1 " {
+		println("[OK] continue")
+	} else {
+		fmt.Printf("[Error] value in continue: %s\n", s)
+	}
+	//==
 }
 
 func testRange() {
@@ -156,44 +198,17 @@ func testRange() {
 }
 
 func main() {
-	println("\n== testIf()\n")
+	println("\n== testIf")
 	testIf()
-	println("\n== testSwitch()\n")
-	println(testSwitch())
-	println("\n== testFor()\n")
+	println("\n== testSwitch")
+	testSwitch()
+	println("\n== testFor")
 	testFor()
-	println("\n== testRange()\n")
-	testRange()
+/*	println("\n== testRange")
+	testRange()*/
 }
 
 /*
-== testIf()
-
-x = 5 is less than 10
-x = 12 is greater than 10
-i = 7 is greater than 3
-
-== testSwitch()
-
-i = 10 is equal to 10
-i = 5 is less than 10
-i is 5
-was <= 5
-was <= 6
-was <= 7
-was <= 8
-odd
-
-== testFor()
-
-sum is equal to 45
-sum is equal to 1024
-sum is equal to 1024
-I loop for ever!
-I loop for ever!
-I loop for ever!
-break on 5: 10 9 8 7 6 5 
-skip 5: 10 9 8 7 6 4 3 2 1 
 
 == testRange()
 

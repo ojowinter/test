@@ -6,15 +6,20 @@ function Rectangle(width, height) {
 	this.width=width; this.height=height;
 }
 
-function area(r) {
-	return r.width * r.height;
-}
-
 function noMethod() {
+	var area = function(r) {
+		return r.width * r.height;
+	};
+
 	var r1 = new Rectangle(12, 2);
-	var r2 = new Rectangle(9, 4);
-	console.log("Area of r1 is: " + area(r1) + "\n");
-	console.log("Area of r2 is: " + area(r2) + "\n");
+
+
+	if (area(r1) === 24 && area(new Rectangle(9, 4)) === 36) {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error] Area of r1 is: " + area(r1) + "\n");
+		alert("\tArea of \"Rectangle{9, 4}\" is: " + area(new Rectangle(9, 4)) + "\n");
+	}
 }
 
 
@@ -37,10 +42,20 @@ function method() {
 	var c1 = new Circle(10);
 	var c2 = new Circle(25);
 
-	console.log("Area of r1 is: " + r1.area() + "\n");
-	console.log("Area of r2 is: " + r2.area() + "\n");
-	console.log("Area of c1 is: " + c1.area() + "\n");
-	console.log("Area of c2 is: " + c2.area() + "\n");
+
+	if (r1.area() === 24 && r2.area() === 36) {
+		console.log("[OK] rectangle\n");
+	} else {
+		alert("[Error] Area of r1 is: " + r1.area() + "\n");
+		alert("\tArea of r2 is: " + r2.area() + "\n");
+	}
+
+	if (c1.area() === 314.1592653589793 && c2.area() === 1963.4954084936207) {
+		console.log("[OK] circle\n");
+	} else {
+		alert("[Error] Area of c1 is: " + c1.area() + "\n");
+		alert("\tArea of c2 is: " + c2.area() + "\n");
+	}
 }
 
 
@@ -77,17 +92,27 @@ function withNamedType() {
 
 
 
-	console.log("The sum of ints in the slice s is: " + s.sum() + "\n");
-	console.log("The older in the map folks is: " + folks.older() + "\n");
+
+	if (s.sum() === 15) {
+		console.log("[OK] sum\n");
+	} else {
+		alert("[Error] The sum of ints in the slice s is: " + s.sum() + "\n");
+	}
+
+	if (folks.older() === "Popey") {
+		console.log("[OK] older\n");
+	} else {
+		alert("[Error] The older in the map folks is: " + folks.older() + "\n");
+	}
 }
 
 
 
 function main() {
-	console.log("\n== noMethod()\n\n");
+	console.log("\n== noMethod\n");
 	noMethod();
-	console.log("\n== method()\n\n");
+	console.log("\n== method\n");
 	method();
-	console.log("\n== withNamedType()\n\n");
+	console.log("\n== withNamedType\n");
 	withNamedType();
 }

@@ -26,17 +26,33 @@ func testStruct() {
 	paul := person{"Paul", 43}          //specify values of fields in their order
 
 	tb_Older, tb_diff := Older(tom, bob)
+	// Checking
+	if tb_Older == bob && tb_diff == 7 {
+		println("[OK] Tom, Bob")
+	} else {
+		fmt.Printf("[Error] Of %s and %s, %s is older by %d years\n",
+			tom.name, bob.name, tb_Older.name, tb_diff)
+	}
+	//==
+
 	tp_Older, tp_diff := Older(tom, paul)
+	// Checking
+	if tp_Older == paul && tp_diff == 25 {
+		println("[OK] Tom, Paul")
+	} else {
+		fmt.Printf("[Error] Of %s and %s, %s is older by %d years\n",
+			tom.name, paul.name, tp_Older.name, tp_diff)
+	}
+	//==
+
 	bp_Older, bp_diff := Older(bob, paul)
-
-	print(fmt.Sprintf("Of %s and %s, %s is older by %d years\n",
-		tom.name, bob.name, tb_Older.name, tb_diff))
-
-	print(fmt.Sprintf("Of %s and %s, %s is older by %d years\n",
-		tom.name, paul.name, tp_Older.name, tp_diff))
-
-	print(fmt.Sprintf("Of %s and %s, %s is older by %d years\n",
-		bob.name, paul.name, bp_Older.name, bp_diff))
+	// Checking
+	if bp_Older == paul && bp_diff == 18 {
+		println("[OK] Bob, Paul")
+	} else {
+		fmt.Printf("[Error] Of %s and %s, %s is older by %d years\n",
+			bob.name, paul.name, bp_Older.name, bp_diff)
+	}
 }
 
 // * * *
@@ -68,7 +84,12 @@ func testArray() {
 
 	older := Older10(array) // Call the function by passing it our array.
 
-	println("The older of the group is:", older.name)
+	// Checking
+	if older.name == "Sam" {
+		println("[OK]")
+	} else {
+		fmt.Printf("[Error] The older of the group is: %s\n", older.name)
+	}
 }
 
 // * * *
@@ -101,14 +122,17 @@ func initializeArray() {
 		person{"Karl", 10},
 		person{"", 0}}
 
+	// Checking
 	if len(array1) == len(array2) {
-		print("array1 and array2 have the same length: ")
+		println("[OK] length")
+	} else {
+		fmt.Printf("[Error] len => array1: %d, array2: %d\n", len(array1), len(array2))
 	}
-	if len(array1) == 10 {
-		println("10")
-	}
+
 	if array1 == array2 {
-		println("array1 and array2 are equals")
+		println("[OK] comparison")
+	} else {
+		fmt.Printf("[Error] array1: %v\narray2: %v\n", array1, array2)
 	}
 }
 
@@ -128,41 +152,23 @@ func multiArray() {
 		{5, 6, 7, 8},
 	}
 
+	// Checking
 	if doubleArray_1 == doubleArray_2 && doubleArray_2 == doubleArray_3 {
-		println("The three multi-dimensional arrays are equal")
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] multi-dimensional")
 	}
 }
 
 // * * *
 
 func main() {
-	println("\n== testStruct()\n")
+	println("\n== testStruct")
 	testStruct()
-	println("\n== testArray()\n")
+	println("\n== testArray")
 	testArray()
-	println("\n== initializeArray()\n")
+	println("\n== initializeArray")
 	initializeArray()
-	println("\n== multiArray()\n")
+	println("\n== multiArray")
 	multiArray()
 }
-
-/*
-== testStruct()
-
-Of Tom and Bob, Bob is older by 7 years
-Of Tom and Paul, Paul is older by 25 years
-Of Bob and Paul, Paul is older by 18 years
-
-== testArray()
-
-The older of the group is: Sam
-
-== initializeArray()
-
-array1 and array2 have the same length: 10
-array1 and array2 are equals
-
-== multiArray()
-
-The three multi-dimensional arrays are equal
-*/

@@ -36,7 +36,7 @@ func TestMethod(t *testing.T)  { compile("method.go", t) }
 
 // == Warnings
 //
-// ../test/control.go:87:2: 'default' clause above 'case' clause in switch statement
+// ../test/control.go:44:2: 'default' clause above 'case' clause in switch statement
 func Example_control() { Compile(DIR + "control.go") }
 
 // == Errors
