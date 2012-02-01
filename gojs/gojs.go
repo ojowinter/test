@@ -40,9 +40,12 @@ const (
 	TAB = "<<TAB>>"
 
 	IOTA = "<<iota>>"
+	ADDR = "<<&>>" // to mark assignments to addresses
 )
 
 var MaxMessage = 10 // Maximum number of errors and warnings to show.
+
+var void struct{} // A struct without any elements occupies no space at all.
 
 // Represents information about code being transformed to JavaScript.
 type transform struct {
@@ -55,8 +58,9 @@ type transform struct {
 
 	// New variables and custom types in each block, for each function.
 	// {Function Id: {Block id: {Name:
-	vars  map[int]map[int]map[string]bool   // is pointer?
-	types map[int]map[int]map[string]string // value initialized
+	vars  map[int]map[int]map[string]bool     // is pointer?
+	types map[int]map[int]map[string]string   // value initialized
+	addr  map[int]map[int]map[string]struct{} // variable assigned to an address
 
 	err      []error  // errors
 	warn     []string // warnings
@@ -77,6 +81,7 @@ func newTransform() *transform {
 
 		make(map[int]map[int]map[string]bool),
 		make(map[int]map[int]map[string]string),
+		make(map[int]map[int]map[string]struct{}),
 
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
@@ -87,11 +92,16 @@ func newTransform() *transform {
 	}
 
 	// Global variables
+	// They're set too in "*transform.getFunc()", and
+	// "*transform.getStatement (case *ast.BlockStmt)".
 	tr.vars[0] = make(map[int]map[string]bool) // funcId = 0
 	tr.vars[0][0] = make(map[string]bool)      // blockId = 0
 
 	tr.types[0] = make(map[int]map[string]string)
 	tr.types[0][0] = make(map[string]string)
+
+	tr.addr[0] = make(map[int]map[string]struct{})
+	tr.addr[0][0] = make(map[string]struct{})
 
 	return tr
 }

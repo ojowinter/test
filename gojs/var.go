@@ -294,6 +294,10 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 		tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 	}
 
+	// To don't add tag for pointer from *tr.transform (in *ast.Ident)
+	tr.isVar = true
+	defer func() { tr.isVar = false }()
+
 	// === Operator
 	switch operator {
 	case token.DEFINE:
@@ -402,7 +406,8 @@ _noFunc:
 	isFirst := true
 
 	for _, i := range iValidNames {
-		name := _names[i]
+		originName := _names[i]
+		name := originName
 		value := ""
 
 		if isGlobal {
@@ -412,7 +417,7 @@ _noFunc:
 
 		// === Name
 		if !isNewVar {
-			name += tagPointer('P', tr.funcId, tr.blockId, name)
+			name += tagPointer(false, 'P', tr.funcId, tr.blockId, name)
 		}
 
 		if isFirst {
@@ -423,6 +428,8 @@ _noFunc:
 		}
 
 		// === Value
+		init := false
+
 		if values != nil {
 			valueOfValidName := values[i]
 
@@ -440,10 +447,18 @@ _noFunc:
 				value = exprStr
 
 				_, typeIsPointer = tr.initValue(false, type_)
+
+				if expr.isAddress {
+					tr.addr[tr.funcId][tr.blockId][originName] = void
+					if !isNewVar {
+						tr.WriteString(ADDR)
+					}
+				}
 			}
 
 		} else { // Initialization explicit
 			value, typeIsPointer = tr.initValue(true, type_)
+			init = true
 		}
 
 		if value != "" {
@@ -455,9 +470,9 @@ _noFunc:
 
 			// Could be addressed ahead
 			if !expr.isPointer && !expr.isAddress && !typeIsPointer {
-				value = tagPointer('L', tr.funcId, tr.blockId, name) +
+				value = tagPointer(init, 'L', tr.funcId, tr.blockId, name) +
 					value +
-					tagPointer('R', tr.funcId, tr.blockId, name)
+					tagPointer(init, 'R', tr.funcId, tr.blockId, name)
 			}
 		}
 
@@ -520,7 +535,7 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 	}
 
 	if tr.initIsPointer {
-		value = "[" + value + "]"
+		value = "{p:undefined}"
 		typeIsPointer = true
 		tr.initIsPointer = false
 	}

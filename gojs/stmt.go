@@ -32,6 +32,7 @@ type dataStmt struct {
 	iCase   int // index in "case" statements
 
 	isConst        bool
+	isVar          bool
 	initIsPointer  bool // the value initialized is a pointer?
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
@@ -70,6 +71,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.blockId++
 		tr.vars[tr.funcId][tr.blockId] = make(map[string]bool)
 		tr.types[tr.funcId][tr.blockId] = make(map[string]string)
+		tr.addr[tr.funcId][tr.blockId] = make(map[string]struct{})
 
 		if !tr.skipLbrace {
 			tr.WriteString("{")

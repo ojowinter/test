@@ -136,12 +136,12 @@ function resize() {
 
 
 function main() {
-	console.log("\n== shortHand()\n\n");
+	console.log("\n== shortHand\n");
 	shortHand();
-	console.log("\n== useFunc()\n\n");
+	console.log("\n== useFunc\n");
 	useFunc();
-	console.log("\n== reference()\n\n");
+	console.log("\n== reference\n");
 	reference();
-	console.log("\n== resize()\n\n");
+	console.log("\n== resize\n");
 	resize();
 }

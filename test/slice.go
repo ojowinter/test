@@ -136,13 +136,13 @@ func resize() {
 // * * *
 
 func main() {
-	println("\n== shortHand()\n")
+	println("\n== shortHand")
 	shortHand()
-	println("\n== useFunc()\n")
+	println("\n== useFunc")
 	useFunc()
-	println("\n== reference()\n")
+	println("\n== reference")
 	reference()
-	println("\n== resize()\n")
+	println("\n== resize")
 	resize()
 }
 

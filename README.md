@@ -76,16 +76,27 @@ Here there is an example that shows the why:
 
 #### Pointers
 
-In JavaScript, the array is the only object that can be referenced. So:
+There are five primitive values in JavaScript that are stored directly in the
+stack: Null, Undefined, Boolean, String and Number. Objects, arrays and
+everything else are reference types.  
+But you do not pass by reference in JavaScript. Not ever. You always pass a
+value from the stack. If the value happens to be a pointer, then it may appear
+as if you were passing by reference, but in reality you aren't.  
+ECMAScript is simply not able to pass by reference.
 
-`*x` is `x[0]` in javascript while `&x` would simply be `x`.
+The emulation is done using an object with a field named `p`. So:
 
-Then, for any value that is addressed, it is boxed in an array, i.e.:
+`*x` and `x` is `x.p` in javascript while `&x` would simply be `x`.
 
-`var x *bool` to `var x = [false]`
+Then, for any variable that is addressed:
+
+`var x *bool` to `var x = {p:false}`
 
 **Note:** the printing of an address in Go (`&x`) results into an hexadecimal
 address. Instead, in JavaScript with this emulation, it prints the value.
+
+**Warning:** due to JavaScript design, it cann't be guaranteed that the
+emulation of pointers can work in other scenes that are not in the test file.
 
 #### Return of multiple values
 

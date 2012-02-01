@@ -22,7 +22,7 @@ var o = "OMDB";
 var a1 = []; for (var i=0; i<32; i++){ a1[i]=0; }
 var a2 = []; for (var i=0; i<2; i++){ a2[i]=[]; for (var j=0; j<4; j++){ a2[i][j]=0; }}
 
-var a4 = []; for (var i=0; i<10; i++){ a4[i]=0; }
+var a4 = []; for (var i=0; i<10; i++){ a4[i]=undefined; }
 var a5 = []; for (var i=0; i<4; i++){ a5[i]=0; }
 var a6 = []; for (var i=0; i<3; i++){ a6[i]=[]; for (var j=0; j<5; j++){ a6[i][j]=0; }}
 var a7 = []; for (var i=0; i<2; i++){ a7[i]=[]; for (var j=0; j<2; j++){ a7[i][j]=[]; for (var k=0; k<2; k++){ a7[i][j][k]=0; }}}
@@ -59,9 +59,9 @@ var m4 = {
 
 
 
-var p0 = [0];
-var p1 = [0];
-var p2 = [false];
+var p0 = {p:undefined};
+var p1 = {p:undefined};
+var p2 = {p:undefined};
 
 
 function main() {

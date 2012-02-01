@@ -28,29 +28,33 @@ To identify variables that could be addressed ahead, it is used the map:
 	{number of function: {number of block: {variable name: is pointer?} }}
 
 In the generated code, it is added a tag before and after of each new variable
-but pointer. The tag uses the schema `{{side:funcId:blockId:varName}}`
+but pointer. The tag uses the schema `<<side:funcId:blockId:varName>>`
 
 	*side:* *L* or *R* if the tag is on the left or on the right of the variable
 	*funcId:* identifier of function. '0' is for global declarations
 	*blockId:* number of block inner of that function. Start with '1'
 	*varName:* variable's name
 
-so, the variables addressed can be boxed (placed between brackets).
-
-It is also added the tag `{{P:funcId:blockId:varName}}` after of each variable
+It is also added the tag `<<P:funcId:blockId:varName>>` after of each variable
 name.
 */
 
 // To remove tags related to pointers
-var reTagPointer = regexp.MustCompile(`<<[LRP]:\d+:\d+:[^>]+>>`)
+var reTagPointer = regexp.MustCompile(`<<i?[LRP]:\d+:\d+:[^>]+>>`)
 
 // Returns a tag to identify pointers.
-func tagPointer(typ rune, funcId, blockId int, name string) string {
+// The argument field indicates if the variable is initialized.
+func tagPointer(init bool, typ rune, funcId, blockId int, name string) string {
 	/*if typ != 'L' && typ != 'R' && typ != 'P' {
 		panic("invalid identifier for pointer: " + string(typ))
 	}*/
 
-	return fmt.Sprintf("<<%s:%d:%d:%s>>", string(typ), funcId, blockId, name)
+	initStr := ""
+	if init {
+		initStr = "i"
+	}
+
+	return fmt.Sprintf("<<%s:%d:%d:%s>>", initStr + string(typ), funcId, blockId, name)
 }
 
 // Search the point where the variable was declared for tag it as pointer.
@@ -87,8 +91,13 @@ func (tr *transform) replacePointers(str *string) {
 					break
 				}
 			}
-			pointer := tagPointer('P', funcId, block, varName)
-			*str = strings.Replace(*str, pointer, "[0]", -1)
+			if _, ok := tr.addr[funcId][block][varName]; ok {
+				pointer := tagPointer(false, 'P', funcId, block, varName)
+				*str = strings.Replace(*str, pointer+ADDR, "", -1)
+			}
+
+			pointer := tagPointer(false, 'P', funcId, block, varName)
+			*str = strings.Replace(*str, pointer, ".p", -1)
 		}
 	}
 
@@ -100,11 +109,19 @@ func (tr *transform) replacePointers(str *string) {
 					replaceLocal(funcId, blockId, len(blocks), name)
 
 					// Replace brackets around variables addressed.
-					lBrack := tagPointer('L', funcId, blockId, name)
-					rBrack := tagPointer('R', funcId, blockId, name)
+					lBrack := tagPointer(false, 'L', funcId, blockId, name)
+					rBrack := tagPointer(false, 'R', funcId, blockId, name)
 
-					*str = strings.Replace(*str, lBrack, "[", 1)
-					*str = strings.Replace(*str, rBrack, "]", 1)
+					*str = strings.Replace(*str, lBrack, "{p:", 1)
+					*str = strings.Replace(*str, rBrack, "}", 1)
+
+					// The declaration of pointers without initial value
+					// have type "nil" in Go
+					iLBrack := tagPointer(true, 'L', funcId, blockId, name)
+					iRBrack := tagPointer(true, 'R', funcId, blockId, name)
+					re := regexp.MustCompile(iLBrack + `[^<]+` + iRBrack)
+
+					*str = re.ReplaceAllString(*str, "{p:undefined}")
 				}
 			}
 		}
@@ -123,9 +140,13 @@ func (tr *transform) replacePointers(str *string) {
 				if _, ok := tr.vars[funcId][blockId][globVarName]; ok {
 					continue
 				}
+				if _, ok := tr.addr[funcId][blockId][globVarName]; ok {
+					pointer := tagPointer(false, 'P', funcId, blockId, globVarName)
+					*str = strings.Replace(*str, pointer+ADDR, "", -1)
+				}
 
-				pointer := tagPointer('P', funcId, blockId, globVarName)
-				*str = strings.Replace(*str, pointer, "[0]", -1)
+				pointer := tagPointer(false, 'P', funcId, blockId, globVarName)
+				*str = strings.Replace(*str, pointer, ".p", -1)
 			}
 		}
 	}

@@ -20,6 +20,11 @@ const DIR = "../test/"
 
 func init() {
 	MaxMessage = 100 // to show all errors
+
+	// In the test files, it is used functions "fmt.Print" to show errors.
+	for _, v := range []string{"", "ln", "f"} {
+		Function["fmt.Print" + v] = "alert"
+	}
 }
 
 func TestConst(t *testing.T)  { compile("decl_const.go", t) }

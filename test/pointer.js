@@ -3,32 +3,32 @@
 
 
 
-var i = [0];
-var hello = [""];
-var p = [0];
+var i = {p:undefined};
+var hello = {p:undefined};
+var p = {p:undefined};
 
 (function() {
-	p[0] = i;
+	p = i;
 	var helloPtr = hello;
 	console.log("helloPtr: " + helloPtr + "\n");
 }());
 
 function declaration() {
-	var i = [0];
-	var hello = [""];
-	var p = [0];
+	var i = {p:undefined};
+	var hello = {p:undefined};
+	var p = {p:undefined};
 
-	p[0] = i;
+	p = i;
 	var helloPtr = hello;
-	console.log("p:  " + p + " " + "\nhelloPtr: " + helloPtr + "\n");
+	console.log("p:  " + p.p + " " + "\nhelloPtr: " + helloPtr + "\n");
 }
 
 function showAddress() {
 	
-	var i = [9];
-	var hello = ["Hello world"];
-	var pi = [3.14];
-	var b = [true];
+	var i = {p:9};
+	var hello = {p:"Hello world"};
+	var pi = {p:3.14};
+	var b = {p:true};
 
 
 	console.log("Hexadecimal address of 'i' is: " + i + "\n");
@@ -38,46 +38,46 @@ function showAddress() {
 }
 
 function access_1() {
-	var hello = ["Hello, mina-san!"];
+	var hello = {p:"Hello, mina-san!"};
 
-	var helloPtr = [""];
-	helloPtr[0] = hello[0];
+	var helloPtr = {p:undefined};
+	helloPtr = hello;
 
-	var i = [6];
+	var i = {p:6};
 	var iPtr = i;
 
 
-	if (hello[0] === "Hello, mina-san!" && helloPtr[0] === "Hello, mina-san!") {
+	if (hello.p === "Hello, mina-san!" && helloPtr.p === "Hello, mina-san!") {
 		console.log("[OK] string\n");
 	} else {
 		alert("[Error] The string \"hello\" is: " + hello + "\n");
-		alert("\tThe string pointed to by \"helloPtr\" is: " + helloPtr[0] + "\n");
+		alert("\tThe string pointed to by \"helloPtr\" is: " + helloPtr.p + "\n");
 	}
 
-	if (i[0] === 6 && iPtr[0] === 6) {
+	if (i.p === 6 && iPtr.p === 6) {
 		console.log("[OK] int\n");
 	} else {
 		alert("[Error] The value of \"i\" is: " + i + "\n");
-		alert("\tThe value pointed to by \"iPtr\" is: " + iPtr[0] + "\n");
+		alert("\tThe value pointed to by \"iPtr\" is: " + iPtr.p + "\n");
 	}
 }
 
 function access_2() {
-	var x = [3];
+	var x = {p:3};
 	var y = x;
 
-	y[0]++;
+	y.p++;
 
-	if (x === 4) {
+	if (x.p === 4) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] x is: " + x + "\n");
 	}
 
 
-	y[0]++;
+	y.p++;
 
-	if (x === 5) {
+	if (x.p === 5) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] x is: " + x + "\n");
@@ -86,20 +86,20 @@ function access_2() {
 
 function allocation() {
 	var sum = 0;
-	var doubleSum = [0];
+	var doubleSum = {p:undefined};
 	for (var i = 0; i < 10; i++) {
 		sum += i;
 	}
 
-	doubleSum[0] = 0;
-	doubleSum[0] = sum * 2;
+	doubleSum.p = 0;
+	doubleSum.p = sum * 2;
 
 
-	if (sum === 45 && doubleSum[0] === 90) {
+	if (sum === 45 && doubleSum.p === 90) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] The sum of numbers from 0 to 10 is: " + sum + "\n");
-		alert("\tThe double of this sum is: " + doubleSum[0] + "\n");
+		alert("\tThe double of this sum is: " + doubleSum.p + "\n");
 	}
 }
 
@@ -124,15 +124,15 @@ function parameterByValue() {
 
 function byReference_1() {
 	var add = function(v) {
-		v[0] = v[0] + 1;
-		return v[0];
+		v.p = v.p + 1;
+		return v.p;
 	};
 
-	var x = [3];
+	var x = {p:3};
 
 	var x1 = add(x);
 
-	if (x1 === 4 && x === 4) {
+	if (x1 === 4 && x.p === 4) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] x+1 = " + x1 + "\n");
@@ -142,7 +142,7 @@ function byReference_1() {
 
 	x1 = add(x);
 
-	if (x1 === 5 && x === 5) {
+	if (x1 === 5 && x.p === 5) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] x+1 = " + x1 + "\n");
@@ -152,14 +152,14 @@ function byReference_1() {
 }
 
 function byReference_2() {
-	var add = function(v, i) { v[0] += i; };
+	var add = function(v, i) { v.p += i; };
 
-	var value = [6];
+	var value = {p:6};
 	var incr = 1;
 
 	add(value, incr);
 
-	if (value === 7) {
+	if (value.p === 7) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] value = " + value + "\n");
@@ -168,7 +168,7 @@ function byReference_2() {
 
 	add(value, incr);
 
-	if (value === 8) {
+	if (value.p === 8) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] value = " + value + "\n");
@@ -177,17 +177,17 @@ function byReference_2() {
 }
 
 function byReference_3() {
-	var x = [3];
+	var x = {p:3};
 	var f = function() {
-		x[0] = 4;
+		x.p = 4;
 	};
 	var y = x;
 
 	f();
-	if (y[0] === 4) {
+	if (y.p === 4) {
 		console.log("[OK]\n");
 	} else {
-		alert("[Error] y =  " + y[0] + "\n");
+		alert("[Error] y =  " + y.p + "\n");
 	}
 }
 

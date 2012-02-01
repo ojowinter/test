@@ -113,8 +113,8 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(typ.Elt)
 		case *ast.Ident, *ast.StarExpr: // the type is initialized
 			init, isPointer := e.tr.initValue(true, typ.Elt)
-			if isPointer { // remove '[', ']'
-				init = init[1:len(init)-1]
+			if isPointer { // remove '{p:', '}'
+				init = init[3:len(init)-1]
 			}
 
 			e.writeLoop()
@@ -464,10 +464,14 @@ func (e *expression) transform(expr ast.Expr) {
 			e.tr.hasError = true
 
 		default:
-			if e.isPointer { // `*x` => `x[0]`
-				name += "[0]"
+			if e.isPointer { // `*x` => `x.p`
+				name += ".p"
 			} else if e.isAddress { // `&x` => `x`
 				e.tr.addPointer(name)
+			} else if !e.tr.isVar {
+				if _, ok := e.tr.vars[e.tr.funcId][e.tr.blockId][name]; ok {
+					name += tagPointer(false, 'P', e.tr.funcId, e.tr.blockId, name)
+				}
 			}
 
 			e.WriteString(name)

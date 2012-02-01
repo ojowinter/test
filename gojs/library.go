@@ -36,9 +36,9 @@ var Constant = map[string]string{
 
 // Functions that can be transformed since JavaScript has an equivalent one.
 var Function = map[string]string{
-	"fmt.Print":   "alert",
-	"fmt.Println": "alert",
-	"fmt.Printf":  "alert",
+	"fmt.Print":   "document.write",
+	"fmt.Println": "document.write",
+	"fmt.Printf":  "document.write",
 	"fmt.Sprintf": "",
 
 	"math.Abs":   "Math.abs",
