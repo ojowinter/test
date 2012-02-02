@@ -406,8 +406,7 @@ _noFunc:
 	isFirst := true
 
 	for _, i := range iValidNames {
-		originName := _names[i]
-		name := originName
+		name := _names[i]
 		value := ""
 
 		if isGlobal {
@@ -416,15 +415,15 @@ _noFunc:
 		tr.lastVarName = name
 
 		// === Name
-		if !isNewVar {
-			name += tagPointer(false, 'P', tr.funcId, tr.blockId, name)
-		}
-
 		if isFirst {
 			tr.WriteString(name)
 			isFirst = false
 		} else {
 			tr.WriteString("," + SP + name)
+		}
+
+		if !isNewVar {
+			tr.WriteString(tagPointer(false, 'P', tr.funcId, tr.blockId, name))
 		}
 
 		// === Value
@@ -449,7 +448,7 @@ _noFunc:
 				_, typeIsPointer = tr.initValue(false, type_)
 
 				if expr.isAddress {
-					tr.addr[tr.funcId][tr.blockId][originName] = void
+					tr.addr[tr.funcId][tr.blockId][name] = void
 					if !isNewVar {
 						tr.WriteString(ADDR)
 					}
@@ -467,6 +466,11 @@ _noFunc:
 
 		if isNewVar {
 			tr.vars[tr.funcId][tr.blockId][name] = typeIsPointer
+
+			// The value could be a pointer so this new variable has to be it.
+			if tr.vars[tr.funcId][tr.blockId][value] {
+				tr.vars[tr.funcId][tr.blockId][name] = true
+			}
 
 			// Could be addressed ahead
 			if !expr.isPointer && !expr.isAddress && !typeIsPointer {

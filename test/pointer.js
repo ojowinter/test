@@ -20,7 +20,7 @@ function declaration() {
 
 	p = i;
 	var helloPtr = hello;
-	console.log("p:  " + p.p + " " + "\nhelloPtr: " + helloPtr + "\n");
+	console.log("p:  " + p.p + " " + "\nhelloPtr: " + helloPtr.p + "\n");
 }
 
 function showAddress() {
