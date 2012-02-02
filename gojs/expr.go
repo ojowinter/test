@@ -112,10 +112,7 @@ func (e *expression) transform(expr ast.Expr) {
 		case *ast.ArrayType: // multi-dimensional array
 			e.transform(typ.Elt)
 		case *ast.Ident, *ast.StarExpr: // the type is initialized
-			init, isPointer := e.tr.initValue(true, typ.Elt)
-			if isPointer { // remove '{p:', '}'
-				init = init[3:len(init)-1]
-			}
+			init, _ := e.tr.initValue(true, typ.Elt)
 
 			e.writeLoop()
 			e.WriteString(fmt.Sprintf("{%s=%s;%s}",

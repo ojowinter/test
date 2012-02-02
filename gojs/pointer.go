@@ -30,13 +30,14 @@ To identify variables that could be addressed ahead, it is used the map:
 In the generated code, it is added a tag before and after of each new variable
 but pointer. The tag uses the schema `<<side:funcId:blockId:varName>>`
 
-	*side:* *L* or *R* if the tag is on the left or on the right of the variable
+	*side:* *L* or *R* if the tag is on the left or on the right of the variable.
+		*i* indicates that its value is of initialization.
 	*funcId:* identifier of function. '0' is for global declarations
 	*blockId:* number of block inner of that function. Start with '1'
 	*varName:* variable's name
 
 It is also added the tag `<<P:funcId:blockId:varName>>` after of each variable
-name.
+name, and `<<&>>` after of it when the assignment is an address.
 */
 
 // To remove tags related to pointers
