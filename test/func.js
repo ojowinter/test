@@ -110,12 +110,12 @@ function resultVariable() {
 	for (var i = -2.0; i <= 10; i++) {
 		var _ = MySqrt(i), sqroot = _[0], ok = _[1];
 		if (ok) {
-			if (sqroot != results[i]) {
+			if (JSON.stringify(sqroot) !== JSON.stringify(results[i])) {
 				alert("[Error] The square root of " + i + " is " + sqroot + "\n");
 				err = true;
 			}
 		} else {
-			if (i != -2.0 && i != -1.0 && i != 0) {
+			if (i !== -2.0 && i !== -1.0 && i !== 0) {
 				alert("[Error] The square root for " + i + " should not be run\n");
 				err = true;
 			}

@@ -34,6 +34,7 @@ type expression struct {
 	isAddress   bool
 	isEllipsis  bool
 	isInitArray bool // initialization of array?
+	isNil       bool
 	isPointer   bool
 
 	useIota       bool
@@ -65,6 +66,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
+		false,
 		false,
 		false,
 		false,
@@ -142,12 +144,13 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
 		op := typ.Op.String()
-		isOpEq := false
+		isComparing := false
 
 		switch typ.Op {
-		case token.EQL:
+		case token.EQL, token.NEQ:
 			op += "="
-			isOpEq = true
+			isComparing = true
+			
 		}
 
 		if e.tr.isConst {
@@ -162,7 +165,7 @@ func (e *expression) transform(expr ast.Expr) {
 		y := e.tr.getExpression(typ.Y)
 
 		// JavaScript only compares basic literals.
-		if isOpEq && !x.isBasicLit && !x.returnBasicLit && !y.isBasicLit && !y.returnBasicLit {
+		if isComparing && !x.isBasicLit && !x.returnBasicLit && !y.isBasicLit && !y.returnBasicLit {
 			stringify = true
 		}
 
@@ -171,6 +174,10 @@ func (e *expression) transform(expr ast.Expr) {
 		} else {
 			e.WriteString(x.String())
 		}
+		// To know when a pointer is compared with the value nil.
+		if !x.isPointer && !x.isAddress && y.isNil {
+			e.WriteString(NIL)
+		}
 
 		e.WriteString(SP + op + SP)
 
@@ -178,6 +185,9 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString("JSON.stringify(" + y.String() + ")")
 		} else {
 			e.WriteString(y.String())
+		}
+		if x.isNil && !y.isPointer && !y.isAddress {
+			e.WriteString(NIL)
 		}
 
 	// godoc go/ast CallExpr
@@ -450,6 +460,7 @@ func (e *expression) transform(expr ast.Expr) {
 		case "nil":
 			e.WriteString("undefined")
 			e.isBasicLit = true
+			e.isNil = true
 
 		// Not supported
 		case "int64", "uint64", "complex64", "complex128":

@@ -39,8 +39,9 @@ const (
 	SP  = "<<SP>>" // space
 	TAB = "<<TAB>>"
 
-	IOTA = "<<iota>>"
 	ADDR = "<<&>>" // to mark assignments to addresses
+	IOTA = "<<iota>>"
+	NIL  = "<<nil>>"
 )
 
 var MaxMessage = 10 // Maximum number of errors and warnings to show.
@@ -58,7 +59,7 @@ type transform struct {
 	// {Function Id: {Block id: {Name:
 	vars  map[int]map[int]map[string]bool   // is pointer?
 	types map[int]map[int]map[string]string // value initialized
-	addr  map[int]map[int]map[string]bool   // variable assigned to an address
+	addr  map[int]map[int]map[string]bool   // variable assigned to an address?
 
 	err      []error  // errors
 	warn     []string // warnings
@@ -289,8 +290,6 @@ func Compile(filename string) error {
 
 	// Variables addressed
 	trans.replacePointers(&str)
-	// Remove the tags in the other variables
-	str = reTagPointer.ReplaceAllString(str, "")
 
 	// Version to debug
 	deb := strings.Replace(str, NL, "\n", -1)

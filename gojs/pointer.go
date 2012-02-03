@@ -95,6 +95,10 @@ func (tr *transform) replacePointers(str *string) {
 
 			pointer := tagPointer(false, 'P', funcId, block, varName)
 
+			// Comparing pointers with value nil
+			reNil := regexp.MustCompile(pointer + NIL)
+			*str = reNil.ReplaceAllString(*str, ".p")
+
 			if tr.addr[funcId][block][varName] {
 				*str = strings.Replace(*str, pointer+ADDR, "", -1)
 			} else {
@@ -145,6 +149,9 @@ func (tr *transform) replacePointers(str *string) {
 
 				pointer := tagPointer(false, 'P', funcId, blockId, globVarName)
 
+				reNil := regexp.MustCompile(pointer + NIL)
+				*str = reNil.ReplaceAllString(*str, ".p")
+
 				if tr.addr[funcId][blockId][globVarName] {
 					*str = strings.Replace(*str, pointer+ADDR, "", -1)
 				} else {
@@ -161,4 +168,10 @@ func (tr *transform) replacePointers(str *string) {
 			}
 		}
 	}
+
+	// * * *
+
+	// Remove the tags.
+	*str = reTagPointer.ReplaceAllString(*str, "")
+	*str = strings.Replace(*str, NIL, "", -1)
 }

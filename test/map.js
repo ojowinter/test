@@ -18,7 +18,7 @@ function declare_1() {
 
 	numbers = {};
 
-	if (numbers != undefined) {
+	if (numbers !== undefined) {
 		code = "OK";
 	} else {
 		code = "Error";
@@ -62,7 +62,7 @@ function declare_2() {
 
 	rating["Go"] = 4.7;
 
-	if (rating["Go"] != rating2["Go"]) {
+	if (rating["Go"] !== rating2["Go"]) {
 		code = "OK";
 	} else {
 		code = "Error";

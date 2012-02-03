@@ -37,6 +37,30 @@ function showAddress() {
 	console.log("Hexadecimal address of 'b' is: " + b + "\n");
 }
 
+function valueNil() {
+	var num = {p:10};
+	var p = {p:undefined};
+
+
+	var msg = "declaration";
+	if (p.p === undefined) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+
+	p = num;
+
+	msg = "assignment";
+	if (p.p !== undefined) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+}
+
 function access_1() {
 	var hello = {p:"Hello, mina-san!"};
 
@@ -196,6 +220,8 @@ function main() {
 	declaration();
 	console.log("\n== showAddress\n");
 	showAddress();
+	console.log("\n== valueNil\n");
+	valueNil();
 	console.log("\n== access_1\n");
 	access_1();
 	console.log("\n== access_2\n");

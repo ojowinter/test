@@ -37,6 +37,30 @@ func showAddress() {
 	println("Hexadecimal address of 'b' is:", &b)
 }
 
+func valueNil() {
+	var num = 10
+	var p *int
+
+	// Checking
+	msg := "declaration"
+	if p == nil {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+
+	p = &num
+	// Checking
+	msg = "assignment"
+	if p != nil {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+}
+
 func access_1() {
 	hello := "Hello, mina-san!"
 
@@ -196,6 +220,8 @@ func main() {
 	declaration()
 	println("\n== showAddress")
 	showAddress()
+	println("\n== valueNil")
+	valueNil()
 	println("\n== access_1")
 	access_1()
 	println("\n== access_2")
@@ -226,5 +252,4 @@ Hexadecimal address of 'i' is: 0x7feaabc2af68
 Hexadecimal address of 'hello' is: 0x7feaabc2af70
 Hexadecimal address of 'pi' is: 0x7feaabc2af6c
 Hexadecimal address of 'b' is: 0x7feaabc2af67
-
 */
