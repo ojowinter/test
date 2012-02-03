@@ -448,11 +448,13 @@ _noFunc:
 				_, typeIsPointer = tr.initValue(false, type_)
 
 				if expr.isAddress {
-					tr.addr[tr.funcId][tr.blockId][name] = void
+					tr.addr[tr.funcId][tr.blockId][name] = true
 					if !isNewVar {
 						tr.WriteString(ADDR)
 					}
-				}
+				} /*else {
+					tr.addr[tr.funcId][tr.blockId][name] = false
+				}*/
 			}
 
 		} else { // Initialization explicit

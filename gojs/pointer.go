@@ -92,13 +92,14 @@ func (tr *transform) replacePointers(str *string) {
 					break
 				}
 			}
-			if _, ok := tr.addr[funcId][block][varName]; ok {
-				pointer := tagPointer(false, 'P', funcId, block, varName)
-				*str = strings.Replace(*str, pointer+ADDR, "", -1)
-			}
 
 			pointer := tagPointer(false, 'P', funcId, block, varName)
-			*str = strings.Replace(*str, pointer, ".p", -1)
+
+			if tr.addr[funcId][block][varName] {
+				*str = strings.Replace(*str, pointer+ADDR, "", -1)
+			} else {
+				*str = strings.Replace(*str, pointer, ".p", -1)
+			}
 		}
 	}
 
@@ -141,13 +142,14 @@ func (tr *transform) replacePointers(str *string) {
 				if _, ok := tr.vars[funcId][blockId][globVarName]; ok {
 					continue
 				}
-				if _, ok := tr.addr[funcId][blockId][globVarName]; ok {
-					pointer := tagPointer(false, 'P', funcId, blockId, globVarName)
-					*str = strings.Replace(*str, pointer+ADDR, "", -1)
-				}
 
 				pointer := tagPointer(false, 'P', funcId, blockId, globVarName)
-				*str = strings.Replace(*str, pointer, ".p", -1)
+
+				if tr.addr[funcId][blockId][globVarName] {
+					*str = strings.Replace(*str, pointer+ADDR, "", -1)
+				} else {
+					*str = strings.Replace(*str, pointer, ".p", -1)
+				}
 			}
 		}
 	}

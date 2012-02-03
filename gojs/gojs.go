@@ -45,8 +45,6 @@ const (
 
 var MaxMessage = 10 // Maximum number of errors and warnings to show.
 
-var void struct{} // A struct without any elements occupies no space at all.
-
 // Represents information about code being transformed to JavaScript.
 type transform struct {
 	line     int // actual line
@@ -58,9 +56,9 @@ type transform struct {
 
 	// New variables and custom types in each block, for each function.
 	// {Function Id: {Block id: {Name:
-	vars  map[int]map[int]map[string]bool     // is pointer?
-	types map[int]map[int]map[string]string   // value initialized
-	addr  map[int]map[int]map[string]struct{} // variable assigned to an address
+	vars  map[int]map[int]map[string]bool   // is pointer?
+	types map[int]map[int]map[string]string // value initialized
+	addr  map[int]map[int]map[string]bool   // variable assigned to an address
 
 	err      []error  // errors
 	warn     []string // warnings
@@ -81,7 +79,7 @@ func newTransform() *transform {
 
 		make(map[int]map[int]map[string]bool),
 		make(map[int]map[int]map[string]string),
-		make(map[int]map[int]map[string]struct{}),
+		make(map[int]map[int]map[string]bool),
 
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
@@ -100,8 +98,8 @@ func newTransform() *transform {
 	tr.types[0] = make(map[int]map[string]string)
 	tr.types[0][0] = make(map[string]string)
 
-	tr.addr[0] = make(map[int]map[string]struct{})
-	tr.addr[0][0] = make(map[string]struct{})
+	tr.addr[0] = make(map[int]map[string]bool)
+	tr.addr[0][0] = make(map[string]bool)
 
 	return tr
 }

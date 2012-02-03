@@ -46,7 +46,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 		tr.vars[tr.funcId] = make(map[int]map[string]bool)
 		tr.types[tr.funcId] = make(map[int]map[string]string)
-		tr.addr[tr.funcId] = make(map[int]map[string]struct{})
+		tr.addr[tr.funcId] = make(map[int]map[string]bool)
 	}
 	// ===
 
