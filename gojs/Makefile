@@ -6,6 +6,7 @@ GOFILES=\
 	func.go\
 	gojs.go\
 	library.go\
+	map.go\
 	pointer.go\
 	stmt.go\
 	var.go\

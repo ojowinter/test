@@ -31,7 +31,7 @@ In the generated code, it is added a tag before and after of each new variable
 but pointer. The tag uses the schema `<<side:funcId:blockId:varName>>`
 
 	*side:* *L* or *R* if the tag is on the left or on the right of the variable.
-		*i* indicates that its value is of initialization.
+		*i* indicates that its value is zero for the value type.
 	*funcId:* identifier of function. '0' is for global declarations
 	*blockId:* number of block inner of that function. Start with '1'
 	*varName:* variable's name
@@ -41,21 +41,21 @@ name, and `<<&>>` after of it when the assignment is an address.
 */
 
 // To remove tags related to pointers
-var reTagPointer = regexp.MustCompile(`<<i?[LRP]:\d+:\d+:[^>]+>>`)
+var reTagPointer = regexp.MustCompile(`<<z?[LRP]:\d+:\d+:[^>]+>>`)
 
 // Returns a tag to identify pointers.
-// The argument field indicates if the variable is initialized.
-func tagPointer(init bool, typ rune, funcId, blockId int, name string) string {
+// The argument field indicates if the variable is zero.
+func tagPointer(zero bool, typ rune, funcId, blockId int, name string) string {
 	/*if typ != 'L' && typ != 'R' && typ != 'P' {
 		panic("invalid identifier for pointer: " + string(typ))
 	}*/
 
-	initStr := ""
-	if init {
-		initStr = "i"
+	zeroStr := ""
+	if zero {
+		zeroStr = "z"
 	}
 
-	return fmt.Sprintf("<<%s:%d:%d:%s>>", initStr + string(typ), funcId, blockId, name)
+	return fmt.Sprintf("<<%s:%d:%d:%s>>", zeroStr + string(typ), funcId, blockId, name)
 }
 
 // Search the point where the variable was declared for tag it as pointer.

@@ -45,8 +45,10 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		tr.blockId = 0
 
 		tr.vars[tr.funcId] = make(map[int]map[string]bool)
-		tr.types[tr.funcId] = make(map[int]map[string]string)
 		tr.addr[tr.funcId] = make(map[int]map[string]bool)
+		tr.typeZero[tr.funcId] = make(map[int]map[string]string)
+		tr.mapKeys[tr.funcId] = make(map[int]map[string]map[string]struct{})
+		tr.mapZero[tr.funcId] = make(map[int]map[string]map[int]string)
 	}
 	// ===
 
@@ -158,7 +160,7 @@ func (tr *transform) joinResults(f *ast.FuncType) (decl, ret string) {
 			continue
 		}
 
-		value, _ := tr.initValue(true, list.Type)
+		value, _ := tr.zeroValue(true, list.Type)
 
 		for _, v := range list.Names {
 			if !isFirst {

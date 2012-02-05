@@ -13,30 +13,6 @@ var p = {p:undefined};
 	console.log("helloPtr: " + helloPtr + "\n");
 }());
 
-function declaration() {
-	var i = {p:undefined};
-	var hello = {p:undefined};
-	var p = {p:undefined};
-
-	p = i;
-	var helloPtr = hello;
-	console.log("p:  " + p + " " + "\nhelloPtr: " + helloPtr + "\n");
-}
-
-function showAddress() {
-	
-	var i = {p:9};
-	var hello = {p:"Hello world"};
-	var pi = {p:3.14};
-	var b = {p:true};
-
-
-	console.log("Hexadecimal address of 'i' is: " + i + "\n");
-	console.log("Hexadecimal address of 'hello' is: " + hello + "\n");
-	console.log("Hexadecimal address of 'pi' is: " + pi + "\n");
-	console.log("Hexadecimal address of 'b' is: " + b + "\n");
-}
-
 function valueNil() {
 	var num = {p:10};
 	var p = {p:undefined};
@@ -59,6 +35,30 @@ function valueNil() {
 		alert("[Error] " + msg + "\n");
 	}
 
+}
+
+function declaration() {
+	var i = {p:undefined};
+	var hello = {p:undefined};
+	var p = {p:undefined};
+
+	p = i;
+	var helloPtr = hello;
+	console.log("p:  " + p + " " + "\nhelloPtr: " + helloPtr + "\n");
+}
+
+function showAddress() {
+	
+	var i = {p:9};
+	var hello = {p:"Hello world"};
+	var pi = {p:3.14};
+	var b = {p:true};
+
+
+	console.log("Hexadecimal address of 'i' is: " + i + "\n");
+	console.log("Hexadecimal address of 'hello' is: " + hello + "\n");
+	console.log("Hexadecimal address of 'pi' is: " + pi + "\n");
+	console.log("Hexadecimal address of 'b' is: " + b + "\n");
 }
 
 function access_1() {
@@ -216,12 +216,12 @@ function byReference_3() {
 }
 
 function main() {
+	console.log("\n== valueNil\n");
+	valueNil();
 	console.log("\n== declaration\n");
 	declaration();
 	console.log("\n== showAddress\n");
 	showAddress();
-	console.log("\n== valueNil\n");
-	valueNil();
 	console.log("\n== access_1\n");
 	access_1();
 	console.log("\n== access_2\n");

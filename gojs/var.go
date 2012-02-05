@@ -207,7 +207,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 					continue
 				}
 
-				init, _ := tr.initValue(true, field.Type)
+				zero, _ := tr.zeroValue(true, field.Type)
 
 				for _, v := range field.Names {
 					name := v.Name
@@ -220,7 +220,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 						fieldsInit += "," + SP
 					}
 					fieldNames += name
-					fieldsInit += init
+					fieldsInit += zero
 					//!anonField = append(anonField, false)
 
 					// === Printing of fields
@@ -263,7 +263,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 				"function %s(%s)%s{%s}", tSpec.Name, fieldNames, SP, fieldLines))
 
 			// Store the name of new type with its values initialized
-			tr.types[tr.funcId][tr.blockId][tSpec.Name.Name] = fieldsInit
+			tr.typeZero[tr.funcId][tr.blockId][tSpec.Name.Name] = fieldsInit
 
 			tr.line += posNewField - firstPos // update the global position
 
@@ -427,7 +427,7 @@ _noFunc:
 		}
 
 		// === Value
-		init := false
+		zero := false
 
 		if values != nil {
 			valueOfValidName := values[i]
@@ -435,6 +435,7 @@ _noFunc:
 			// If the expression is an anonymous function, then
 			// it is written in the main buffer.
 			expr = tr.newExpression(name)
+			expr.isOnRight = true
 			expr.transform(valueOfValidName)
 
 			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
@@ -445,7 +446,7 @@ _noFunc:
 				}
 				value = exprStr
 
-				_, typeIsPointer = tr.initValue(false, type_)
+				_, typeIsPointer = tr.zeroValue(false, type_)
 
 				if expr.isAddress {
 					tr.addr[tr.funcId][tr.blockId][name] = true
@@ -457,9 +458,16 @@ _noFunc:
 				}*/
 			}
 
+			// Maps: a new variable assigned to another one could be a map.
+			if isNewVar && expr.isIdent && tr.findMap(value) {
+				if _, ok := tr.mapKeys[tr.funcId][tr.blockId][name]; !ok {
+					tr.mapKeys[tr.funcId][tr.blockId][name] = make(map[string]struct{})
+				}
+			}
+
 		} else { // Initialization explicit
-			value, typeIsPointer = tr.initValue(true, type_)
-			init = true
+			value, typeIsPointer = tr.zeroValue(true, type_)
+			zero = true
 		}
 
 		if value != "" {
@@ -476,9 +484,9 @@ _noFunc:
 
 			// Could be addressed ahead
 			if !expr.isPointer && !expr.isAddress && !typeIsPointer {
-				value = tagPointer(init, 'L', tr.funcId, tr.blockId, name) +
+				value = tagPointer(zero, 'L', tr.funcId, tr.blockId, name) +
 					value +
-					tagPointer(init, 'R', tr.funcId, tr.blockId, name)
+					tagPointer(zero, 'R', tr.funcId, tr.blockId, name)
 			}
 		}
 
@@ -493,9 +501,9 @@ _noFunc:
 	}
 }
 
-// Returns the value initialized to zero according to its type if "init", and a
-// boolean indicating if it is a pointer.
-func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIsPointer bool) {
+// Returns the zero value of the value type if "init", and a boolean indicating
+// if it is a pointer.
+func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIsPointer bool) {
 	var ident *ast.Ident
 
 	switch t := typ.(type) {
@@ -514,9 +522,9 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 		ident = t
 	case *ast.StarExpr:
 		tr.initIsPointer = true
-		return tr.initValue(init, t.X)
+		return tr.zeroValue(init, t.X)
 	default:
-		panic(fmt.Sprintf("initValue(): unexpected type: %T", typ))
+		panic(fmt.Sprintf("zeroValue(): unexpected type: %T", typ))
 	}
 
 	if !init {
@@ -537,7 +545,7 @@ func (tr *transform) initValue(init bool, typ interface{}) (value string, typeIs
 		value = "(0+0i)"
 	default:
 		value = ident.Name
-		value = fmt.Sprintf("new %s(%s)", value, tr.getInitType(value))
+		value = fmt.Sprintf("new %s(%s)", value, tr.getZeroValue(value))
 	}
 
 	if tr.initIsPointer {
@@ -563,23 +571,23 @@ func (tr *transform) getTypeFields(fields []string) (args, allFields string) {
 	return
 }
 
-// Returns the initializations of a custom type.
-func (tr *transform) getInitType(name string) string {
+// Returns the zero value of a custom type.
+func (tr *transform) getZeroValue(name string) string {
 	// In the actual function
 	if tr.funcId != 0 {
 		for block := tr.blockId; block >= 1; block-- {
-			if _, ok := tr.types[tr.funcId][block][name]; ok {
-				return tr.types[tr.funcId][block][name]
+			if _, ok := tr.typeZero[tr.funcId][block][name]; ok {
+				return tr.typeZero[tr.funcId][block][name]
 			}
 		}
 	}
 
 	// Finally, search in the global variables (funcId = 0).
 	for block := tr.blockId; block >= 0; block-- { // block until 0
-		if _, ok := tr.types[0][block][name]; ok {
-			return tr.types[0][block][name]
+		if _, ok := tr.typeZero[0][block][name]; ok {
+			return tr.typeZero[0][block][name]
 		}
 	}
 	//fmt.Printf("Function %d, block %d, name %s\n", tr.funcId, tr.blockId, name)
-	panic("getInitType: type not found: " + name)
+	panic("getZeroValue: type not found: " + name)
 }

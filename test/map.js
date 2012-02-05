@@ -2,29 +2,35 @@
 
 
 
+function valueNil() {
+	var n;
+
+
+	var msg = "declaration";
+	if (n === undefined) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+
+	n = {};
+
+
+	msg = "using make";
+	if (n !== undefined) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+}
+
 function declare_1() {
 
 
 	var numbers;
-
-	var code = "";
-	if (numbers === undefined) {
-		code = "OK";
-	} else {
-		code = "Error";
-	}
-	console.log("[" + code + "] value in declaration\n");
-
-
 	numbers = {};
-
-	if (numbers !== undefined) {
-		code = "OK";
-	} else {
-		code = "Error";
-	}
-	console.log("[" + code + "] value using make\n");
-
 
 	numbers["one"] = 1;
 	numbers["ten"] = 10;
@@ -32,7 +38,7 @@ function declare_1() {
 
 
 	if (numbers["trois"] === 3) {
-		console.log("[OK] value of a key\n");
+		console.log("[OK]\n");
 	} else {
 		alert("[Error] Trois is the french word for the number: " + numbers["trois"] + "\n");
 	}
@@ -52,7 +58,7 @@ function declare_2() {
 
 
 	var code = "";
-	if (rating["Go"] === rating2["Go"]) {
+	if (JSON.stringify(rating["Go"]) === JSON.stringify(rating2["Go"])) {
 		console.log("[OK] comparing same value\n");
 	} else {
 		alert("[Error] rating[\"Go\"]: " + rating["Go"] + "\trating2[\"Go\"]: " + rating2["Go"] + "\n");
@@ -62,7 +68,7 @@ function declare_2() {
 
 	rating["Go"] = 4.7;
 
-	if (rating["Go"] !== rating2["Go"]) {
+	if (JSON.stringify(rating["Go"]) !== JSON.stringify(rating2["Go"])) {
 		code = "OK";
 	} else {
 		code = "Error";
@@ -80,7 +86,7 @@ function reference() {
 	m1["Hello"] = "Salut";
 
 
-	if (m["Hello"] === m1["Hello"]) {
+	if (JSON.stringify(m["Hello"]) === JSON.stringify(m1["Hello"])) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] value in key: " + m["Hello"] + "\n");
@@ -88,11 +94,28 @@ function reference() {
 
 }
 
+function checkKey() {
+	var rating = {"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2};
+	var csharp_rating = 0;
+
+
+	if (csharp_rating === 0.00) {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error] value in key: " + csharp_rating + "\n");
+	}
+
+}
+
 function main() {
+	console.log("\n== valueNil\n");
+	valueNil();
 	console.log("\n== declare_1\n");
 	declare_1();
 	console.log("\n== declare_2\n");
 	declare_2();
 	console.log("\n== reference\n");
 	reference();
+	console.log("\n== checkKey\n");
+	checkKey();
 }

@@ -2,29 +2,35 @@ package main
 
 import "fmt"
 
+func valueNil() {
+	var n map[string]int
+
+	// Checking
+	msg := "declaration"
+	if n == nil {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+
+	n = make(map[string]int)
+
+	// Checking
+	msg = "using make"
+	if n != nil {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+}
+
 func declare_1() {
 	// A map that associates strings to int
 	// eg. "one" --> 1, "two" --> 2...
 	var numbers map[string]int //declare a map of strings to ints
-	// Checking
-	code := ""
-	if numbers == nil {
-		code = "OK"
-	} else {
-		code = "Error"
-	}
-	println("[" + code + "] value in declaration")
-	//==
-
 	numbers = make(map[string]int)
-	// Checking
-	if numbers != nil {
-		code = "OK"
-	} else {
-		code = "Error"
-	}
-	println("[" + code + "] value using make")
-	//==
 
 	numbers["one"] = 1
 	numbers["ten"] = 10
@@ -32,7 +38,7 @@ func declare_1() {
 
 	// Checking
 	if numbers["trois"] == 3 {
-		println("[OK] value of a key")
+		println("[OK]")
 	} else {
 		fmt.Println("[Error] Trois is the french word for the number:", numbers["trois"])
 	}
@@ -88,11 +94,28 @@ func reference() {
 	//==
 }
 
+func checkKey() {
+	rating := map[string]float32 {"C":5, "Go":4.5, "Python":4.5, "C++":2 }
+	csharp_rating := rating["C#"]
+
+	// Checking
+	if csharp_rating == 0.00 {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] value in key:", csharp_rating)
+	}
+	//==
+}
+
 func main() {
+	println("\n== valueNil")
+	valueNil()
 	println("\n== declare_1")
 	declare_1()
 	println("\n== declare_2")
 	declare_2()
 	println("\n== reference")
 	reference()
+	println("\n== checkKey")
+	checkKey()
 }

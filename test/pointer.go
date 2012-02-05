@@ -13,30 +13,6 @@ func init() {
 	println("helloPtr:", helloPtr)
 }
 
-func declaration() {
-	var i int
-	var hello string
-	var p *int
-
-	p = &i
-	helloPtr := &hello
-	println("p: ", p, "\nhelloPtr:", helloPtr)
-}
-
-func showAddress() {
-	var (
-		i     int     = 9
-		hello string  = "Hello world"
-		pi    float32 = 3.14
-		b     bool    = true
-	)
-
-	println("Hexadecimal address of 'i' is:", &i)
-	println("Hexadecimal address of 'hello' is:", &hello)
-	println("Hexadecimal address of 'pi' is:", &pi)
-	println("Hexadecimal address of 'b' is:", &b)
-}
-
 func valueNil() {
 	var num = 10
 	var p *int
@@ -59,6 +35,30 @@ func valueNil() {
 		fmt.Println("[Error]", msg)
 	}
 	//==
+}
+
+func declaration() {
+	var i int
+	var hello string
+	var p *int
+
+	p = &i
+	helloPtr := &hello
+	println("p: ", p, "\nhelloPtr:", helloPtr)
+}
+
+func showAddress() {
+	var (
+		i     int     = 9
+		hello string  = "Hello world"
+		pi    float32 = 3.14
+		b     bool    = true
+	)
+
+	println("Hexadecimal address of 'i' is:", &i)
+	println("Hexadecimal address of 'hello' is:", &hello)
+	println("Hexadecimal address of 'pi' is:", &pi)
+	println("Hexadecimal address of 'b' is:", &b)
 }
 
 func access_1() {
@@ -216,12 +216,12 @@ func byReference_3() {
 }
 
 func main() {
+	println("\n== valueNil")
+	valueNil()
 	println("\n== declaration")
 	declaration()
 	println("\n== showAddress")
 	showAddress()
-	println("\n== valueNil")
-	valueNil()
 	println("\n== access_1")
 	access_1()
 	println("\n== access_2")

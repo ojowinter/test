@@ -70,8 +70,10 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 	case *ast.BlockStmt:
 		tr.blockId++
 		tr.vars[tr.funcId][tr.blockId] = make(map[string]bool)
-		tr.types[tr.funcId][tr.blockId] = make(map[string]string)
 		tr.addr[tr.funcId][tr.blockId] = make(map[string]bool)
+		tr.typeZero[tr.funcId][tr.blockId] = make(map[string]string)
+		tr.mapKeys[tr.funcId][tr.blockId] = make(map[string]map[string]struct{})
+		tr.mapZero[tr.funcId][tr.blockId] = make(map[string]map[int]string)
 
 		if !tr.skipLbrace {
 			tr.WriteString("{")

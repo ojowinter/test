@@ -30,12 +30,15 @@ type expression struct {
 	varName  string // variable name
 	funcName string // function name
 
-	//isFunc      bool // anonymous function
-	isAddress   bool
-	isEllipsis  bool
-	isInitArray bool // initialization of array?
-	isNil       bool
-	isPointer   bool
+	isOnRight bool // is it on the right of '='?
+
+	//isFunc       bool // anonymous function
+	isPointer    bool
+	isAddress    bool
+	arrayHasElts bool // array has elements?
+	isEllipsis   bool
+	isNil        bool
+	isIdent      bool
 
 	useIota       bool
 	skipSemicolon bool
@@ -66,6 +69,8 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
+		false,
+		false,
 		false,
 		false,
 		false,
@@ -114,11 +119,11 @@ func (e *expression) transform(expr ast.Expr) {
 		case *ast.ArrayType: // multi-dimensional array
 			e.transform(typ.Elt)
 		case *ast.Ident, *ast.StarExpr: // the type is initialized
-			init, _ := e.tr.initValue(true, typ.Elt)
+			zero, _ := e.tr.zeroValue(true, typ.Elt)
 
 			e.writeLoop()
 			e.WriteString(fmt.Sprintf("{%s=%s;%s}",
-				SP+e.tr.lastVarName+e.printArray(), init, SP))
+				SP+e.tr.lastVarName+e.printArray(), zero, SP))
 
 			if len(e.lenArray) > 1 {
 				e.WriteString(strings.Repeat("}", len(e.lenArray)-1))
@@ -175,7 +180,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(x.String())
 		}
 		// To know when a pointer is compared with the value nil.
-		if !x.isPointer && !x.isAddress && y.isNil {
+		if y.isNil && !x.isPointer && !x.isAddress {
 			e.WriteString(NIL)
 		}
 
@@ -238,13 +243,13 @@ func (e *expression) transform(expr ast.Expr) {
 					capacity = e.tr.getExpression(typ.Args[-1]).String()
 				}*/
 
-				init, _ := e.tr.initValue(true, argType.Elt)
+				zero, _ := e.tr.zeroValue(true, argType.Elt)
 
 				e.WriteString("[]")
 				e.lenArray = append(e.lenArray, length)
 				e.writeLoop()
 				e.WriteString(fmt.Sprintf("{%s=%s;%s}",
-					SP+e.tr.lastVarName+e.printArray(), init, SP))
+					SP+e.tr.lastVarName+e.printArray(), zero, SP))
 				e.skipSemicolon = true
 
 			case *ast.MapType:
@@ -265,7 +270,7 @@ func (e *expression) transform(expr ast.Expr) {
 				}
 
 			case *ast.Ident:
-				value, _ := e.tr.initValue(true, argType)
+				value, _ := e.tr.zeroValue(true, argType)
 				e.WriteString(value)
 
 			default:
@@ -340,7 +345,7 @@ func (e *expression) transform(expr ast.Expr) {
 	case *ast.CompositeLit:
 		switch compoType := typ.Type.(type) {
 		case *ast.ArrayType:
-			if !e.isInitArray {
+			if !e.arrayHasElts {
 				e.transform(typ.Type)
 			}
 
@@ -351,11 +356,11 @@ func (e *expression) transform(expr ast.Expr) {
 				break
 			}
 
-			// For arrays initialized
+			// For arrays with elements
 			if len(typ.Elts) != 0 {
-				if !e.isInitArray && compoType.Len != nil {
+				if !e.arrayHasElts && compoType.Len != nil {
 					e.WriteString(fmt.Sprintf("%s=%s", SP+e.varName+SP, SP))
-					e.isInitArray = true
+					e.arrayHasElts = true
 				}
 				e.WriteString("[")
 				e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
@@ -476,9 +481,13 @@ func (e *expression) transform(expr ast.Expr) {
 				name += ".p"
 			} else if e.isAddress { // `&x` => `x`
 				e.tr.addPointer(name)
-			} else if !e.tr.isVar {
-				if _, ok := e.tr.vars[e.tr.funcId][e.tr.blockId][name]; ok {
-					name += tagPointer(false, 'P', e.tr.funcId, e.tr.blockId, name)
+			} else {
+				if !e.tr.isVar {
+					if _, ok := e.tr.vars[e.tr.funcId][e.tr.blockId][name]; ok {
+						name += tagPointer(false, 'P', e.tr.funcId, e.tr.blockId, name)
+					}
+				} else {
+					e.isIdent = true
 				}
 			}
 
@@ -492,10 +501,20 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Index  Expr      // index expression
 	//  Rbrack token.Pos // position of "]"
 	case *ast.IndexExpr:
-		e.transform(typ.X)
-		e.WriteString("[")
-		e.transform(typ.Index)
-		e.WriteString("]")
+		x := e.tr.getExpression(typ.X).String()
+		index := e.tr.getExpression(typ.Index).String()
+		value := x + "[" + index + "]"
+
+		if e.tr.isVar && e.tr.findMap(x) {
+			if !e.isOnRight { // add new key
+				e.tr.mapKeys[e.tr.funcId][e.tr.blockId][x][index] = void
+			} else if _, ok := e.tr.mapKeys[e.tr.funcId][e.tr.blockId][x][index]; !ok {
+				println("Bazinga!!!", x, index)
+				value = "0"
+			}
+		}
+
+		e.WriteString(value)
 
 	// godoc go/ast InterfaceType
 	//  Interface  token.Pos  // position of "interface" keyword
@@ -508,9 +527,16 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Colon token.Pos // position of ":"
 	//  Value Expr
 	case *ast.KeyValueExpr:
-		e.transform(typ.Key)
-		e.WriteString(":" + SP)
+		key := e.tr.getExpression(typ.Key).String()
+
+		e.WriteString(key + ":" + SP)
 		e.transform(typ.Value)
+
+		if e.tr.isVar {
+			e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName][key] = void
+		} else {
+			println("NO VAR")
+		}
 
 	// godoc go/ast MapType
 	//  Map   token.Pos // position of "map" keyword
@@ -520,6 +546,13 @@ func (e *expression) transform(expr ast.Expr) {
 		// Type checking
 		e.tr.getExpression(typ.Key)
 		e.tr.getExpression(typ.Value)
+
+		// Initialization for maps
+		if e.tr.isVar {
+			if _, ok := e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName]; !ok {
+				e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = make(map[string]struct{})
+			}
+		}
 
 	// godoc go/ast ParenExpr
 	//  Lparen token.Pos // position of "("
@@ -576,7 +609,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.funcName = goName
 			e.WriteString(jsName)
 		} else {
-			/*if _, ok := e.tr.types[x]; !ok {
+			/*if _, ok := e.tr.typeZero[x]; !ok {
 				panic("selector: " + x)
 			}*/
 

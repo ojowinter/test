@@ -46,6 +46,8 @@ const (
 
 var MaxMessage = 10 // Maximum number of errors and warnings to show.
 
+var void struct{} // A struct without any elements occupies no space at all.
+
 // Represents information about code being transformed to JavaScript.
 type transform struct {
 	line     int // actual line
@@ -55,18 +57,29 @@ type transform struct {
 	*bytes.Buffer // sintaxis translated to JS
 	*dataStmt     // extra data for a statement
 
-	// New variables and custom types in each block, for each function.
-	// {Function Id: {Block id: {Name:
-	vars  map[int]map[int]map[string]bool   // is pointer?
-	types map[int]map[int]map[string]string // value initialized
-	addr  map[int]map[int]map[string]bool   // variable assigned to an address?
-
 	err      []error  // errors
 	warn     []string // warnings
 	exported []string // declarations to be exported
 
 	//slice map[string]string // for range; key: function name, value: slice name
 	//function string // actual function
+
+	// == Variables defined in each block, for each function.
+	// {Function Id: {Block id: {Name:
+	vars map[int]map[int]map[string]bool // is pointer?
+	addr map[int]map[int]map[string]bool // variable was assigned to an address?
+
+	// Zero value for custom types.
+	typeZero map[int]map[int]map[string]string
+
+	// It is needed to keep the keys for each map.
+	// If a key does not exist then there is to return its zero value.
+	mapKeys map[int]map[int]map[string]map[string]struct{}
+	// Zero value for the keys into a map. The keys start at 1.
+	// i.e. for "map[int]map[string]float64"
+	// key 1 => zero value: 0
+	// key 2 => zero value: ""
+	mapZero map[int]map[int]map[string]map[int]string
 }
 
 func newTransform() *transform {
@@ -78,29 +91,40 @@ func newTransform() *transform {
 		new(bytes.Buffer),
 		&dataStmt{},
 
-		make(map[int]map[int]map[string]bool),
-		make(map[int]map[int]map[string]string),
-		make(map[int]map[int]map[string]bool),
-
 		make([]error, 0, MaxMessage),
 		make([]string, 0, MaxMessage),
 		make([]string, 0),
 
 		//make(map[string]string),
 		//"",
+
+		make(map[int]map[int]map[string]bool),
+		make(map[int]map[int]map[string]bool),
+		make(map[int]map[int]map[string]string),
+		make(map[int]map[int]map[string]map[string]struct{}),
+		make(map[int]map[int]map[string]map[int]string),
 	}
 
-	// Global variables
-	// They're set too in "*transform.getFunc()", and
-	// "*transform.getStatement (case *ast.BlockStmt)".
-	tr.vars[0] = make(map[int]map[string]bool) // funcId = 0
-	tr.vars[0][0] = make(map[string]bool)      // blockId = 0
+	// == Global variables
+	// Ones related to local variables are set in:
+	// file func: *transform.getFunc()
+	// file stmt: *transform.getStatement() (case: *ast.BlockStmt)
+	// file var:  *transform.writeVar() (label: _noFunc)
+	// file expr: *expression.transform (case: *ast.MapType)
 
-	tr.types[0] = make(map[int]map[string]string)
-	tr.types[0][0] = make(map[string]string)
-
+	// funcId = 0
+	tr.vars[0] = make(map[int]map[string]bool)
 	tr.addr[0] = make(map[int]map[string]bool)
+	tr.typeZero[0] = make(map[int]map[string]string)
+	tr.mapKeys[0] = make(map[int]map[string]map[string]struct{})
+	tr.mapZero[0] = make(map[int]map[string]map[int]string)
+
+	// blockId = 0
+	tr.vars[0][0] = make(map[string]bool)
 	tr.addr[0][0] = make(map[string]bool)
+	tr.typeZero[0][0] = make(map[string]string)
+	tr.mapKeys[0][0] = make(map[string]map[string]struct{})
+	tr.mapZero[0][0] = make(map[string]map[int]string)
 
 	return tr
 }
@@ -320,6 +344,10 @@ func Compile(filename string) error {
 			fmt.Fprintln(os.Stderr, "\n Too many warnings")
 		}
 	}
+
+/*for k, v := range trans.mapKeys{ //[3][1] {
+	fmt.Println(k, v)
+}*/
 
 	return nil
 }
