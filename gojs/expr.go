@@ -30,8 +30,6 @@ type expression struct {
 	varName  string // variable name
 	funcName string // function name
 
-	isOnRight bool // is it on the right of '='?
-
 	//isFunc       bool // anonymous function
 	isPointer    bool
 	isAddress    bool
@@ -49,6 +47,7 @@ type expression struct {
 	returnBasicLit bool
 
 	lenArray []string // the lengths of an array
+	index    []string
 }
 
 // Initializes a new type of "expression".
@@ -80,7 +79,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		false,
 		false,
 		false,
-		false,
+		make([]string, 0),
 		make([]string, 0),
 	}
 }
@@ -501,16 +500,29 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Index  Expr      // index expression
 	//  Rbrack token.Pos // position of "]"
 	case *ast.IndexExpr:
+		e.index = append(e.index, e.tr.getExpression(typ.Index).String())
+
+		// Could be a multi-dimensional index
+		if _, ok := typ.X.(*ast.IndexExpr); ok {
+			e.transform(typ.X)
+			return
+		}
+
 		x := e.tr.getExpression(typ.X).String()
-		index := e.tr.getExpression(typ.Index).String()
-		value := x + "[" + index + "]"
+		index := ""
+
+		for i := len(e.index)-1; i >= 0; i-- { // inverse order
+			index += "[" + e.index[i] + "]"
+		}
+
+		value := x + index
 
 		if e.tr.isVar && e.tr.findMap(x) {
-			if !e.isOnRight { // add new key
+			if !e.tr.isValue { // add new key
 				e.tr.mapKeys[e.tr.funcId][e.tr.blockId][x][index] = void
+			// Check if the key exist.
 			} else if _, ok := e.tr.mapKeys[e.tr.funcId][e.tr.blockId][x][index]; !ok {
-				println("Bazinga!!!", x, index)
-				value = "0"
+				value = e.tr.mapZero[e.tr.funcId][e.tr.blockId][x]
 			}
 		}
 
@@ -528,14 +540,19 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Value Expr
 	case *ast.KeyValueExpr:
 		key := e.tr.getExpression(typ.Key).String()
+		exprValue := e.tr.getExpression(typ.Value)
+		value := exprValue.String()
 
-		e.WriteString(key + ":" + SP)
-		e.transform(typ.Value)
+		if value[0] == '[' { // multi-dimensional index
+			value = "{" + value[1:len(value)-1] + "}"
+		}
+
+		e.WriteString(key + ":" + SP + value)
 
 		if e.tr.isVar {
 			e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName][key] = void
 		} else {
-			println("NO VAR")
+			println("No var: KeyValue") // TODO: delete
 		}
 
 	// godoc go/ast MapType
@@ -543,15 +560,18 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Key   Expr
 	//  Value Expr
 	case *ast.MapType:
-		// Type checking
+		// For type checking
 		e.tr.getExpression(typ.Key)
 		e.tr.getExpression(typ.Value)
 
 		// Initialization for maps
-		if e.tr.isVar {
+		if _, ok := typ.Value.(*ast.MapType); !ok && e.tr.isVar {
 			if _, ok := e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName]; !ok {
 				e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = make(map[string]struct{})
 			}
+
+			zero, _ := e.tr.zeroValue(true, typ.Value)
+			e.tr.mapZero[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = zero
 		}
 
 	// godoc go/ast ParenExpr

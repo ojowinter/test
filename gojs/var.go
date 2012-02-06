@@ -403,6 +403,7 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 _noFunc:
 	expr := tr.newExpression(nil)
 	typeIsPointer := false
+	//isFuncLit := false // TODO: remove
 	isFirst := true
 
 	for _, i := range iValidNames {
@@ -431,11 +432,11 @@ _noFunc:
 
 		if values != nil {
 			valueOfValidName := values[i]
+			tr.isValue = true
 
 			// If the expression is an anonymous function, then
 			// it is written in the main buffer.
 			expr = tr.newExpression(name)
-			expr.isOnRight = true
 			expr.transform(valueOfValidName)
 
 			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
@@ -456,7 +457,9 @@ _noFunc:
 				} /*else {
 					tr.addr[tr.funcId][tr.blockId][name] = false
 				}*/
-			}
+			} /*else { // TODO: remove
+				isFuncLit = true
+			}*/
 
 			// Maps: a new variable assigned to another one could be a map.
 			if isNewVar && expr.isIdent && tr.findMap(value) {
@@ -470,7 +473,7 @@ _noFunc:
 			zero = true
 		}
 
-		if value != "" {
+		if /*!isFuncLit &&*/ value != "" { // TODO: remove commented code
 			tr.WriteString(SP + sign + SP)
 		}
 
@@ -491,6 +494,7 @@ _noFunc:
 		}
 
 		tr.WriteString(value)
+		tr.isValue = false
 	}
 
 	if !isFirst && !expr.skipSemicolon && !tr.skipSemicolon {
@@ -507,7 +511,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 	var ident *ast.Ident
 
 	switch t := typ.(type) {
-	case nil:
+	case nil, *ast.MapType:
 		return "", false
 	case *ast.ArrayType:
 		if t.Len != nil {
@@ -515,7 +519,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 			return tr.getExpression(t).String(), false
 		}
 		return "[]", false
-	case *ast.MapType:
+	case *ast.InterfaceType: // TODO ?
 		return "", false
 
 	case *ast.Ident:

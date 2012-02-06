@@ -95,14 +95,25 @@ func reference() {
 }
 
 func checkKey() {
-	rating := map[string]float32 {"C":5, "Go":4.5, "Python":4.5, "C++":2 }
-	csharp_rating := rating["C#"]
+	rating := map[string]float32{"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}
 
+	csharp_rating := rating["C#"]
 	// Checking
 	if csharp_rating == 0.00 {
 		println("[OK]")
 	} else {
 		fmt.Println("[Error] value in key:", csharp_rating)
+	}
+	//==
+
+	multMap := map[int]map[int]string{1: {1: "one"}, 2: {2: "two"}}
+
+	k_multMap := multMap[1][2]
+	// Checking
+	if k_multMap == "" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error] value in key:", k_multMap)
 	}
 	//==
 }

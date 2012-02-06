@@ -96,13 +96,24 @@ function reference() {
 
 function checkKey() {
 	var rating = {"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2};
-	var csharp_rating = 0;
 
+	var csharp_rating = 0;
 
 	if (csharp_rating === 0.00) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error] value in key: " + csharp_rating + "\n");
+	}
+
+
+	var multMap = {1: {1: "one"}, 2: {2: "two"}};
+
+	var k_multMap = "";
+
+	if (k_multMap === "") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error] value in key: " + k_multMap + "\n");
 	}
 
 }
