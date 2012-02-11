@@ -519,8 +519,8 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 			return tr.getExpression(t).String(), false
 		}
 		return "[]", false
-	case *ast.InterfaceType: // TODO ?
-		return "", false
+	case *ast.InterfaceType:
+		return "undefined", false
 
 	case *ast.Ident:
 		ident = t

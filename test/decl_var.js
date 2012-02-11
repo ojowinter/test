@@ -54,7 +54,7 @@ var m4 = new g.M({
 	1: "first",
 	2: 2,
 	3: 3
-}, );
+}, undefined);
 
 
 
