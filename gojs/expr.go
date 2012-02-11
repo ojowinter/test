@@ -29,7 +29,6 @@ type expression struct {
 
 	varName  string // variable name
 	funcName string // function name
-	mapZero  string // zero value for the value type into a map
 
 	//isFunc       bool // anonymous function
 	isPointer    bool
@@ -68,7 +67,6 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		tr,
 		new(bytes.Buffer),
 		id,
-		"",
 		"",
 		false,
 		false,
@@ -407,16 +405,13 @@ func (e *expression) transform(expr ast.Expr) {
 
 		case *ast.MapType:
 			// Type checking
-			expr := e.tr.getExpression(typ.Type)
-			if expr.hasError {
-//			e.transform(typ.Type)
-//			if e.hasError {
+			if e.tr.getExpression(typ.Type).hasError {
 				return
 			}
 
 			e.WriteString("new g.M({")
 			e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
-			e.WriteString("}," + SP + expr.mapZero + ")")
+			e.WriteString("}," + SP + e.tr.zeroOfMap(compoType) + ")")
 
 		case nil:
 			e.WriteString("[")
@@ -551,11 +546,6 @@ func (e *expression) transform(expr ast.Expr) {
 		// For type checking
 		e.tr.getExpression(typ.Key)
 		e.tr.getExpression(typ.Value)
-
-		// Initialization for maps
-		if _, ok := typ.Value.(*ast.MapType); !ok && e.tr.isVar {
-			e.mapZero, _ = e.tr.zeroValue(true, typ.Value)
-		}
 
 	// godoc go/ast ParenExpr
 	//  Lparen token.Pos // position of "("

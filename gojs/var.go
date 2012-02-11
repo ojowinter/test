@@ -505,6 +505,21 @@ _noFunc:
 	}
 }
 
+// Returns the fields of a custom type.
+func (tr *transform) getTypeFields(fields []string) (args, allFields string) {
+	for i, f := range fields {
+		if i == 0 {
+			args = f
+		} else {
+			args += "," + SP + f
+			allFields += SP
+		}
+
+		allFields += fmt.Sprintf("this.%s=%s;", f, f)
+	}
+	return
+}
+
 // Returns the zero value of the value type if "init", and a boolean indicating
 // if it is a pointer.
 func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIsPointer bool) {
@@ -519,7 +534,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 			return tr.getExpression(t).String(), false
 		}
 		return "[]", false
-	case *ast.InterfaceType:
+	case *ast.InterfaceType: // nil
 		return "undefined", false
 
 	case *ast.Ident:
@@ -549,7 +564,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 		value = "(0+0i)"
 	default:
 		value = ident.Name
-		value = fmt.Sprintf("new %s(%s)", value, tr.getZeroValue(value))
+		value = fmt.Sprintf("new %s(%s)", value, tr.zeroOfType(value))
 	}
 
 	if tr.initIsPointer {
@@ -560,23 +575,17 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 	return
 }
 
-// Returns the fields of a custom type.
-func (tr *transform) getTypeFields(fields []string) (args, allFields string) {
-	for i, f := range fields {
-		if i == 0 {
-			args = f
-		} else {
-			args += "," + SP + f
-			allFields += SP
-		}
-
-		allFields += fmt.Sprintf("this.%s=%s;", f, f)
+// Returns the zero value of a map.
+func (tr *transform) zeroOfMap(m *ast.MapType) string {
+	if mapT, ok := m.Value.(*ast.MapType); ok { // nested map
+		return tr.zeroOfMap(mapT)
 	}
-	return
+	v, _ := tr.zeroValue(true, m.Value)
+	return v
 }
 
 // Returns the zero value of a custom type.
-func (tr *transform) getZeroValue(name string) string {
+func (tr *transform) zeroOfType(name string) string {
 	// In the actual function
 	if tr.funcId != 0 {
 		for block := tr.blockId; block >= 1; block-- {
@@ -593,5 +602,5 @@ func (tr *transform) getZeroValue(name string) string {
 		}
 	}
 	//fmt.Printf("Function %d, block %d, name %s\n", tr.funcId, tr.blockId, name)
-	panic("getZeroValue: type not found: " + name)
+	panic("zeroOfType: type not found: " + name)
 }

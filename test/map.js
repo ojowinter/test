@@ -106,7 +106,7 @@ function checkKey() {
 	}
 
 
-	var multMap = new g.M({1: {1: "one"}, 2: {2: "two"}}, );
+	var multMap = new g.M({1: {1: "one"}, 2: {2: "two"}}, "");
 
 	var k_multMap = multMap[1][2];
 
