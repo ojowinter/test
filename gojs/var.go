@@ -462,12 +462,12 @@ _noFunc:
 			}*/
 
 			// Maps: a new variable assigned to another one could be a map.
-			if isNewVar && expr.isIdent && tr.findMap(value) {
+/*			if isNewVar && expr.isIdent && tr.findMap(value) {
 				if _, ok := tr.mapKeys[tr.funcId][tr.blockId][name]; !ok {
 					tr.mapKeys[tr.funcId][tr.blockId][name] = make(map[string]struct{})
 				}
 			}
-
+*/
 		} else { // Initialization explicit
 			value, typeIsPointer = tr.zeroValue(true, type_)
 			zero = true

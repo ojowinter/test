@@ -38,7 +38,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 
 	isFuncInit := false // function init()
 
-	// === Initialization to save variables created on this function
+	// == Initialization to save variables created on this function
 	if decl.Name != nil { // discard literal functions
 		tr.funcTotal++
 		tr.funcId = tr.funcTotal
@@ -47,10 +47,8 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		tr.vars[tr.funcId] = make(map[int]map[string]bool)
 		tr.addr[tr.funcId] = make(map[int]map[string]bool)
 		tr.typeZero[tr.funcId] = make(map[int]map[string]string)
-		tr.mapKeys[tr.funcId] = make(map[int]map[string]map[string]struct{})
-		tr.mapZero[tr.funcId] = make(map[int]map[string]string)
 	}
-	// ===
+	// ==
 
 	tr.addLine(decl.Pos())
 	tr.addIfExported(decl.Name)

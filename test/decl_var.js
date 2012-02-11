@@ -45,16 +45,16 @@ var s5 = ["a", "b", "c"];
 
 var m1 = {};
 var m2 = {};
-var m3 = {
+var m3 = new g.M({
 	1: "first",
 	2: "second",
 	3: "third"
-};
-var m4 = {
+}, "");
+var m4 = new g.M({
 	1: "first",
 	2: 2,
 	3: 3
-};
+}, );
 
 
 
@@ -73,5 +73,5 @@ function main() {
 
 }
 
-_export(test, [A]);
+g.Export(test, [A]);
 })();

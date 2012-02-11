@@ -34,5 +34,5 @@ function main() {
 	}
 }
 
-_export(test, [Point]);
+g.Export(test, [Point]);
 })();

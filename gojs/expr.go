@@ -29,6 +29,7 @@ type expression struct {
 
 	varName  string // variable name
 	funcName string // function name
+	mapZero  string // zero value for the value type into a map
 
 	//isFunc       bool // anonymous function
 	isPointer    bool
@@ -67,6 +68,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		tr,
 		new(bytes.Buffer),
 		id,
+		"",
 		"",
 		false,
 		false,
@@ -405,13 +407,16 @@ func (e *expression) transform(expr ast.Expr) {
 
 		case *ast.MapType:
 			// Type checking
-			if e.tr.getExpression(typ.Type).hasError {
+			expr := e.tr.getExpression(typ.Type)
+			if expr.hasError {
+//			e.transform(typ.Type)
+//			if e.hasError {
 				return
 			}
 
-			e.WriteString("{")
+			e.WriteString("new g.M({")
 			e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
-			e.WriteString("}")
+			e.WriteString("}," + SP + expr.mapZero + ")")
 
 		case nil:
 			e.WriteString("[")
@@ -515,18 +520,7 @@ func (e *expression) transform(expr ast.Expr) {
 			index += "[" + e.index[i] + "]"
 		}
 
-		value := x + index
-
-		if e.tr.isVar && e.tr.findMap(x) {
-			if !e.tr.isValue { // add new key
-				e.tr.mapKeys[e.tr.funcId][e.tr.blockId][x][index] = void
-			// Check if the key exist.
-			} else if _, ok := e.tr.mapKeys[e.tr.funcId][e.tr.blockId][x][index]; !ok {
-				value = e.tr.mapZero[e.tr.funcId][e.tr.blockId][x]
-			}
-		}
-
-		e.WriteString(value)
+		e.WriteString(x + index)
 
 	// godoc go/ast InterfaceType
 	//  Interface  token.Pos  // position of "interface" keyword
@@ -549,12 +543,6 @@ func (e *expression) transform(expr ast.Expr) {
 
 		e.WriteString(key + ":" + SP + value)
 
-		if e.tr.isVar {
-			e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName][key] = void
-		} else {
-			println("No var: KeyValue") // TODO: delete
-		}
-
 	// godoc go/ast MapType
 	//  Map   token.Pos // position of "map" keyword
 	//  Key   Expr
@@ -566,12 +554,7 @@ func (e *expression) transform(expr ast.Expr) {
 
 		// Initialization for maps
 		if _, ok := typ.Value.(*ast.MapType); !ok && e.tr.isVar {
-			if _, ok := e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName]; !ok {
-				e.tr.mapKeys[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = make(map[string]struct{})
-			}
-
-			zero, _ := e.tr.zeroValue(true, typ.Value)
-			e.tr.mapZero[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = zero
+			e.mapZero, _ = e.tr.zeroValue(true, typ.Value)
 		}
 
 	// godoc go/ast ParenExpr

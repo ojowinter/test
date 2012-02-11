@@ -71,13 +71,6 @@ type transform struct {
 
 	// Zero value for custom types.
 	typeZero map[int]map[int]map[string]string
-
-	// It is needed to keep the keys for each map.
-	// If a key does not exist then there is to return its zero value.
-	mapKeys map[int]map[int]map[string]map[string]struct{}
-	// Zero value for the value type into a map.
-	// i.e. for "map[int]map[string]float64", the zero value is 0
-	mapZero map[int]map[int]map[string]string
 }
 
 func newTransform() *transform {
@@ -99,30 +92,22 @@ func newTransform() *transform {
 		make(map[int]map[int]map[string]bool),
 		make(map[int]map[int]map[string]bool),
 		make(map[int]map[int]map[string]string),
-		make(map[int]map[int]map[string]map[string]struct{}),
-		make(map[int]map[int]map[string]string),
 	}
 
 	// == Global variables
 	// Ones related to local variables are set in:
 	// file func: *transform.getFunc()
 	// file stmt: *transform.getStatement() (case: *ast.BlockStmt)
-	// file var:  *transform.writeVar() (label: _noFunc)
-	// file expr: *expression.transform (case: *ast.MapType)
 
 	// funcId = 0
 	tr.vars[0] = make(map[int]map[string]bool)
 	tr.addr[0] = make(map[int]map[string]bool)
 	tr.typeZero[0] = make(map[int]map[string]string)
-	tr.mapKeys[0] = make(map[int]map[string]map[string]struct{})
-	tr.mapZero[0] = make(map[int]map[string]string)
 
 	// blockId = 0
 	tr.vars[0][0] = make(map[string]bool)
 	tr.addr[0][0] = make(map[string]bool)
 	tr.typeZero[0][0] = make(map[string]string)
-	tr.mapKeys[0][0] = make(map[string]map[string]struct{})
-	tr.mapZero[0][0] = make(map[string]string)
 
 	return tr
 }
@@ -291,7 +276,7 @@ func Compile(filename string) error {
 		if len(trans.exported) != 0 {
 			for i, v := range trans.exported {
 				if i == 0 {
-					trans.WriteString(fmt.Sprintf("%s_export(%s,%s[%s",
+					trans.WriteString(fmt.Sprintf("%sg.Export(%s,%s[%s",
 						NL+NL, pkgName, SP, v))
 				} else {
 					trans.WriteString("," + SP + v)
@@ -342,13 +327,6 @@ func Compile(filename string) error {
 			fmt.Fprintln(os.Stderr, "\n Too many warnings")
 		}
 	}
-/*
-for k, v := range trans.mapKeys{ //[3][1] {
-	fmt.Println(k, v)
-}
-for k, v := range trans.mapZero{ //[3][1] {
-	fmt.Println(k, v)
-}
-*/
+
 	return nil
 }

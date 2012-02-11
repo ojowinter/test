@@ -145,7 +145,7 @@ By example, for a package named *foo* with names exported *Add* and *Product*:
 
 ## Installation
 
-	goinstall << DOWNLOAD URL >>
+	go get github.com/kless/GoScript
 
 
 ## Operating instructions

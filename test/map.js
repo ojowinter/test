@@ -47,7 +47,7 @@ function declare_1() {
 
 function declare_2() {
 
-	var rating2 = {"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2};
+	var rating2 = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
 
 
 	var rating = {};
@@ -95,9 +95,9 @@ function reference() {
 }
 
 function checkKey() {
-	var rating = {"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2};
+	var rating = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
 
-	var csharp_rating = 0;
+	var csharp_rating = rating["C#"];
 
 	if (csharp_rating === 0.00) {
 		console.log("[OK]\n");
@@ -106,9 +106,9 @@ function checkKey() {
 	}
 
 
-	var multMap = {1: {1: "one"}, 2: {2: "two"}};
+	var multMap = new g.M({1: {1: "one"}, 2: {2: "two"}}, );
 
-	var k_multMap = "";
+	var k_multMap = multMap[1][2];
 
 	if (k_multMap === "") {
 		console.log("[OK]\n");

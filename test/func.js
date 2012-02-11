@@ -93,7 +93,7 @@ function resultVariable() {
 		return [s, ok];
 	};
 
-	var results = {
+	var results = new g.M({
 		1: 1,
 		2: 1.4142135623730951,
 		3: 1.7320508075688772,
@@ -104,7 +104,7 @@ function resultVariable() {
 		8: 2.8284271247461903,
 		9: 3,
 		10: 3.1622776601683795
-	};
+	}, 0);
 
 	var err = false;
 	for (var i = -2.0; i <= 10; i++) {

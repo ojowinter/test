@@ -16,7 +16,10 @@ package gojs
 
 import "testing"
 
-const DIR = "../test/"
+const (
+	DIR_PKG  = "../pkg/"
+	DIR_TEST = "../test/"
+)
 
 func init() {
 	MaxMessage = 100 // to show all errors
@@ -27,22 +30,22 @@ func init() {
 	}
 }
 
-func TestConst(t *testing.T)  { compile("decl_const.go", t) }
-func TestVar(t *testing.T)    { compile("decl_var.go", t) }
-func TestStruct(t *testing.T) { compile("decl_struct.go", t) }
-//func TestOp(t *testing.T)     { compile("operator.go", t) }
+func TestConst(t *testing.T)  { compile('t', "decl_const.go", t) }
+func TestVar(t *testing.T)    { compile('t', "decl_var.go", t) }
+func TestStruct(t *testing.T) { compile('t', "decl_struct.go", t) }
+//func TestOp(t *testing.T)     { compile('t', "operator.go", t) }
 
-func TestPointer(t *testing.T) { compile("pointer.go", t) }
-func TestFunc(t *testing.T)    { compile("func.go", t) }
-func TestCompo(t *testing.T)   { compile("composite.go", t) }
-func TestSlice(t *testing.T)   { compile("slice.go", t) }
-func TestMap(t *testing.T)     { compile("map.go", t) }
-func TestMethod(t *testing.T)  { compile("method.go", t) }
+func TestPointer(t *testing.T) { compile('t', "pointer.go", t) }
+func TestFunc(t *testing.T)    { compile('t', "func.go", t) }
+func TestCompo(t *testing.T)   { compile('t', "composite.go", t) }
+func TestSlice(t *testing.T)   { compile('t', "slice.go", t) }
+func TestMap(t *testing.T)     { compile('t', "map.go", t) }
+func TestMethod(t *testing.T)  { compile('t', "method.go", t) }
 
 // == Warnings
 //
 // ../test/control.go:44:2: 'default' clause above 'case' clause in switch statement
-func Example_control() { Compile(DIR + "control.go") }
+func Example_control() { Compile(DIR_TEST + "control.go") }
 
 // == Errors
 //
@@ -68,7 +71,7 @@ func Example_control() { Compile(DIR + "control.go") }
 // ../test/error_decl.go:64:4: int64 type
 // ../test/error_decl.go:65:2: anonymous field in struct
 // ../test/error_decl.go:66:4: complex128 type
-func Example_decl() { Compile(DIR + "error_decl.go") }
+func Example_decl() { Compile(DIR_TEST + "error_decl.go") }
 
 // == Errors
 //
@@ -78,17 +81,27 @@ func Example_decl() { Compile(DIR + "error_decl.go") }
 // ../test/error_stmt.go:12:2: built-in function recover()
 // ../test/error_stmt.go:18:1: use of label
 // ../test/error_stmt.go:23:3: goto directive
-func Example_stmt() { Compile(DIR + "error_stmt.go") }
+func Example_stmt() { Compile(DIR_TEST + "error_stmt.go") }
 
-// === Helpers
+// === Library
 //
 
-//func TestHelper(t *testing.T) { compile("../helper/helper.go", t) }
+func TestPkg(t *testing.T) { compile('p', "pkg.go", t) }
 
 // * * *
 
-func compile(filename string, t *testing.T) {
-	if err := Compile(DIR + filename); err != nil {
+func compile(kind rune, filename string, t *testing.T) {
+	dir := ""
+
+	if kind == 't' {
+		dir = DIR_TEST
+	} else if kind == 'p' {
+		dir = DIR_PKG
+	} else {
+		panic("Wrong kind")
+	}
+
+	if err := Compile(dir + filename); err != nil {
 		t.Fatalf("expected parse file: %s", err)
 	}
 }

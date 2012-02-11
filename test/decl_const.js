@@ -57,5 +57,5 @@ function main() {
 
 }
 
-_export(test, [Pi, Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Partyday]);
+g.Export(test, [Pi, Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Partyday]);
 })();
