@@ -30,6 +30,8 @@ type expression struct {
 	varName  string // variable name
 	funcName string // function name
 
+	isValue bool // is on the right of the assignment?
+
 	//isFunc       bool // anonymous function
 	isPointer    bool
 	isAddress    bool
@@ -68,6 +70,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
+		false,
 		false,
 		false,
 		false,
@@ -252,7 +255,8 @@ func (e *expression) transform(expr ast.Expr) {
 				e.skipSemicolon = true
 
 			case *ast.MapType:
-				e.WriteString("{}") // or "new Object()"
+				e.tr.maps[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
+				e.WriteString("new g.M({}," + SP + e.tr.zeroOfMap(argType) + ")")
 
 			case *ast.ChanType:
 				e.transform(typ.Fun)
@@ -408,6 +412,7 @@ func (e *expression) transform(expr ast.Expr) {
 			if e.tr.getExpression(typ.Type).hasError {
 				return
 			}
+			e.tr.maps[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
 
 			e.WriteString("new g.M({")
 			e.writeElts(typ.Elts, typ.Lbrace, typ.Rbrace)
@@ -500,22 +505,39 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Index  Expr      // index expression
 	//  Rbrack token.Pos // position of "]"
 	case *ast.IndexExpr:
+		// == Store indexes
 		e.index = append(e.index, e.tr.getExpression(typ.Index).String())
 
-		// Could be a multi-dimensional index
+		// Could be multi-dimensional
 		if _, ok := typ.X.(*ast.IndexExpr); ok {
 			e.transform(typ.X)
 			return
 		}
+		// ==
 
 		x := e.tr.getExpression(typ.X).String()
 		index := ""
+		indexArgs := ""
 
 		for i := len(e.index)-1; i >= 0; i-- { // inverse order
-			index += "[" + e.index[i] + "]"
+			idx := e.index[i]
+			index += "[" + idx + "]"
+
+			if indexArgs != "" {
+				indexArgs += "," + SP
+			}
+			indexArgs += idx
 		}
 
-		e.WriteString(x + index)
+		if e.tr.isMap(x) {
+			if e.tr.isVar && !e.isValue {
+				e.WriteString(x + ".m" + index)
+			} else {
+				e.WriteString(x + ".get(" + indexArgs + ")")
+			}
+		} else {
+			e.WriteString(x + index)
+		}
 
 	// godoc go/ast InterfaceType
 	//  Interface  token.Pos  // position of "interface" keyword

@@ -14,7 +14,7 @@ function valueNil() {
 	}
 
 
-	n = {};
+	n = new g.M({}, 0);
 
 
 	msg = "using make";
@@ -30,17 +30,17 @@ function declare_1() {
 
 
 	var numbers;
-	numbers = {};
+	numbers = new g.M({}, 0);
 
-	numbers["one"] = 1;
-	numbers["ten"] = 10;
-	numbers["trois"] = 3;
+	numbers.m["one"] = 1;
+	numbers.m["ten"] = 10;
+	numbers.m["trois"] = 3;
 
 
-	if (numbers["trois"] === 3) {
+	if (numbers.get("trois") === 3) {
 		console.log("[OK]\n");
 	} else {
-		alert("[Error] Trois is the french word for the number: " + numbers["trois"] + "\n");
+		alert("[Error] Trois is the french word for the number: " + numbers.get("trois") + "\n");
 	}
 
 }
@@ -50,25 +50,25 @@ function declare_2() {
 	var rating2 = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
 
 
-	var rating = {};
-	rating["C"] = 5;
-	rating["Go"] = 4.5;
-	rating["Python"] = 4.5;
-	rating["C++"] = 2;
+	var rating = new g.M({}, 0);
+	rating.m["C"] = 5;
+	rating.m["Go"] = 4.5;
+	rating.m["Python"] = 4.5;
+	rating.m["C++"] = 2;
 
 
 	var code = "";
-	if (JSON.stringify(rating["Go"]) === JSON.stringify(rating2["Go"])) {
+	if (JSON.stringify(rating.get("Go")) === JSON.stringify(rating2.get("Go"))) {
 		console.log("[OK] comparing same value\n");
 	} else {
-		alert("[Error] rating[\"Go\"]: " + rating["Go"] + "\trating2[\"Go\"]: " + rating2["Go"] + "\n");
+		alert("[Error] rating[\"Go\"]: " + rating.get("Go") + "\trating2[\"Go\"]: " + rating2.get("Go") + "\n");
 
 	}
 
 
-	rating["Go"] = 4.7;
+	rating.m["Go"] = 4.7;
 
-	if (JSON.stringify(rating["Go"]) !== JSON.stringify(rating2["Go"])) {
+	if (JSON.stringify(rating.get("Go")) !== JSON.stringify(rating2.get("Go"))) {
 		code = "OK";
 	} else {
 		code = "Error";
@@ -79,17 +79,17 @@ function declare_2() {
 
 function reference() {
 
-	var m = {};
-	m["Hello"] = "Bonjour";
+	var m = new g.M({}, "");
+	m.m["Hello"] = "Bonjour";
 
 	var m1 = m;
-	m1["Hello"] = "Salut";
+	m1.m["Hello"] = "Salut";
 
 
-	if (JSON.stringify(m["Hello"]) === JSON.stringify(m1["Hello"])) {
+	if (JSON.stringify(m.get("Hello")) === JSON.stringify(m1.get("Hello"))) {
 		console.log("[OK]\n");
 	} else {
-		alert("[Error] value in key: " + m["Hello"] + "\n");
+		alert("[Error] value in key: " + m.get("Hello") + "\n");
 	}
 
 }
@@ -97,7 +97,7 @@ function reference() {
 function checkKey() {
 	var rating = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
 
-	var csharp_rating = rating["C#"];
+	var csharp_rating = rating.get("C#");
 
 	if (csharp_rating === 0.00) {
 		console.log("[OK]\n");
@@ -108,7 +108,7 @@ function checkKey() {
 
 	var multMap = new g.M({1: {1: "one"}, 2: {2: "two"}}, "");
 
-	var k_multMap = multMap[1][2];
+	var k_multMap = multMap.get(1, 2);
 
 	if (k_multMap === "") {
 		console.log("[OK]\n");

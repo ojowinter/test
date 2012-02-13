@@ -33,7 +33,6 @@ type dataStmt struct {
 
 	isConst        bool
 	isVar          bool
-	isValue        bool // is on the right of the assignment?
 	initIsPointer  bool // the value initialized is a pointer?
 	wasFallthrough bool // the last statement was "fallthrough"?
 	wasReturn      bool // the last statement was "return"?
@@ -72,6 +71,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.blockId++
 		tr.vars[tr.funcId][tr.blockId] = make(map[string]bool)
 		tr.addr[tr.funcId][tr.blockId] = make(map[string]bool)
+		tr.maps[tr.funcId][tr.blockId] = make(map[string]struct{})
 		tr.typeZero[tr.funcId][tr.blockId] = make(map[string]string)
 
 		if !tr.skipLbrace {

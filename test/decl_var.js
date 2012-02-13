@@ -43,8 +43,8 @@ var s5 = ["a", "b", "c"];
 
 
 
-var m1 = {};
-var m2 = {};
+var m1 = new g.M({}, 0);
+var m2 = new g.M({}, 0);
 var m3 = new g.M({
 	1: "first",
 	2: "second",

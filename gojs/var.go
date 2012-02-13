@@ -290,13 +290,12 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 	var sign string
 	var isNewVar, isBitClear bool
 
+	tr.isVar = true
+	defer func() { tr.isVar = false }()
+
 	if !isGlobal && isMultipleLine {
 		tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 	}
-
-	// To don't add tag for pointer from *tr.transform (in *ast.Ident)
-	tr.isVar = true
-	defer func() { tr.isVar = false }()
 
 	// === Operator
 	switch operator {
@@ -321,7 +320,7 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 
 	// === Names
 	var _names        []string
-	var iValidNames   []int // index of variables which are not in blank
+	var idxValidNames []int // index of variables which are not in blank
 	var nameIsPointer []bool
 
 	switch t := names.(type) {
@@ -352,10 +351,10 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 	// Check if there is any variable to use
 	for i, v := range _names {
 		if v != BLANK {
-			iValidNames = append(iValidNames, i)
+			idxValidNames = append(idxValidNames, i)
 		}
 	}
-	if len(iValidNames) == 0 {
+	if len(idxValidNames) == 0 {
 		return
 	}
 
@@ -381,8 +380,8 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 				tr.WriteString(_names[0] + SP + sign + SP + fun + ";")
 				return
 			}
-			if len(iValidNames) == 1 {
-				i := iValidNames[0]
+			if len(idxValidNames) == 1 {
+				i := idxValidNames[0]
 				tr.WriteString(fmt.Sprintf("%s[%d];",
 					_names[i] + SP + sign + SP + fun, i))
 				return
@@ -391,7 +390,7 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 			// multiple variables
 			str := fmt.Sprintf("_%s", SP+sign+SP+fun)
 
-			for _, i := range iValidNames {
+			for _, i := range idxValidNames {
 				str += fmt.Sprintf(",%s_[%d]", SP+_names[i]+SP+sign+SP, i)
 			}
 
@@ -406,7 +405,7 @@ _noFunc:
 	//isFuncLit := false // TODO: remove
 	isFirst := true
 
-	for _, i := range iValidNames {
+	for _, i := range idxValidNames {
 		name := _names[i]
 		value := ""
 
@@ -432,11 +431,11 @@ _noFunc:
 
 		if values != nil {
 			valueOfValidName := values[i]
-			tr.isValue = true
 
 			// If the expression is an anonymous function, then
 			// it is written in the main buffer.
 			expr = tr.newExpression(name)
+			expr.isValue = true
 			expr.transform(valueOfValidName)
 
 			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
@@ -462,12 +461,10 @@ _noFunc:
 			}*/
 
 			// Maps: a new variable assigned to another one could be a map.
-/*			if isNewVar && expr.isIdent && tr.findMap(value) {
-				if _, ok := tr.mapKeys[tr.funcId][tr.blockId][name]; !ok {
-					tr.mapKeys[tr.funcId][tr.blockId][name] = make(map[string]struct{})
-				}
+			if isNewVar && expr.isIdent && tr.isMap(value) {
+				tr.maps[tr.funcId][tr.blockId][name] = void
 			}
-*/
+
 		} else { // Initialization explicit
 			value, typeIsPointer = tr.zeroValue(true, type_)
 			zero = true
@@ -494,7 +491,6 @@ _noFunc:
 		}
 
 		tr.WriteString(value)
-		tr.isValue = false
 	}
 
 	if !isFirst && !expr.skipSemicolon && !tr.skipSemicolon {
@@ -573,15 +569,6 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 		tr.initIsPointer = false
 	}
 	return
-}
-
-// Returns the zero value of a map.
-func (tr *transform) zeroOfMap(m *ast.MapType) string {
-	if mapT, ok := m.Value.(*ast.MapType); ok { // nested map
-		return tr.zeroOfMap(mapT)
-	}
-	v, _ := tr.zeroValue(true, m.Value)
-	return v
 }
 
 // Returns the zero value of a custom type.
