@@ -17,8 +17,8 @@ package gojs
 import "testing"
 
 const (
-	DIR_PKG  = "../pkg/"
-	DIR_TEST = "../test/"
+	DIR_PKG  = "../_pkg/"
+	DIR_TEST = "../_test/"
 )
 
 func init() {
