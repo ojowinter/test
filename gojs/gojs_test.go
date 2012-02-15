@@ -44,43 +44,43 @@ func TestMethod(t *testing.T)  { compile('t', "method.go", t) }
 
 // == Warnings
 //
-// ../test/control.go:44:2: 'default' clause above 'case' clause in switch statement
+// ../_test/control.go:44:2: 'default' clause above 'case' clause in switch statement
 func Example_control() { Compile(DIR_TEST + "control.go") }
 
 // == Errors
 //
 // os: import from core library
-// ../test/error_decl.go:13:10: complex128 type
-// ../test/error_decl.go:14:10: complex128 type
-// ../test/error_decl.go:15:10: complex128 type
-// ../test/error_decl.go:16:10: complex128 type
-// ../test/error_decl.go:18:6: built-in function complex()
-// ../test/error_decl.go:23:17: complex64 type
-// ../test/error_decl.go:24:13: complex64 type
-// ../test/error_decl.go:25:11: complex64 type
-// ../test/error_decl.go:30:14: complex128 type
-// ../test/error_decl.go:31:9: complex128 type
-// ../test/error_decl.go:32:12: complex128 type
-// ../test/error_decl.go:37:16: complex64 type
-// ../test/error_decl.go:38:23: complex64 type
-// ../test/error_decl.go:39:11: complex64 type
-// ../test/error_decl.go:48:12: channel type
-// ../test/error_decl.go:49:12: channel type
-// ../test/error_decl.go:50:7: channel operator
-// ../test/error_decl.go:60:2: function type in struct
-// ../test/error_decl.go:64:4: int64 type
-// ../test/error_decl.go:65:2: anonymous field in struct
-// ../test/error_decl.go:66:4: complex128 type
+// ../_test/error_decl.go:13:10: complex128 type
+// ../_test/error_decl.go:14:10: complex128 type
+// ../_test/error_decl.go:15:10: complex128 type
+// ../_test/error_decl.go:16:10: complex128 type
+// ../_test/error_decl.go:18:6: built-in function complex()
+// ../_test/error_decl.go:23:17: complex64 type
+// ../_test/error_decl.go:24:13: complex64 type
+// ../_test/error_decl.go:25:11: complex64 type
+// ../_test/error_decl.go:30:14: complex128 type
+// ../_test/error_decl.go:31:9: complex128 type
+// ../_test/error_decl.go:32:12: complex128 type
+// ../_test/error_decl.go:37:16: complex64 type
+// ../_test/error_decl.go:38:23: complex64 type
+// ../_test/error_decl.go:39:11: complex64 type
+// ../_test/error_decl.go:48:12: channel type
+// ../_test/error_decl.go:49:12: channel type
+// ../_test/error_decl.go:50:7: channel operator
+// ../_test/error_decl.go:60:2: function type in struct
+// ../_test/error_decl.go:64:4: int64 type
+// ../_test/error_decl.go:65:2: anonymous field in struct
+// ../_test/error_decl.go:66:4: complex128 type
 func Example_decl() { Compile(DIR_TEST + "error_decl.go") }
 
 // == Errors
 //
-// ../test/error_stmt.go:6:13: channel type
-// ../test/error_stmt.go:8:2: goroutine
-// ../test/error_stmt.go:9:2: defer directive
-// ../test/error_stmt.go:12:2: built-in function recover()
-// ../test/error_stmt.go:18:1: use of label
-// ../test/error_stmt.go:23:3: goto directive
+// ../_test/error_stmt.go:6:13: channel type
+// ../_test/error_stmt.go:8:2: goroutine
+// ../_test/error_stmt.go:9:2: defer directive
+// ../_test/error_stmt.go:12:2: built-in function recover()
+// ../_test/error_stmt.go:18:1: use of label
+// ../_test/error_stmt.go:23:3: goto directive
 func Example_stmt() { Compile(DIR_TEST + "error_stmt.go") }
 
 // === Library

@@ -434,17 +434,12 @@ _noFunc:
 		if values != nil {
 			valueOfValidName := values[i]
 
+			// If the expression is an anonymous function, then, at transforming,
+			// it is written in the main buffer.
 			expr = tr.newExpression(name)
 			expr.isValue = true
 
-			// If the expression is an anonymous function, then, at transforming,
-			// it is written in the main buffer.
-			if _, ok := valueOfValidName.(*ast.FuncLit); ok {
-				isFuncLit = true
-
-				tr.WriteString(nameExpr)
-				expr.transform(valueOfValidName)
-			} else {
+			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
 				expr.transform(valueOfValidName)
 				exprStr := expr.String()
 
@@ -466,6 +461,8 @@ _noFunc:
 
 				// == Map: v, ok := m[k]
 				if len(values) == 1 && tr.isMap(expr.mapName) {
+					value = value[:len(value)-3] // remove '[0]'
+
 					if len(idxValidNames) == 1 {
 						tr.WriteString(fmt.Sprintf("%s%s%s[%d];",
 							_names[idxValidNames[0]],
@@ -481,6 +478,11 @@ _noFunc:
 					return
 				}
 				// ==
+			} else {
+				isFuncLit = true
+
+				tr.WriteString(nameExpr)
+				expr.transform(valueOfValidName)
 			}
 
 			// Map: a new variable assigned to another one could be a map.

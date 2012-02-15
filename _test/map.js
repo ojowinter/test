@@ -37,10 +37,10 @@ function declare_1() {
 	numbers.m["trois"] = 3;
 
 
-	if (numbers.get("trois") === 3) {
+	if (numbers.get("trois")[0] === 3) {
 		console.log("[OK]\n");
 	} else {
-		alert("[Error] Trois is the french word for the number: " + numbers.get("trois") + "\n");
+		alert("[Error] Trois is the french word for the number: " + numbers.get("trois")[0] + "\n");
 	}
 
 }
@@ -58,17 +58,17 @@ function declare_2() {
 
 
 	var code = "";
-	if (JSON.stringify(rating.get("Go")) === JSON.stringify(rating2.get("Go"))) {
+	if (JSON.stringify(rating.get("Go")[0]) === JSON.stringify(rating2.get("Go")[0])) {
 		console.log("[OK] comparing same value\n");
 	} else {
-		alert("[Error] rating[\"Go\"]: " + rating.get("Go") + "\trating2[\"Go\"]: " + rating2.get("Go") + "\n");
+		alert("[Error] rating[\"Go\"]: " + rating.get("Go")[0] + "\trating2[\"Go\"]: " + rating2.get("Go")[0] + "\n");
 
 	}
 
 
 	rating.m["Go"] = 4.7;
 
-	if (JSON.stringify(rating.get("Go")) !== JSON.stringify(rating2.get("Go"))) {
+	if (JSON.stringify(rating.get("Go")[0]) !== JSON.stringify(rating2.get("Go")[0])) {
 		code = "OK";
 	} else {
 		code = "Error";
@@ -86,10 +86,10 @@ function reference() {
 	m1.m["Hello"] = "Salut";
 
 
-	if (JSON.stringify(m.get("Hello")) === JSON.stringify(m1.get("Hello"))) {
+	if (JSON.stringify(m.get("Hello")[0]) === JSON.stringify(m1.get("Hello")[0])) {
 		console.log("[OK]\n");
 	} else {
-		alert("[Error] value in key: " + m.get("Hello") + "\n");
+		alert("[Error] value in key: " + m.get("Hello")[0] + "\n");
 	}
 
 }

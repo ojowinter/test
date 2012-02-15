@@ -545,7 +545,7 @@ func (e *expression) transform(expr ast.Expr) {
 			if e.tr.isVar && !e.isValue {
 				e.WriteString(x + ".m" + index)
 			} else {
-				e.WriteString(x + ".get(" + indexArgs + ")")
+				e.WriteString(x + ".get(" + indexArgs + ")[0]")
 			}
 		} else {
 			e.WriteString(x + index)
