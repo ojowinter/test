@@ -46,15 +46,9 @@ M.prototype.get = function(k) {
 	}
 
 	if (v === undefined) {
-		return this.z;
+		return [this.z, false];
 	}
-	return v;
-}
-
-
-
-M.prototype.del = function(k) {
-	this.m[k] = undefined;
+	return [v, true];
 }
 
 g.Export(g, [Export, M]);

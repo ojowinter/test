@@ -96,8 +96,7 @@ function reference() {
 
 function checkKey() {
 	var rating = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
-
-	var csharp_rating = rating.get("C#");
+	var csharp_rating = rating.get("C#")[0];
 
 	if (csharp_rating === 0.00) {
 		console.log("[OK]\n");
@@ -107,13 +106,26 @@ function checkKey() {
 
 
 	var multMap = new g.M({1: {1: "one"}, 2: {2: "two"}}, "");
-
-	var k_multMap = multMap.get(1, 2);
+	var k_multMap = multMap.get(1, 2)[0];
 
 	if (k_multMap === "") {
 		console.log("[OK]\n");
 	} else {
-		alert("[Error] value in key: " + k_multMap + "\n");
+		alert("[Error] value in multi-dimensional key: " + k_multMap + "\n");
+	}
+
+
+	var _ = rating.get("C#"), csharp_rating2 = _[0], ok = _[1];
+
+	if (ok) {
+		alert("[Error] using comma\n");
+	} else {
+		console.log("[OK] using comma\n");
+	}
+	if (csharp_rating2 === 0.00) {
+		console.log("[OK] value (using comma)\n");
+	} else {
+		alert("[Error] value in key (using comma): " + csharp_rating2 + "\n");
 	}
 
 }

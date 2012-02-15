@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Library to handle Go features.
+// Handle Go features.
 
 package g
 
@@ -37,7 +37,7 @@ type M struct {
 // Gets the value for the key "k".
 // If looking some key up in M's map gets you "nil" ("undefined" in JS),
 // then return a copy of the zero value.
-func (m M) get(k interface{}) interface{} {
+func (m M) get(k interface{}) (interface{}, bool) {
 	v := m.m
 
 	// Allow multi-dimensional index (separated by commas)
@@ -46,13 +46,13 @@ func (m M) get(k interface{}) interface{} {
 	}
 
 	if v == nil {
-		return m.z
+		return m.z, false
 	}
-	return v
+	return v, true
 }
-
+/*
 // Deletes a key.
-// delete(name_m, k) => name_m.m.k = nil
+// delete(map_name, k) => map_name.m[k] = nil | map_name.del(k)
 func (m M) del(k interface{}) {
-	m.m[k] = nil
-}
+	m.m.k = nil
+}*/

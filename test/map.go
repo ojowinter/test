@@ -96,7 +96,6 @@ func reference() {
 
 func checkKey() {
 	rating := map[string]float32{"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}
-
 	csharp_rating := rating["C#"]
 	// Checking
 	if csharp_rating == 0.00 {
@@ -107,15 +106,28 @@ func checkKey() {
 	//==
 
 	multMap := map[int]map[int]string{1: {1: "one"}, 2: {2: "two"}}
-
 	k_multMap := multMap[1][2]
 	// Checking
 	if k_multMap == "" {
 		println("[OK]")
 	} else {
-		fmt.Println("[Error] value in key:", k_multMap)
+		fmt.Println("[Error] value in multi-dimensional key:", k_multMap)
 	}
 	//==
+
+	csharp_rating2, ok := rating["C#"]
+	// Checking
+	if ok {
+		fmt.Println("[Error] using comma")
+	} else {
+		println("[OK] using comma")
+	}
+	if csharp_rating2 == 0.00 {
+		println("[OK] value (using comma)")
+	} else {
+		fmt.Println("[Error] value in key (using comma):", csharp_rating2)
+	}
+	// ==
 }
 
 func main() {

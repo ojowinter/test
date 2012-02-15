@@ -21,6 +21,9 @@ import (
 
 // Checks if a variable name is a map.
 func (tr *transform) isMap(name string) bool {
+	if name == "" {
+		return false
+	}
 	name = strings.SplitN(name, "<<", 2)[0] // could have a tag
 
 	for funcId := tr.funcId; funcId >= 0; funcId-- {

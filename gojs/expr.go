@@ -29,6 +29,7 @@ type expression struct {
 
 	varName  string // variable name
 	funcName string // function name
+	mapName  string
 
 	isValue bool // is on the right of the assignment?
 
@@ -70,6 +71,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		new(bytes.Buffer),
 		id,
 		"",
+		"",
 		false,
 		false,
 		false,
@@ -85,6 +87,14 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		make([]string, 0),
 		make([]string, 0),
 	}
+}
+
+// Returns the Go expression transformed to JavaScript.
+func (tr *transform) getExpression(expr ast.Expr) *expression {
+	e := tr.newExpression(nil)
+
+	e.transform(expr)
+	return e
 }
 
 // Transforms the Go expression.
@@ -530,6 +540,8 @@ func (e *expression) transform(expr ast.Expr) {
 		}
 
 		if e.tr.isMap(x) {
+			e.mapName = x
+
 			if e.tr.isVar && !e.isValue {
 				e.WriteString(x + ".m" + index)
 			} else {

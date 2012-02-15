@@ -348,18 +348,22 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 		panic("unreachable")
 	}
 
-	// Check if there is any variable to use
+	// Check if there is any variable to use; and it is exported
 	for i, v := range _names {
 		if v != BLANK {
 			idxValidNames = append(idxValidNames, i)
+
+			if isGlobal {
+				tr.addIfExported(v)
+			}
 		}
 	}
 	if len(idxValidNames) == 0 {
 		return
 	}
 
-	// === Function
 	if values != nil {
+		// === Function
 		if call, ok := values[0].(*ast.CallExpr); ok {
 
 			// Function literal
@@ -402,28 +406,26 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 _noFunc:
 	expr := tr.newExpression(nil)
 	typeIsPointer := false
-	//isFuncLit := false // TODO: remove
+	isFuncLit := false // TODO: remove
 	isFirst := true
 
 	for _, i := range idxValidNames {
 		name := _names[i]
+		nameExpr := ""
 		value := ""
 
-		if isGlobal {
-			tr.addIfExported(name)
-		}
 		tr.lastVarName = name
 
 		// === Name
 		if isFirst {
-			tr.WriteString(name)
+			nameExpr += name
 			isFirst = false
 		} else {
-			tr.WriteString("," + SP + name)
+			 nameExpr += "," + SP + name
 		}
 
 		if !isNewVar {
-			tr.WriteString(tagPointer(false, 'P', tr.funcId, tr.blockId, name))
+			nameExpr += tagPointer(false, 'P', tr.funcId, tr.blockId, name)
 		}
 
 		// === Value
@@ -432,13 +434,18 @@ _noFunc:
 		if values != nil {
 			valueOfValidName := values[i]
 
-			// If the expression is an anonymous function, then
-			// it is written in the main buffer.
 			expr = tr.newExpression(name)
 			expr.isValue = true
-			expr.transform(valueOfValidName)
 
-			if _, ok := valueOfValidName.(*ast.FuncLit); !ok {
+			// If the expression is an anonymous function, then, at transforming,
+			// it is written in the main buffer.
+			if _, ok := valueOfValidName.(*ast.FuncLit); ok {
+				isFuncLit = true
+
+				tr.WriteString(nameExpr)
+				expr.transform(valueOfValidName)
+			} else {
+				expr.transform(valueOfValidName)
 				exprStr := expr.String()
 
 				if isBitClear {
@@ -451,16 +458,32 @@ _noFunc:
 				if expr.isAddress {
 					tr.addr[tr.funcId][tr.blockId][name] = true
 					if !isNewVar {
-						tr.WriteString(ADDR)
+						nameExpr += ADDR
 					}
 				} /*else {
 					tr.addr[tr.funcId][tr.blockId][name] = false
 				}*/
-			} /*else { // TODO: remove
-				isFuncLit = true
-			}*/
 
-			// Maps: a new variable assigned to another one could be a map.
+				// == Map: v, ok := m[k]
+				if len(values) == 1 && tr.isMap(expr.mapName) {
+					if len(idxValidNames) == 1 {
+						tr.WriteString(fmt.Sprintf("%s%s%s[%d];",
+							_names[idxValidNames[0]],
+							SP + sign + SP,
+							value, idxValidNames[0]))
+					} else {
+						tr.WriteString(fmt.Sprintf("_%s,%s_[%d],%s_[%d];",
+							SP + sign + SP + value,
+							SP + _names[0] + SP + sign + SP, 0,
+							SP + _names[1] + SP + sign + SP, 1))
+					}
+
+					return
+				}
+				// ==
+			}
+
+			// Map: a new variable assigned to another one could be a map.
 			if isNewVar && expr.isIdent && tr.isMap(value) {
 				tr.maps[tr.funcId][tr.blockId][name] = void
 			}
@@ -468,10 +491,6 @@ _noFunc:
 		} else { // Initialization explicit
 			value, typeIsPointer = tr.zeroValue(true, type_)
 			zero = true
-		}
-
-		if /*!isFuncLit &&*/ value != "" { // TODO: remove commented code
-			tr.WriteString(SP + sign + SP)
 		}
 
 		if isNewVar {
@@ -483,14 +502,19 @@ _noFunc:
 			}
 
 			// Could be addressed ahead
-			if !expr.isPointer && !expr.isAddress && !typeIsPointer {
+			if value != "" && !expr.isPointer && !expr.isAddress && !typeIsPointer {
 				value = tagPointer(zero, 'L', tr.funcId, tr.blockId, name) +
 					value +
 					tagPointer(zero, 'R', tr.funcId, tr.blockId, name)
 			}
 		}
 
-		tr.WriteString(value)
+		if !isFuncLit {
+			tr.WriteString(nameExpr)
+			if value != "" {
+				tr.WriteString(SP + sign + SP + value)
+			}
+		}
 	}
 
 	if !isFirst && !expr.skipSemicolon && !tr.skipSemicolon {
