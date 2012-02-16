@@ -308,10 +308,9 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString("'cap'")
 
 		case "delete":
-			e.WriteString(fmt.Sprintf("%s.m[%s]%s=%sundefined",
+			e.WriteString(fmt.Sprintf("delete %s.m[%s]",
 				e.tr.getExpression(typ.Args[0]).String(),
-				e.tr.getExpression(typ.Args[1]).String(),
-				SP, SP))
+				e.tr.getExpression(typ.Args[1]).String()))
 
 		case "panic":
 			e.WriteString(fmt.Sprintf("throw new Error(%s)",

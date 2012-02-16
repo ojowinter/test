@@ -302,6 +302,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		expr := tr.getExpression(typ.X).String()
 		key := tr.getExpression(typ.Key).String()
 		value := ""
+		isMap := false
 
 		if typ.Value != nil {
 			value = tr.getExpression(typ.Value).String()
@@ -311,10 +312,21 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			}
 		}
 
-		tr.WriteString(fmt.Sprintf("for%s(%s in %s)%s", SP, key, expr, SP))
+		tr.WriteString(fmt.Sprintf("for%s(%s in %s", SP, key, expr))
+		if tr.isMap(expr) {
+			tr.WriteString(".m")
+			isMap = true
+		}
+		tr.WriteString(")" + SP)
 
 		if typ.Value != nil {
-			tr.WriteString(fmt.Sprintf("{%s=%s[%s];", SP+value+SP, SP+expr, key))
+			tr.WriteString(fmt.Sprintf("{%s=%s", SP+value+SP, SP+expr))
+			if isMap {
+				tr.WriteString(".get(" + key + ")[0];")
+			} else {
+				tr.WriteString("[" + key + "];")
+			}
+
 			tr.skipLbrace = true
 		}
 

@@ -2,6 +2,8 @@
 
 
 
+var rating = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
+
 function valueNil() {
 	var n;
 
@@ -95,7 +97,6 @@ function reference() {
 }
 
 function checkKey() {
-	var rating = new g.M({"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}, 0);
 	var csharp_rating = rating.get("C#")[0];
 
 	if (csharp_rating === 0.00) {
@@ -128,16 +129,61 @@ function checkKey() {
 		alert("[Error] value in key (using comma): " + csharp_rating2 + "\n");
 	}
 
+}
 
-	rating.m["C++"] = undefined;
-	ok = rating.get("C++")[1];
+function deleteKey() {
+	delete rating.m["C++"];
+
+	var ok = rating.get("C++")[1];
 
 	if (ok) {
-		alert("[Error] deleting key\n");
+		alert("[Error]\n");
 	} else {
-		console.log("[OK] deleting key\n");
+		console.log("[OK]\n");
 	}
 
+}
+
+function testRange() {
+	var hasError = false;
+
+
+	var value; for (key in rating.m) { value = rating.get(key)[0];
+		switch (key) {
+		case "C":
+			if (value !== 5) {
+			alert("[Error] key 'C': expected '5', got " + value + "\n");
+			hasError = true;
+		} break;
+		case "Go":
+			if (value !== 4.5) {
+			alert("[Error] key 'Go': expected '4.5', got " + value + "\n");
+			hasError = true;
+		} break;
+		case "Python":
+			if (value !== 4.5) {
+			alert("[Error] key 'Python': expected '4.5', got " + value + "\n");
+			hasError = true;
+		} break;
+		default:
+			alert("[Error] key not expected: " + key + "\n");
+			hasError = true;
+		}
+	}
+	if (!hasError) {
+		console.log("[OK]\n");
+	}
+
+
+	for (key in rating.m) {
+		if (key !== "C" && key !== "Go" && key !== "Python") {
+			alert("[Error] key not expected: " + key + "\n");
+			hasError = true;
+		}
+	}
+	if (!hasError) {
+		console.log("[OK] omitting value\n");
+	}
 }
 
 function main() {
@@ -151,4 +197,8 @@ function main() {
 	reference();
 	console.log("\n== checkKey\n");
 	checkKey();
+	console.log("\n== deleteKey\n");
+	deleteKey();
+	console.log("\n== testRange\n");
+	testRange();
 }

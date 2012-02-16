@@ -2,6 +2,8 @@ package main
 
 import "fmt"
 
+var rating = map[string]float32{"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}
+
 func valueNil() {
 	var n map[string]int
 
@@ -95,7 +97,6 @@ func reference() {
 }
 
 func checkKey() {
-	rating := map[string]float32{"C": 5, "Go": 4.5, "Python": 4.5, "C++": 2}
 	csharp_rating := rating["C#"]
 	// Checking
 	if csharp_rating == 0.00 {
@@ -128,16 +129,61 @@ func checkKey() {
 		fmt.Println("[Error] value in key (using comma):", csharp_rating2)
 	}
 	// ==
+}
 
+func deleteKey() {
 	delete(rating, "C++") // We delete the entry with key "C++"
-	_, ok = rating["C++"]
+
+	_, ok := rating["C++"]
 	// Checking
 	if ok {
-		fmt.Println("[Error] deleting key")
+		fmt.Println("[Error]")
 	} else {
-		println("[OK] deleting key")
+		println("[OK]")
 	}
 	// ==
+}
+
+func testRange() {
+	hasError := false
+
+	// Iterate over the ratings map
+	for key, value := range rating {
+		switch key {
+		case "C":
+			if value != 5 {
+				fmt.Println("[Error] key 'C': expected '5', got", value)
+				hasError = true
+			}
+		case "Go":
+			if value != 4.5 {
+				fmt.Println("[Error] key 'Go': expected '4.5', got", value)
+				hasError = true
+			}
+		case "Python":
+			if value != 4.5 {
+				fmt.Println("[Error] key 'Python': expected '4.5', got", value)
+				hasError = true
+			}
+		default:
+			fmt.Println("[Error] key not expected:", key)
+			hasError = true
+		}
+	}
+	if !hasError {
+		println("[OK]")
+	}
+
+	// Omit the value.
+	for key := range rating {
+		if key != "C" && key != "Go" && key != "Python" {
+			fmt.Println("[Error] key not expected:", key)
+			hasError = true
+		}
+	}
+	if !hasError {
+		println("[OK] omitting value")
+	}
 }
 
 func main() {
@@ -151,4 +197,8 @@ func main() {
 	reference()
 	println("\n== checkKey")
 	checkKey()
+	println("\n== deleteKey")
+	deleteKey()
+	println("\n== testRange")
+	testRange()
 }
