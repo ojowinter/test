@@ -50,9 +50,3 @@ func (m M) get(k interface{}) (interface{}, bool) {
 	}
 	return v, true
 }
-/*
-// Deletes a key.
-// delete(map_name, k) => map_name.m[k] = nil | map_name.del(k)
-func (m M) del(k interface{}) {
-	m.m.k = nil
-}*/

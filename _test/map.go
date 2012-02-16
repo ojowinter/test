@@ -147,7 +147,7 @@ func deleteKey() {
 func testRange() {
 	hasError := false
 
-	// Iterate over the ratings map
+	// == Iterate over the ratings map
 	for key, value := range rating {
 		switch key {
 		case "C":
@@ -174,7 +174,7 @@ func testRange() {
 		println("[OK]")
 	}
 
-	// Omit the value.
+	// == Omit the value.
 	for key := range rating {
 		if key != "C" && key != "Go" && key != "Python" {
 			fmt.Println("[Error] key not expected:", key)
@@ -183,6 +183,49 @@ func testRange() {
 	}
 	if !hasError {
 		println("[OK] omitting value")
+	}
+}
+
+func blankIdentifierInRange() {
+	hasError := false
+
+	// Return the biggest value in a slice of ints.
+	Max := func(slice []int) int { // The input parameter is a slice of ints.
+		max := slice[0]               //the first element is the max for now.
+		for _, value := range slice { // Notice how we iterate!
+			if value > max { // We found a bigger value in our slice.
+				max = value
+			}
+		}
+		return max
+	}
+
+	// Declare three arrays of different sizes, to test the function Max.
+	A1 := [10]int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	A2 := [4]int{1, 2, 3, 4}
+	A3 := [1]int{1}
+
+	//declare a slice of ints
+	var slice []int
+
+	slice = A1[:] // Take all A1 elements.
+	if Max(slice) != 9 {
+		fmt.Println("[Error] 'A1': value expected '9', got", Max(slice))
+		hasError = true
+	}
+	slice = A2[:] // Take all A2 elements.
+	if Max(slice) != 4 {
+		fmt.Println("[Error] 'A2': value expected '4', got", Max(slice))
+		hasError = true
+	}
+	slice = A3[:] // Take all A3 elements.
+	if Max(slice) != 1 {
+		fmt.Println("[Error] 'A3': value expected '1', got", Max(slice))
+		hasError = true
+	}
+
+	if !hasError {
+		println("[OK]")
 	}
 }
 
@@ -201,4 +244,6 @@ func main() {
 	deleteKey()
 	println("\n== testRange")
 	testRange()
+	println("\n== blankIdentifierInRange")
+	blankIdentifierInRange()
 }

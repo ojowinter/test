@@ -186,6 +186,49 @@ function testRange() {
 	}
 }
 
+function blankIdentifierInRange() {
+	var hasError = false;
+
+
+	var Max = function(slice) {
+		var max = slice[0];
+		var value; for (_ in slice) { value = slice[_];
+			if (value > max) {
+				max = value;
+			}
+		}
+		return max;
+	};
+
+
+	var A1 = []; for (var i=0; i<10; i++){ A1[i]=0; } A1 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	var A2 = []; for (var i=0; i<4; i++){ A2[i]=0; } A2 = [1, 2, 3, 4];
+	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
+
+
+	var slice = [];
+
+	slice = A1.slice(0);
+	if (Max(slice) !== 9) {
+		alert("[Error] 'A1': value expected '9', got " + Max(slice) + "\n");
+		hasError = true;
+	}
+	slice = A2.slice(0);
+	if (Max(slice) !== 4) {
+		alert("[Error] 'A2': value expected '4', got " + Max(slice) + "\n");
+		hasError = true;
+	}
+	slice = A3.slice(0);
+	if (Max(slice) !== 1) {
+		alert("[Error] 'A3': value expected '1', got " + Max(slice) + "\n");
+		hasError = true;
+	}
+
+	if (!hasError) {
+		console.log("[OK]\n");
+	}
+}
+
 function main() {
 	console.log("\n== valueNil\n");
 	valueNil();
@@ -201,4 +244,6 @@ function main() {
 	deleteKey();
 	console.log("\n== testRange\n");
 	testRange();
+	console.log("\n== blankIdentifierInRange\n");
+	blankIdentifierInRange();
 }
