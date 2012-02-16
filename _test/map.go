@@ -99,7 +99,7 @@ func checkKey() {
 	csharp_rating := rating["C#"]
 	// Checking
 	if csharp_rating == 0.00 {
-		println("[OK]")
+		println("[OK] single key")
 	} else {
 		fmt.Println("[Error] value in key:", csharp_rating)
 	}
@@ -109,7 +109,7 @@ func checkKey() {
 	k_multMap := multMap[1][2]
 	// Checking
 	if k_multMap == "" {
-		println("[OK]")
+		println("[OK] multi-dimensional key")
 	} else {
 		fmt.Println("[Error] value in multi-dimensional key:", k_multMap)
 	}
@@ -126,6 +126,16 @@ func checkKey() {
 		println("[OK] value (using comma)")
 	} else {
 		fmt.Println("[Error] value in key (using comma):", csharp_rating2)
+	}
+	// ==
+
+	delete(rating, "C++") // We delete the entry with key "C++"
+	_, ok = rating["C++"]
+	// Checking
+	if ok {
+		fmt.Println("[Error] deleting key")
+	} else {
+		println("[OK] deleting key")
 	}
 	// ==
 }

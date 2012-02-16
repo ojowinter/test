@@ -307,6 +307,12 @@ func (e *expression) transform(expr ast.Expr) {
 		case "cap":
 			e.WriteString("'cap'")
 
+		case "delete":
+			e.WriteString(fmt.Sprintf("%s.m[%s]%s=%sundefined",
+				e.tr.getExpression(typ.Args[0]).String(),
+				e.tr.getExpression(typ.Args[1]).String(),
+				SP, SP))
+
 		case "panic":
 			e.WriteString(fmt.Sprintf("throw new Error(%s)",
 				e.tr.getExpression(typ.Args[0])))
@@ -324,7 +330,7 @@ func (e *expression) transform(expr ast.Expr) {
 			return
 
 		// === Not implemented
-		case "append", "close", "copy", "delete", "uintptr":
+		case "append", "close", "copy", "uintptr":
 			panic(fmt.Sprintf("built-in call unimplemented: %s", call))
 
 		// Defined functions

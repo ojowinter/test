@@ -432,7 +432,14 @@ _noFunc:
 		zero := false
 
 		if values != nil {
-			valueOfValidName := values[i]
+			var valueOfValidName ast.Expr
+
+			// _, ok = m[k]
+			if len(values) == 1 && i == 1 {
+				valueOfValidName = values[0]
+			} else {
+				valueOfValidName = values[i]
+			}
 
 			// If the expression is an anonymous function, then, at transforming,
 			// it is written in the main buffer.

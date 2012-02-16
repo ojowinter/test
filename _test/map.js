@@ -99,7 +99,7 @@ function checkKey() {
 	var csharp_rating = rating.get("C#")[0];
 
 	if (csharp_rating === 0.00) {
-		console.log("[OK]\n");
+		console.log("[OK] single key\n");
 	} else {
 		alert("[Error] value in key: " + csharp_rating + "\n");
 	}
@@ -109,7 +109,7 @@ function checkKey() {
 	var k_multMap = multMap.get(1, 2)[0];
 
 	if (k_multMap === "") {
-		console.log("[OK]\n");
+		console.log("[OK] multi-dimensional key\n");
 	} else {
 		alert("[Error] value in multi-dimensional key: " + k_multMap + "\n");
 	}
@@ -126,6 +126,16 @@ function checkKey() {
 		console.log("[OK] value (using comma)\n");
 	} else {
 		alert("[Error] value in key (using comma): " + csharp_rating2 + "\n");
+	}
+
+
+	rating.m["C++"] = undefined;
+	ok = rating.get("C++")[1];
+
+	if (ok) {
+		alert("[Error] deleting key\n");
+	} else {
+		console.log("[OK] deleting key\n");
 	}
 
 }
