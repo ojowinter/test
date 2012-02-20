@@ -34,7 +34,7 @@ function S(base, f) {
 
 
 S.prototype.cap = function() {
-	return;
+	return this.base.p.length - this.f.length;
 }
 
 

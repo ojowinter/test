@@ -34,7 +34,7 @@ type S struct {
 
 // Returns the capacity of the slice.
 func (s S) cap() int {
-	return //s.base.p.length - s.f.length
+	return s.base.p.length - s.f.length
 }
 
 // == Map

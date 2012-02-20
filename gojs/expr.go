@@ -601,11 +601,10 @@ func (e *expression) transform(expr ast.Expr) {
 		x := ""
 
 		switch t := typ.X.(type) {
+		case *ast.SelectorExpr:
+			e.transform(typ.X)
 		case *ast.Ident:
 			x = t.Name
-			if x == e.tr.recvVar {
-				x = "this"
-			}
 		case *ast.IndexExpr:
 			e.transform(t)
 			e.WriteString("." + typ.Sel.Name)
@@ -614,6 +613,9 @@ func (e *expression) transform(expr ast.Expr) {
 			panic(fmt.Sprintf("'SelectorExpr': unimplemented: %T", t))
 		}
 
+		if x == e.tr.recvVar {
+			x = "this"
+		}
 		goName := x + "." + typ.Sel.Name
 
 		// Check is the selector is a package
