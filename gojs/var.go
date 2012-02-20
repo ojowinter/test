@@ -261,7 +261,10 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 			tr.addLine(tSpec.Pos())
 			tr.WriteString(fmt.Sprintf(
 				"function %s(%s)%s{%s}", tSpec.Name, fieldNames, SP, fieldLines))
-
+/*			tr.WriteString(fmt.Sprintf("function %s(%s)%s{%sthis._z=%q;%s}",
+				tSpec.Name, fieldNames, SP,
+				SP, fieldsInit, fieldLines))
+*/
 			// Store the name of new type with its values initialized
 			tr.typeZero[tr.funcId][tr.blockId][tSpec.Name.Name] = fieldsInit
 
@@ -562,7 +565,8 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 			tr.skipSemicolon = true
 			return tr.getExpression(t).String(), false
 		}
-		return "[]", false
+		//return "[]", false
+		return "new g.S([], 0)", false
 	case *ast.InterfaceType: // nil
 		return "undefined", false
 

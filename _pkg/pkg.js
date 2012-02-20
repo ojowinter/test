@@ -27,18 +27,27 @@ function Export(pkg, exported) {
 
 
 
+function S(f, cap) {
+	this.f=f;
+	this.cap=cap;
+}
 
 
-function M(m, z) {
-	this.m=m;
-	this.z=z;
+
+
+
+
+
+function M(f, zero) {
+	this.f=f;
+	this.zero=zero;
 }
 
 
 
 
 M.prototype.get = function(k) {
-	var v = this.m;
+	var v = this.f;
 
 
 	for (var i = 0; i < arguments.length; i++) {
@@ -46,10 +55,10 @@ M.prototype.get = function(k) {
 	}
 
 	if (v === undefined) {
-		return [this.z, false];
+		return [this.zero, false];
 	}
 	return [v, true];
 }
 
-g.Export(g, [Export, M]);
+g.Export(g, [Export, S, M]);
 })();

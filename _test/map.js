@@ -34,9 +34,9 @@ function declare_1() {
 	var numbers;
 	numbers = new g.M({}, 0);
 
-	numbers.m["one"] = 1;
-	numbers.m["ten"] = 10;
-	numbers.m["trois"] = 3;
+	numbers.f["one"] = 1;
+	numbers.f["ten"] = 10;
+	numbers.f["trois"] = 3;
 
 
 	if (numbers.get("trois")[0] === 3) {
@@ -53,10 +53,10 @@ function declare_2() {
 
 
 	var rating = new g.M({}, 0);
-	rating.m["C"] = 5;
-	rating.m["Go"] = 4.5;
-	rating.m["Python"] = 4.5;
-	rating.m["C++"] = 2;
+	rating.f["C"] = 5;
+	rating.f["Go"] = 4.5;
+	rating.f["Python"] = 4.5;
+	rating.f["C++"] = 2;
 
 
 	var code = "";
@@ -68,7 +68,7 @@ function declare_2() {
 	}
 
 
-	rating.m["Go"] = 4.7;
+	rating.f["Go"] = 4.7;
 
 	if (JSON.stringify(rating.get("Go")[0]) !== JSON.stringify(rating2.get("Go")[0])) {
 		code = "OK";
@@ -82,10 +82,10 @@ function declare_2() {
 function reference() {
 
 	var m = new g.M({}, "");
-	m.m["Hello"] = "Bonjour";
+	m.f["Hello"] = "Bonjour";
 
 	var m1 = m;
-	m1.m["Hello"] = "Salut";
+	m1.f["Hello"] = "Salut";
 
 
 	if (JSON.stringify(m.get("Hello")[0]) === JSON.stringify(m1.get("Hello")[0])) {
@@ -132,7 +132,7 @@ function checkKey() {
 }
 
 function deleteKey() {
-	delete rating.m["C++"];
+	delete rating.f["C++"];
 
 	var ok = rating.get("C++")[1];
 
@@ -206,7 +206,7 @@ function blankIdentifierInRange() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = [];
+	var slice = new g.S([], 0);
 
 	slice = A1.slice(0);
 	if (Max(slice) !== 9) {

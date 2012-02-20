@@ -35,12 +35,13 @@ func TestVar(t *testing.T)    { compile('t', "decl_var.go", t) }
 func TestStruct(t *testing.T) { compile('t', "decl_struct.go", t) }
 //func TestOp(t *testing.T)     { compile('t', "operator.go", t) }
 
-func TestPointer(t *testing.T) { compile('t', "pointer.go", t) }
-func TestFunc(t *testing.T)    { compile('t', "func.go", t) }
-func TestCompo(t *testing.T)   { compile('t', "composite.go", t) }
-func TestSlice(t *testing.T)   { compile('t', "slice.go", t) }
-func TestMap(t *testing.T)     { compile('t', "map.go", t) }
-func TestMethod(t *testing.T)  { compile('t', "method.go", t) }
+func TestPointer(t *testing.T)  { compile('t', "pointer.go", t) }
+func TestFunc(t *testing.T)     { compile('t', "func.go", t) }
+func TestCompo(t *testing.T)    { compile('t', "composite.go", t) }
+func TestSlice(t *testing.T)    { compile('t', "slice.go", t) }
+func TestMap(t *testing.T)      { compile('t', "map.go", t) }
+func TestFuncMore(t *testing.T) { compile('t', "func-more.go", t) }
+func TestMethod(t *testing.T)   { compile('t', "method.go", t) }
 
 // == Warnings
 //

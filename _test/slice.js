@@ -6,7 +6,7 @@ function shortHand() {
 
 	var array = []; for (var i=0; i<10; i++){ array[i]=0; } array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
-	var a_slice = [], b_slice = [];
+	var a_slice = new g.S([], 0), b_slice = new g.S([], 0);
 
 	console.log("=== Slicing\n");
 	a_slice = array.slice(4,8);
@@ -53,7 +53,7 @@ function useFunc() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = [];
+	var slice = new g.S([], 0);
 
 	slice = A1.slice(0);
 	console.log("The biggest value of A1 is " + Max(slice) + "\n");
@@ -111,7 +111,7 @@ function reference() {
 
 
 function resize() {
-	var slice = [];
+	var slice = new g.S([], 0);
 
 	console.log("=== Before calling make\n");
 	if (slice === undefined) {

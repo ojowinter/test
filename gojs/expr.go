@@ -308,7 +308,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString("'cap'")
 
 		case "delete":
-			e.WriteString(fmt.Sprintf("delete %s.m[%s]",
+			e.WriteString(fmt.Sprintf("delete %s.f[%s]",
 				e.tr.getExpression(typ.Args[0]).String(),
 				e.tr.getExpression(typ.Args[1]).String()))
 
@@ -548,7 +548,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.mapName = x
 
 			if e.tr.isVar && !e.isValue {
-				e.WriteString(x + ".m" + index)
+				e.WriteString(x + ".f" + index)
 			} else {
 				e.WriteString(x + ".get(" + indexArgs + ")[0]")
 			}

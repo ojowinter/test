@@ -16,29 +16,38 @@
 
 package g
 
-// Adds public names to the map named in "pkg".
+// Adds public names from "exported" to the map "pkg".
 func Export(pkg map[interface{}]interface{}, exported []interface{}) {
 	for _, v := range exported {
 		pkg.v = v
 	}
 }
 
+// == Slice
+//
+
+// S represents a slice.
+type S struct {
+	f   []interface{} // slice field
+	cap int           // capacity
+}
+
 // == Map
 //
 
-// Represents a map M as an object with two fields, "map" and "zero".
-// The compiler put the appropriate zero value for the map (which it is work out
+// M represents a map.
+// The compiler adds the appropriate zero value for the map (which it is work out
 // from the map type).
 type M struct {
-	m map[interface{}]interface{} // map
-	z interface{}                 // zero value for the map
+	f    map[interface{}]interface{} // map field
+	zero interface{}                 // zero value for the map
 }
 
 // Gets the value for the key "k".
 // If looking some key up in M's map gets you "nil" ("undefined" in JS),
 // then return a copy of the zero value.
 func (m M) get(k interface{}) (interface{}, bool) {
-	v := m.m
+	v := m.f
 
 	// Allow multi-dimensional index (separated by commas)
 	for i := 0; i < len(arguments); i++ {
@@ -46,7 +55,7 @@ func (m M) get(k interface{}) (interface{}, bool) {
 	}
 
 	if v == nil {
-		return m.z, false
+		return m.zero, false
 	}
 	return v, true
 }
