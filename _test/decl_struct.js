@@ -10,7 +10,7 @@ function s1(a, b, f, A) {
 	this.a=a; this.b=b;
 	this.f=f;
 
-	this.A=A;
+	this.A={p:A};
 
 }
 

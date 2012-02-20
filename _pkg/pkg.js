@@ -27,9 +27,14 @@ function Export(pkg, exported) {
 
 
 
-function S(f, cap) {
+function S(base, f) {
+	this.base={p:base};
 	this.f=f;
-	this.cap=cap;
+}
+
+
+S.prototype.cap = function() {
+	return;
 }
 
 

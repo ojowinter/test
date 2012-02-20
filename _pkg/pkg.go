@@ -28,8 +28,13 @@ func Export(pkg map[interface{}]interface{}, exported []interface{}) {
 
 // S represents a slice.
 type S struct {
-	f   []interface{} // slice field
-	cap int           // capacity
+	base *interface{}  // element type
+	f    []interface{} // slice field
+}
+
+// Returns the capacity of the slice.
+func (s S) cap() int {
+	return //s.base.p.length - s.f.length
 }
 
 // == Map

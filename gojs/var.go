@@ -191,20 +191,23 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 			//  Tag     *BasicLit     // field tag; or nil
 			//  Comment *CommentGroup // line comments; or nil
 			for _, field := range typ.Fields.List {
+				isPointer := false
+
 				if _, ok := field.Type.(*ast.FuncType); ok {
 					tr.addError("%s: function type in struct",
 						tr.fset.Position(field.Pos()))
-					continue
-				}
-
-				// Type checking
-				if tr.getExpression(field.Type).hasError {
 					continue
 				}
 				if field.Names == nil {
 					tr.addError("%s: anonymous field in struct",
 						tr.fset.Position(field.Pos()))
 					continue
+				}
+				// Type checking
+				if expr := tr.getExpression(field.Type); expr.hasError {
+					continue
+				} else if expr.isPointer {
+					isPointer = true
 				}
 
 				zero, _ := tr.zeroValue(true, field.Type)
@@ -232,7 +235,13 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 					} else {
 						fieldLines += SP
 					}
-					fieldLines += fmt.Sprintf("this.%s=%s;", name, name)
+
+					if !isPointer {
+						fieldLines += fmt.Sprintf("this.%s=%s;", name, name)
+					} else {
+						fieldLines += fmt.Sprintf("this.%s={p:%s};", name, name)
+					}
+
 					posOldField = posNewField
 					// ===
 
