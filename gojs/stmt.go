@@ -72,6 +72,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.vars[tr.funcId][tr.blockId] = make(map[string]bool)
 		tr.addr[tr.funcId][tr.blockId] = make(map[string]bool)
 		tr.maps[tr.funcId][tr.blockId] = make(map[string]struct{})
+		tr.slices[tr.funcId][tr.blockId] = make(map[string]struct{})
 		tr.typeZero[tr.funcId][tr.blockId] = make(map[string]string)
 
 		if !tr.skipLbrace {
@@ -313,7 +314,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		tr.WriteString(fmt.Sprintf("for%s(%s in %s", SP, key, expr))
-		if tr.isMap(expr) {
+		if tr.isType(mapT, expr) {
 			tr.WriteString(".m")
 			isMap = true
 		}

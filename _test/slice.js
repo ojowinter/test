@@ -2,29 +2,56 @@
 
 
 
+function valueNil() {
+	var s = new g.S();
+
+
+	var msg = "value";
+	if (s.f === undefined) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+	msg = "length";
+	if (s.len() === 0) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+	msg = "capacity";
+	if (s.cap() === 0) {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+}
+
 function shortHand() {
 
 	var array = []; for (var i=0; i<10; i++){ array[i]=0; } array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
-	var a_slice = new g.S([], 0), b_slice = new g.S([], 0);
+	var a_slice = new g.S(), b_slice = new g.S();
 
 	console.log("=== Slicing\n");
 	a_slice = array.slice(4,8);
-	console.log(a_slice + "\n");
+	console.log(a_slice.f + "\n");
 	a_slice = array.slice(6,7);
-	console.log(a_slice + "\n");
+	console.log(a_slice.f + "\n");
 
 	console.log("\n=== Shorthands\n");
 	a_slice = array.slice(0,3);
-	console.log(a_slice + "\n");
+	console.log(a_slice.f + "\n");
 	a_slice = array.slice(5);
-	console.log(a_slice + "\n");
+	console.log(a_slice.f + "\n");
 	a_slice = array.slice(0);
-	console.log(a_slice + "\n");
+	console.log(a_slice.f + "\n");
 
 	console.log("\n=== Slice of a slice\n");
 	a_slice = array.slice(3,7);
-	console.log(a_slice + "\n");
+	console.log(a_slice.f + "\n");
 	b_slice = a_slice.slice(1,3);
 	console.log(b_slice + "\n");
 	b_slice = a_slice.slice(0,3);
@@ -53,24 +80,24 @@ function useFunc() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = new g.S([], 0);
+	var slice = new g.S();
 
 	slice = A1.slice(0);
-	console.log("The biggest value of A1 is " + Max(slice) + "\n");
+	console.log("The biggest value of A1 is " + Max(slice.f) + "\n");
 	slice = A2.slice(0);
-	console.log("The biggest value of A2 is " + Max(slice) + "\n");
+	console.log("The biggest value of A2 is " + Max(slice.f) + "\n");
 	slice = A3.slice(0);
-	console.log("The biggest value of A3 is " + Max(slice) + "\n");
+	console.log("The biggest value of A3 is " + Max(slice.f) + "\n");
 }
 
 
 
 function PrintByteSlice(name, slice) {
 	var s = "" + name + " is : [";
-	for (var index = 0; index < slice.length - 1; index++) {
+	for (var index = 0; index < slice.len() - 1; index++) {
 		s += "" + slice[index] + ",";
 	}
-	s += "" + slice[slice.length - 1] + "]";
+	s += "" + slice[slice.len() - 1] + "]";
 
 	console.log(s + "\n");
 }
@@ -111,26 +138,26 @@ function reference() {
 
 
 function resize() {
-	var slice = new g.S([], 0);
+	var slice = new g.S();
 
 	console.log("=== Before calling make\n");
-	if (slice === undefined) {
+	if (slice.f === undefined) {
 		console.log("slice == nil\n");
 	}
-	console.log("len(slice) == " + slice.length + "\n");
-	console.log("cap(slice) == " + 'cap' + "\n");
+	console.log("len(slice) == " + slice.len() + "\n");
+	console.log("cap(slice) == " + slice.cap() + "\n");
 
 
 	console.log("=== After calling make\n");
 	slice = []; for (var i=0; i<4; i++){ slice[i]=0; }
-	console.log("slice == " + slice + "\n");
-	console.log("len(slice) == " + slice.length + "\n");
-	console.log("cap(slice) == " + 'cap' + "\n");
+	console.log("slice == " + slice.f + "\n");
+	console.log("len(slice) == " + slice.len() + "\n");
+	console.log("cap(slice) == " + slice.cap() + "\n");
 
 
 	console.log("=== Let's change some of its elements: slice[1], slice[3] = 2, 3\n");
 	slice[1] = 2, slice[3] = 3;
-	console.log("slice == " + slice + "\n");
+	console.log("slice == " + slice.f + "\n");
 }
 
 

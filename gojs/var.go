@@ -126,6 +126,9 @@ func (tr *transform) getVar(spec []ast.Spec, isGlobal bool) {
 	for _, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
+		// It is necessary to add the first variable before of checking
+		tr.lastVarName = vSpec.Names[0].Name
+
 		// Type checking
 		if tr.getExpression(vSpec.Type).hasError {
 			continue
@@ -294,8 +297,8 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 	}
 }
 
-//
 // === Utility
+//
 
 // Writes variables for both declarations and assignments.
 func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interface{}, operator token.Token, isGlobal, isMultipleLine bool) {
@@ -418,7 +421,7 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 _noFunc:
 	expr := tr.newExpression(nil)
 	typeIsPointer := false
-	isFuncLit := false // TODO: remove
+	isFuncLit := false
 	isFirst := true
 
 	for _, i := range idxValidNames {
@@ -479,7 +482,7 @@ _noFunc:
 				}*/
 
 				// == Map: v, ok := m[k]
-				if len(values) == 1 && tr.isMap(expr.mapName) {
+				if len(values) == 1 && tr.isType(mapT, expr.mapName) {
 					value = value[:len(value)-3] // remove '[0]'
 
 					if len(idxValidNames) == 1 {
@@ -504,9 +507,14 @@ _noFunc:
 				expr.transform(valueOfValidName)
 			}
 
-			// Map: a new variable assigned to another one could be a map.
-			if isNewVar && expr.isIdent && tr.isMap(value) {
-				tr.maps[tr.funcId][tr.blockId][name] = void
+			// Check if new variables assigned to another ones are slices or maps.
+			if isNewVar && expr.isIdent {
+				if tr.isType(sliceT, value) {
+					tr.slices[tr.funcId][tr.blockId][name] = void
+				}
+				if tr.isType(mapT, value) {
+					tr.maps[tr.funcId][tr.blockId][name] = void
+				}
 			}
 
 		} else { // Initialization explicit
@@ -561,6 +569,9 @@ func (tr *transform) getTypeFields(fields []string) (args, allFields string) {
 	return
 }
 
+// === Zero value
+//
+
 // Returns the zero value of the value type if "init", and a boolean indicating
 // if it is a pointer.
 func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIsPointer bool) {
@@ -574,8 +585,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 			tr.skipSemicolon = true
 			return tr.getExpression(t).String(), false
 		}
-		//return "[]", false
-		return "new g.S([], 0)", false
+		return "new g.S()", false
 	case *ast.InterfaceType: // nil
 		return "undefined", false
 
@@ -617,6 +627,15 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 	return
 }
 
+// Returns the zero value of a map.
+func (tr *transform) zeroOfMap(m *ast.MapType) string {
+	if mapT, ok := m.Value.(*ast.MapType); ok { // nested map
+		return tr.zeroOfMap(mapT)
+	}
+	v, _ := tr.zeroValue(true, m.Value)
+	return v
+}
+
 // Returns the zero value of a custom type.
 func (tr *transform) zeroOfType(name string) string {
 	// In the actual function
@@ -636,4 +655,44 @@ func (tr *transform) zeroOfType(name string) string {
 	}
 	//fmt.Printf("Function %d, block %d, name %s\n", tr.funcId, tr.blockId, name)
 	panic("zeroOfType: type not found: " + name)
+}
+
+// === Checking
+//
+
+type dataType uint8
+
+const (
+	_ dataType = iota
+	sliceT
+	mapT
+)
+
+// Checks if a variable name is of a specific data type.
+func (tr *transform) isType(t dataType, name string) bool {
+	if name == "" {
+		return false
+	}
+
+	name = strings.SplitN(name, "<<", 2)[0] // could have a tag
+
+	for funcId := tr.funcId; funcId >= 0; funcId-- {
+		for blockId := tr.blockId; blockId >= 0; blockId-- {
+			if _, ok := tr.vars[funcId][blockId][name]; ok { // variable found
+				switch t {
+				case sliceT:
+					if _, ok := tr.slices[funcId][blockId][name]; ok {
+						return true
+					}
+				case mapT:
+					if _, ok := tr.maps[funcId][blockId][name]; ok {
+						return true
+					}
+				}
+
+				return false
+			}
+		}
+	}
+	return false
 }

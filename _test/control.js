@@ -192,7 +192,7 @@ function testFor() {
 function testRange() {
 	var s = [2, 3, 5];
 
-	var v; for (i in s) { v = s[i];
+	var v; for (i in s.f) { v = s.f[i];
 		console.log("key: " + i + " " + "value: " + v + "\n");
 	}
 }

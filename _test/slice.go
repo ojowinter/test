@@ -2,6 +2,33 @@ package main
 
 import "fmt"
 
+func valueNil() {
+	var s []byte
+
+	// Checking
+	msg := "value"
+	if s == nil {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+
+	msg = "length"
+	if len(s) == 0 {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+
+	msg = "capacity"
+	if cap(s) == 0 {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+}
+
 func shortHand() {
 	// Declare an array of 10 bytes (ASCII characters). Remember: byte is uint8
 	var array = [10]byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'}

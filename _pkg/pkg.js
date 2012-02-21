@@ -27,14 +27,34 @@ function Export(pkg, exported) {
 
 
 
-function S(base, f) {
-	this.base={p:base};
+function S(f, base) {
 	this.f=f;
+	this.base={p:base};
+}
+
+
+
+
+
+
+
+
+
+
+
+S.prototype.len = function() {
+	if (this.f !== undefined) {
+		return this.f.length;
+	}
+	return 0;
 }
 
 
 S.prototype.cap = function() {
-	return this.base.p.length - this.f.length;
+	if (this.f !== undefined) {
+		return this.base.p.length - this.f.length;
+	}
+	return 0;
 }
 
 

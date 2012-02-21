@@ -113,6 +113,7 @@ func (e *expression) transform(expr ast.Expr) {
 			}
 		}
 		if typ.Len == nil { // slice
+			e.tr.slices[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
 			break
 		}
 		if _, ok := typ.Len.(*ast.Ellipsis); ok {
@@ -247,6 +248,7 @@ func (e *expression) transform(expr ast.Expr) {
 			switch argType := typ.Args[0].(type) {
 			// For slice
 			case *ast.ArrayType:
+//				e.tr.slices[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
 				length := e.tr.getExpression(typ.Args[1]).String()
 				// TODO: add capacity
 				//capacity := 0
@@ -301,11 +303,36 @@ func (e *expression) transform(expr ast.Expr) {
 			e.WriteString(fmt.Sprintf("console.log(%s)", e.tr.GetArgs(call, typ.Args)))
 
 		case "len":
-			e.WriteString(fmt.Sprintf("%s.length", e.tr.getExpression(typ.Args[0])))
+			name := e.tr.getExpression(typ.Args[0]).String()
+			name_ := name
 			e.returnBasicLit = true
 
+			if strings.HasSuffix(name, ".f") {
+				name_ = name[:len(name)-2] // remove ".f"
+			}
+
+			if e.tr.isType(sliceT, name_) {
+				e.WriteString(name_ + ".len()")
+			} else {
+				e.WriteString(name + ".length")
+			}
+
 		case "cap":
-			e.WriteString("'cap'")
+			name := e.tr.getExpression(typ.Args[0]).String()
+			name_ := name
+			e.returnBasicLit = true
+
+			if strings.HasSuffix(name, ".f") {
+				name_ = name[:len(name)-2] // remove ".f"
+			}
+
+			if e.tr.isType(sliceT, name_) {
+				if strings.HasSuffix(name, ".f") {
+					name = name_
+				}
+			}
+
+			e.WriteString(fmt.Sprintf("%s.cap()", name))
 
 		case "delete":
 			e.WriteString(fmt.Sprintf("delete %s.f[%s]",
@@ -374,6 +401,10 @@ func (e *expression) transform(expr ast.Expr) {
 				break
 			}
 
+			// Slice
+/*			if compoType.Len == nil {
+				e.tr.slices[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
+			}*/
 			// For arrays with elements
 			if len(typ.Elts) != 0 {
 				if !e.arrayHasElts && compoType.Len != nil {
@@ -502,6 +533,10 @@ func (e *expression) transform(expr ast.Expr) {
 				e.tr.addPointer(name)
 			} else {
 				if !e.tr.isVar {
+					if e.tr.isType(sliceT, name) {
+						name += ".f" // slice field
+					}
+
 					if _, ok := e.tr.vars[e.tr.funcId][e.tr.blockId][name]; ok {
 						name += tagPointer(false, 'P', e.tr.funcId, e.tr.blockId, name)
 					}
@@ -544,7 +579,7 @@ func (e *expression) transform(expr ast.Expr) {
 			indexArgs += idx
 		}
 
-		if e.tr.isMap(x) {
+		if e.tr.isType(mapT, x) {
 			e.mapName = x
 
 			if e.tr.isVar && !e.isValue {
