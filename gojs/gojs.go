@@ -327,6 +327,10 @@ func Compile(filename string) error {
 			fmt.Fprintln(os.Stderr, "\n Too many warnings")
 		}
 	}
-
+/*
+for k, v := range trans.slices {
+	fmt.Println(k, v)
+}
+*/
 	return nil
 }

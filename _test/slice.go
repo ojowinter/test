@@ -35,29 +35,92 @@ func shortHand() {
 	// Declare a and b as slice of bytes
 	var a_slice, b_slice []byte
 
-	println("=== Slicing")
+	msg := "slicing"
+
 	a_slice = array[4:8]
-	println(string(a_slice))
+	// Checking
+	if string(a_slice) == "efgh" {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+
 	a_slice = array[6:7]
-	println(string(a_slice))
+	// Checking
+	if string(a_slice) == "g" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error]")
+	}
+	//==
 
-	println("\n=== Shorthands")
+	msg = "shorthand"
+
 	a_slice = array[:3]
-	println(string(a_slice))
-	a_slice = array[5:]
-	println(string(a_slice))
-	a_slice = array[:]
-	println(string(a_slice))
+	// Checking
+	if string(a_slice) == "abc" {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
 
-	println("\n=== Slice of a slice")
+	a_slice = array[5:]
+	// Checking
+	if string(a_slice) == "fghij" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error]")
+	}
+	//==
+
+	a_slice = array[:]
+	// Checking
+	if string(a_slice) == "abcdefghij" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error]")
+	}
+	//==
+
+	msg = "slice of a slice"
+
 	a_slice = array[3:7]
-	println(string(a_slice))
+	// Checking
+	if string(a_slice) == "defg" {
+		println("[OK]", msg)
+	} else {
+		fmt.Println("[Error]", msg)
+	}
+	//==
+
 	b_slice = a_slice[1:3]
-	println(string(b_slice))
+	// Checking
+	if string(b_slice) == "ef" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error]")
+	}
+	//==
+
 	b_slice = a_slice[:3]
-	println(string(b_slice))
+	// Checking
+	if string(b_slice) == "def" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error]")
+	}
+	//==
+
 	b_slice = a_slice[:]
-	println(string(b_slice))
+	// Checking
+	if string(b_slice) == "defg" {
+		println("[OK]")
+	} else {
+		fmt.Println("[Error]")
+	}
+	//==
 }
 
 // * * *
@@ -163,6 +226,8 @@ func resize() {
 // * * *
 
 func main() {
+	println("\n== valueNil")
+	valueNil()
 	println("\n== shortHand")
 	shortHand()
 	println("\n== useFunc")
@@ -174,23 +239,6 @@ func main() {
 }
 
 /*
-== shortHand()
-
-=== Slicing
-efgh
-g
-
-=== Shorthands
-abc
-fghij
-abcdefghij
-
-=== Slice of a slice
-defg
-ef
-def
-defg
-
 == useFunc()
 
 The biggest value of A1 is 9

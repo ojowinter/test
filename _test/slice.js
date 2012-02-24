@@ -3,7 +3,7 @@
 
 
 function valueNil() {
-	var s = new g.S();
+	var s = new g.S(undefined, 0, 0);
 
 
 	var msg = "value";
@@ -14,14 +14,14 @@ function valueNil() {
 	}
 
 	msg = "length";
-	if (s.len() === 0) {
+	if (s.len === 0) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
 	}
 
 	msg = "capacity";
-	if (s.cap() === 0) {
+	if (s.cap === 0) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
@@ -33,31 +33,94 @@ function shortHand() {
 
 	var array = []; for (var i=0; i<10; i++){ array[i]=0; } array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
-	var a_slice = new g.S(), b_slice = new g.S();
+	var a_slice = new g.S(undefined, 0, 0), b_slice = new g.S(undefined, 0, 0);
 
-	console.log("=== Slicing\n");
-	a_slice = array.slice(4,8);
-	console.log(a_slice.f + "\n");
-	a_slice = array.slice(6,7);
-	console.log(a_slice.f + "\n");
+	var msg = "slicing";
 
-	console.log("\n=== Shorthands\n");
-	a_slice = array.slice(0,3);
-	console.log(a_slice.f + "\n");
-	a_slice = array.slice(5);
-	console.log(a_slice.f + "\n");
-	a_slice = array.slice(0);
-	console.log(a_slice.f + "\n");
+	a_slice.fromArray(array, 4, 8);
 
-	console.log("\n=== Slice of a slice\n");
-	a_slice = array.slice(3,7);
-	console.log(a_slice.f + "\n");
-	b_slice = a_slice.slice(1,3);
-	console.log(b_slice + "\n");
-	b_slice = a_slice.slice(0,3);
-	console.log(b_slice + "\n");
-	b_slice = a_slice.slice(0);
-	console.log(b_slice + "\n");
+	if (a_slice.String() === "efgh") {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+
+	a_slice.fromArray(array, 6, 7);
+
+	if (a_slice.String() === "g") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error]\n");
+	}
+
+
+	msg = "shorthand";
+
+	a_slice.fromArray(array, 0, 3);
+
+	if (a_slice.String() === "abc") {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+
+	a_slice.fromArray(array, 5);
+
+	if (a_slice.String() === "fghij") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error]\n");
+	}
+
+
+	a_slice.fromArray(array, 0);
+
+	if (a_slice.String() === "abcdefghij") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error]\n");
+	}
+
+
+	msg = "slice of a slice";
+
+	a_slice.fromArray(array, 3, 7);
+
+	if (a_slice.String() === "defg") {
+		console.log("[OK] " + msg + "\n");
+	} else {
+		alert("[Error] " + msg + "\n");
+	}
+
+
+	b_slice.fromSlice(a_slice, 1, 3);
+
+	if (b_slice.String() === "ef") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error]\n");
+	}
+
+
+	b_slice.fromSlice(a_slice, 0, 3);
+
+	if (b_slice.String() === "def") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error]\n");
+	}
+
+
+	b_slice.fromSlice(a_slice, 0);
+
+	if (b_slice.String() === "defg") {
+		console.log("[OK]\n");
+	} else {
+		alert("[Error]\n");
+	}
+
 }
 
 
@@ -80,13 +143,13 @@ function useFunc() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = new g.S();
+	var slice = new g.S(undefined, 0, 0);
 
-	slice = A1.slice(0);
+	slice.fromArray(A1, 0);
 	console.log("The biggest value of A1 is " + Max(slice.f) + "\n");
-	slice = A2.slice(0);
+	slice.fromArray(A2, 0);
 	console.log("The biggest value of A2 is " + Max(slice.f) + "\n");
-	slice = A3.slice(0);
+	slice.fromArray(A3, 0);
 	console.log("The biggest value of A3 is " + Max(slice.f) + "\n");
 }
 
@@ -94,10 +157,10 @@ function useFunc() {
 
 function PrintByteSlice(name, slice) {
 	var s = "" + name + " is : [";
-	for (var index = 0; index < slice.len() - 1; index++) {
+	for (var index = 0; index < slice.len - 1; index++) {
 		s += "" + slice[index] + ",";
 	}
-	s += "" + slice[slice.len() - 1] + "]";
+	s += "" + slice[slice.len - 1] + "]";
 
 	console.log(s + "\n");
 }
@@ -107,13 +170,13 @@ function reference() {
 	var A = []; for (var i=0; i<10; i++){ A[i]=0; } A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
 
-	var slice1 = A.slice(3,7);
-	var slice2 = A.slice(5);
-	var slice3 = slice1.slice(0,2);
+	var slice1.fromArray(A, 3, 7);
+	var slice2.fromArray(A, 5);
+	var slice3.fromArray(slice1, 0, 2);
 
 
 	console.log("=== First content of A and the slices\n");
-	PrintByteSlice("A", A.slice(0));
+	PrintByteSlice("A", A, 0);
 	PrintByteSlice("slice1", slice1);
 	PrintByteSlice("slice2", slice2);
 	PrintByteSlice("slice3", slice3);
@@ -121,7 +184,7 @@ function reference() {
 
 	A[4] = 'E';
 	console.log("\n=== Content of A and the slices, after changing 'e' to 'E' in array A\n");
-	PrintByteSlice("A", A.slice(0));
+	PrintByteSlice("A", A, 0);
 	PrintByteSlice("slice1", slice1);
 	PrintByteSlice("slice2", slice2);
 	PrintByteSlice("slice3", slice3);
@@ -129,7 +192,7 @@ function reference() {
 
 	slice2[1] = 'G';
 	console.log("\n=== Content of A and the slices, after changing 'g' to 'G' in slice2\n");
-	PrintByteSlice("A", A.slice(0));
+	PrintByteSlice("A", A, 0);
 	PrintByteSlice("slice1", slice1);
 	PrintByteSlice("slice2", slice2);
 	PrintByteSlice("slice3", slice3);
@@ -138,21 +201,21 @@ function reference() {
 
 
 function resize() {
-	var slice = new g.S();
+	var slice = new g.S(undefined, 0, 0);
 
 	console.log("=== Before calling make\n");
 	if (slice.f === undefined) {
 		console.log("slice == nil\n");
 	}
-	console.log("len(slice) == " + slice.len() + "\n");
-	console.log("cap(slice) == " + slice.cap() + "\n");
+	console.log("len(slice) == " + slice.len + "\n");
+	console.log("cap(slice) == " + slice.cap + "\n");
 
 
 	console.log("=== After calling make\n");
 	slice = []; for (var i=0; i<4; i++){ slice[i]=0; }
 	console.log("slice == " + slice.f + "\n");
-	console.log("len(slice) == " + slice.len() + "\n");
-	console.log("cap(slice) == " + slice.cap() + "\n");
+	console.log("len(slice) == " + slice.len + "\n");
+	console.log("cap(slice) == " + slice.cap + "\n");
 
 
 	console.log("=== Let's change some of its elements: slice[1], slice[3] = 2, 3\n");
@@ -163,6 +226,8 @@ function resize() {
 
 
 function main() {
+	console.log("\n== valueNil\n");
+	valueNil();
 	console.log("\n== shortHand\n");
 	shortHand();
 	console.log("\n== useFunc\n");

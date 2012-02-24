@@ -27,23 +27,25 @@ type expression struct {
 	tr            *transform
 	*bytes.Buffer // sintaxis translated
 
-	varName  string // variable name
-	funcName string // function name
+	varName  string
+	funcName string
 	mapName  string
+	name     string // used for slice
 
-	isValue bool // is on the right of the assignment?
+	hasError bool
 
-	//isFunc       bool // anonymous function
-	isPointer    bool
-	isAddress    bool
-	arrayHasElts bool // array has elements?
-	isEllipsis   bool
-	isNil        bool
-	isIdent      bool
+	//isFunc     bool // anonymous function
+	isAddress  bool
+	isEllipsis bool
+	isIdent    bool
+	isNil      bool
+	isPointer  bool
+	isSlice    bool
+	isValue    bool // is it on the right of the assignment?
 
-	useIota       bool
+	arrayHasElts  bool // does array has elements?
 	skipSemicolon bool
-	hasError      bool
+	useIota       bool
 
 	// To handle comparisons
 	isBasicLit     bool
@@ -72,6 +74,8 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		id,
 		"",
 		"",
+		"",
+		false,
 		false,
 		false,
 		false,
@@ -113,7 +117,6 @@ func (e *expression) transform(expr ast.Expr) {
 			}
 		}
 		if typ.Len == nil { // slice
-			e.tr.slices[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
 			break
 		}
 		if _, ok := typ.Len.(*ast.Ellipsis); ok {
@@ -292,47 +295,52 @@ func (e *expression) transform(expr ast.Expr) {
 				panic(fmt.Sprintf("call of 'new' unimplemented: %T", argType))
 			}
 
-		// Conversion
+		// == Conversion
+		case "string":
+			arg := e.tr.getExpression(typ.Args[0]).String()
+			_arg := stripField(arg)
+
+			if !e.tr.isType(sliceType, _arg) {
+				e.WriteString(arg)
+				e.returnBasicLit = true
+			} else {
+				e.WriteString(_arg + ".String()")
+			}
+
 		case "uint", "uint8", "uint16", "uint32",
 			"int", "int8", "int16", "int32",
-			"float32", "float64", "byte", "rune", "string":
+			"float32", "float64", "byte", "rune":
 			e.transform(typ.Args[0])
 			e.returnBasicLit = true
+		// ==
 
 		case "print", "println":
 			e.WriteString(fmt.Sprintf("console.log(%s)", e.tr.GetArgs(call, typ.Args)))
 
 		case "len":
-			name := e.tr.getExpression(typ.Args[0]).String()
-			name_ := name
-			e.returnBasicLit = true
+			arg := e.tr.getExpression(typ.Args[0]).String()
+			_arg := stripField(arg)
 
-			if strings.HasSuffix(name, ".f") {
-				name_ = name[:len(name)-2] // remove ".f"
-			}
-
-			if e.tr.isType(sliceT, name_) {
-				e.WriteString(name_ + ".len()")
+			if e.tr.isType(sliceType, _arg) {
+				e.WriteString(_arg + ".len")
 			} else {
-				e.WriteString(name + ".length")
+				e.WriteString(arg + ".length")
 			}
+
+			e.returnBasicLit = true
 
 		case "cap":
-			name := e.tr.getExpression(typ.Args[0]).String()
-			name_ := name
-			e.returnBasicLit = true
+			arg := e.tr.getExpression(typ.Args[0]).String()
+			_arg := stripField(arg)
 
-			if strings.HasSuffix(name, ".f") {
-				name_ = name[:len(name)-2] // remove ".f"
-			}
-
-			if e.tr.isType(sliceT, name_) {
-				if strings.HasSuffix(name, ".f") {
-					name = name_
+			if e.tr.isType(sliceType, _arg) {
+				if strings.HasSuffix(arg, ".f") {
+					arg = _arg
 				}
 			}
 
-			e.WriteString(fmt.Sprintf("%s.cap()", name))
+			e.WriteString(arg + ".cap")
+			e.returnBasicLit = true
 
 		case "delete":
 			e.WriteString(fmt.Sprintf("delete %s.f[%s]",
@@ -533,7 +541,7 @@ func (e *expression) transform(expr ast.Expr) {
 				e.tr.addPointer(name)
 			} else {
 				if !e.tr.isVar {
-					if e.tr.isType(sliceT, name) {
+					if e.tr.isType(sliceType, name) {
 						name += ".f" // slice field
 					}
 
@@ -579,7 +587,7 @@ func (e *expression) transform(expr ast.Expr) {
 			indexArgs += idx
 		}
 
-		if e.tr.isType(mapT, x) {
+		if e.tr.isType(mapType, x) {
 			e.mapName = x
 
 			if e.tr.isVar && !e.isValue {
@@ -693,15 +701,18 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Rbrack token.Pos // position of "]"
 	case *ast.SliceExpr:
 		slice := "0"
+		x := typ.X.(*ast.Ident).Name
 
 		if typ.Low != nil {
-			slice = typ.Low.(*ast.BasicLit).Value
+			slice = typ.Low.(*ast.BasicLit).Value // e.tr.getExpression(typ.Low).String()
 		}
 		if typ.High != nil {
-			slice += "," + typ.High.(*ast.BasicLit).Value
+			slice += "," + SP + typ.High.(*ast.BasicLit).Value // e.tr.getExpression(typ.High).String()
 		}
 
-		e.WriteString(fmt.Sprintf("%s.slice(%s)", typ.X.(*ast.Ident), slice))
+		e.WriteString(x + "," + SP+slice)
+		e.isSlice = true
+		e.name = x
 
 	// godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword
@@ -810,4 +821,14 @@ func (e *expression) writeElts(elts []ast.Expr, Lbrace, Rbrace token.Pos) {
 	}
 
 	e.tr.line += posNewElt - firstPos // update the global position
+}
+
+// * * *
+
+// Strips the field name ".f".
+func stripField(name string) string {
+	if strings.HasSuffix(name, ".f") {
+		return name[:len(name)-2]
+	}
+	return name
 }

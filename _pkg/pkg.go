@@ -26,22 +26,63 @@ func Export(pkg map[interface{}]interface{}, exported []interface{}) {
 // == Slice
 //
 
+//	base *interface{}  // element type
 // S represents a slice.
 type S struct {
-	f    []interface{} // slice field
-	base *interface{}  // element type
+	f   []interface{} // slice
+	len int
+	cap int
 }
 
-// Sets 
-/*func (s S) set(f []interface{}) {
-	s.f = f
+// Sets the slice from an array.
+func (s S) fromArray(i interface{}, low, high int) {
+	s.f = i.slice(low, high)
+	s.len = high - low
+	s.cap = len(i) - s.len
 }
 
-func (s S) get() []interface{} {
+// Sets the slice from another slice.
+func (s S) fromSlice(i []interface{}, low, high int) {
+	s.f = i.f.slice(low, high)
+	s.len = high - low
+	s.cap = len(i.f) - s.len
+}
+
+// Initializes the slice.
+func (s S) make(len, cap int) {
+	s.f = nil
+	s.len = len
+
+	if cap != nil {
+		s.cap = cap
+	} else {
+		s.cap = len
+	}
+}
+
+// Appends an element to the slice.
+func (s S) append(elt interface{}) {
+	if s.len == s.cap {
+		s.cap = s.len * 2
+	}
+	s.len++
+}
+
+// Returns the slice like a string.
+func (s S) String() string {
+	str := s.f.toString()
+	spl := str.split(",")
+	return spl.join("")
+
+//	str := strings.Split(string(s.f.toString), ",")
+//	return strings.Join(str, "")
+}
+
+/*func (s S) get() []interface{} {
 	
 }*/
 
-// Returns the length of the slice.
+/*// Returns the length of the slice.
 func (s S) len() int {
 	if s.f != nil {
 		return len(s.f)
@@ -55,7 +96,7 @@ func (s S) cap() int {
 		return s.base.p.length - s.f.length
 	}
 	return 0
-}
+}*/
 
 // == Map
 //
@@ -64,7 +105,7 @@ func (s S) cap() int {
 // The compiler adds the appropriate zero value for the map (which it is work out
 // from the map type).
 type M struct {
-	f    map[interface{}]interface{} // map field
+	f    map[interface{}]interface{} // map
 	zero interface{}                 // zero value for the map
 }
 

@@ -420,14 +420,20 @@ func (tr *transform) writeVar(names interface{}, values []ast.Expr, type_ interf
 
 _noFunc:
 	expr := tr.newExpression(nil)
-	typeIsPointer := false
+	typeIs := otherType
 	isFuncLit := false
+	isZeroValue := false
 	isFirst := true
+	value := ""
+
+	if values == nil { // initialization explicit
+		value, typeIs = tr.zeroValue(true, type_)
+		isZeroValue = true
+	}
 
 	for _, i := range idxValidNames {
 		name := _names[i]
 		nameExpr := ""
-		value := ""
 
 		tr.lastVarName = name
 
@@ -444,9 +450,11 @@ _noFunc:
 		}
 
 		// === Value
-		zero := false
-
-		if values != nil {
+		if isZeroValue {
+			if typeIs == sliceType {
+				tr.slices[tr.funcId][tr.blockId][name] = void
+			}
+		} else {
 			var valueOfValidName ast.Expr
 
 			// _, ok = m[k]
@@ -470,7 +478,7 @@ _noFunc:
 				}
 				value = exprStr
 
-				_, typeIsPointer = tr.zeroValue(false, type_)
+				_, typeIs = tr.zeroValue(false, type_)
 
 				if expr.isAddress {
 					tr.addr[tr.funcId][tr.blockId][name] = true
@@ -482,7 +490,7 @@ _noFunc:
 				}*/
 
 				// == Map: v, ok := m[k]
-				if len(values) == 1 && tr.isType(mapT, expr.mapName) {
+				if len(values) == 1 && tr.isType(mapType, expr.mapName) {
 					value = value[:len(value)-3] // remove '[0]'
 
 					if len(idxValidNames) == 1 {
@@ -509,20 +517,21 @@ _noFunc:
 
 			// Check if new variables assigned to another ones are slices or maps.
 			if isNewVar && expr.isIdent {
-				if tr.isType(sliceT, value) {
+				if tr.isType(sliceType, value) {
 					tr.slices[tr.funcId][tr.blockId][name] = void
 				}
-				if tr.isType(mapT, value) {
+				if tr.isType(mapType, value) {
 					tr.maps[tr.funcId][tr.blockId][name] = void
 				}
 			}
-
-		} else { // Initialization explicit
-			value, typeIsPointer = tr.zeroValue(true, type_)
-			zero = true
 		}
 
 		if isNewVar {
+			typeIsPointer := false
+			if typeIs == pointerType {
+				typeIsPointer = true
+			}
+
 			tr.vars[tr.funcId][tr.blockId][name] = typeIsPointer
 
 			// The value could be a pointer so this new variable has to be it.
@@ -532,15 +541,22 @@ _noFunc:
 
 			// Could be addressed ahead
 			if value != "" && !expr.isPointer && !expr.isAddress && !typeIsPointer {
-				value = tagPointer(zero, 'L', tr.funcId, tr.blockId, name) +
+				value = tagPointer(isZeroValue, 'L', tr.funcId, tr.blockId, name) +
 					value +
-					tagPointer(zero, 'R', tr.funcId, tr.blockId, name)
+					tagPointer(isZeroValue, 'R', tr.funcId, tr.blockId, name)
 			}
 		}
 
 		if !isFuncLit {
 			tr.WriteString(nameExpr)
-			if value != "" {
+
+			if expr.isSlice {
+				if tr.isType(sliceType, expr.name) {
+					tr.WriteString(".fromSlice(" + value + ")")
+				} else {
+					tr.WriteString(".fromArray(" + value + ")")
+				}
+			} else if value != "" {
 				tr.WriteString(SP + sign + SP + value)
 			}
 		}
@@ -572,22 +588,36 @@ func (tr *transform) getTypeFields(fields []string) (args, allFields string) {
 // === Zero value
 //
 
+type dataType uint8
+
+const (
+	otherType dataType = iota
+	mapType
+	pointerType
+	sliceType
+)
+
 // Returns the zero value of the value type if "init", and a boolean indicating
 // if it is a pointer.
-func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIsPointer bool) {
+func (tr *transform) zeroValue(init bool, typ interface{}) (value string, dt dataType) {
 	var ident *ast.Ident
 
 	switch t := typ.(type) {
-	case nil, *ast.MapType:
-		return "", false
+	case nil:
+		return
+
+	case *ast.MapType:
+		return "", mapType
+
 	case *ast.ArrayType:
 		if t.Len != nil {
 			tr.skipSemicolon = true
-			return tr.getExpression(t).String(), false
+			return tr.getExpression(t).String(), otherType
 		}
-		return "new g.S()", false
+		return fmt.Sprintf("new g.S(undefined,%s0,%s0)", SP, SP), sliceType
+
 	case *ast.InterfaceType: // nil
-		return "undefined", false
+		return "undefined", otherType
 
 	case *ast.Ident:
 		ident = t
@@ -599,7 +629,10 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 	}
 
 	if !init {
-		return "", tr.initIsPointer
+		if tr.initIsPointer {
+			return "", pointerType
+		}
+		return
 	}
 
 	switch ident.Name {
@@ -621,7 +654,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, typeIs
 
 	if tr.initIsPointer {
 		value = "{p:undefined}"
-		typeIsPointer = true
+		dt = pointerType
 		tr.initIsPointer = false
 	}
 	return
@@ -660,14 +693,6 @@ func (tr *transform) zeroOfType(name string) string {
 // === Checking
 //
 
-type dataType uint8
-
-const (
-	_ dataType = iota
-	sliceT
-	mapT
-)
-
 // Checks if a variable name is of a specific data type.
 func (tr *transform) isType(t dataType, name string) bool {
 	if name == "" {
@@ -680,11 +705,11 @@ func (tr *transform) isType(t dataType, name string) bool {
 		for blockId := tr.blockId; blockId >= 0; blockId-- {
 			if _, ok := tr.vars[funcId][blockId][name]; ok { // variable found
 				switch t {
-				case sliceT:
+				case sliceType:
 					if _, ok := tr.slices[funcId][blockId][name]; ok {
 						return true
 					}
-				case mapT:
+				case mapType:
 					if _, ok := tr.maps[funcId][blockId][name]; ok {
 						return true
 					}

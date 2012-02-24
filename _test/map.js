@@ -206,19 +206,19 @@ function blankIdentifierInRange() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = new g.S();
+	var slice = new g.S(undefined, 0, 0);
 
-	slice = A1.slice(0);
+	slice.fromArray(A1, 0);
 	if (Max(slice.f) !== 9) {
 		alert("[Error] 'A1': value expected '9', got " + Max(slice.f) + "\n");
 		hasError = true;
 	}
-	slice = A2.slice(0);
+	slice.fromArray(A2, 0);
 	if (Max(slice.f) !== 4) {
 		alert("[Error] 'A2': value expected '4', got " + Max(slice.f) + "\n");
 		hasError = true;
 	}
-	slice = A3.slice(0);
+	slice.fromArray(A3, 0);
 	if (Max(slice.f) !== 1) {
 		alert("[Error] 'A3': value expected '1', got " + Max(slice.f) + "\n");
 		hasError = true;

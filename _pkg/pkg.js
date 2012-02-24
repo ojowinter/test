@@ -27,35 +27,76 @@ function Export(pkg, exported) {
 
 
 
-function S(f, base) {
+
+function S(f, len, cap) {
 	this.f=f;
-	this.base={p:base};
+	this.len=len;
+	this.cap=cap;
 }
 
 
+S.prototype.fromArray = function(i, low, high) {
+	this.f = i.slice(low, high);
+	this.len = high - low;
+	this.cap = i.length - this.len;
+}
 
 
+S.prototype.fromSlice = function(i, low, high) {
+	this.f = i.f.slice(low, high);
+	this.len = high - low;
+	this.cap = i.f.length - this.len;
+}
 
 
+S.prototype.make = function(len, cap) {
+	this.f = undefined;
+	this.len = len;
 
-
-
-
-
-S.prototype.len = function() {
-	if (this.f !== undefined) {
-		return this.f.length;
+	if (cap !== undefined) {
+		this.cap = cap;
+	} else {
+		this.cap = len;
 	}
-	return 0;
 }
 
 
-S.prototype.cap = function() {
-	if (this.f !== undefined) {
-		return this.base.p.length - this.f.length;
+S.prototype.append = function(elt) {
+	if (JSON.stringify(this.len) === JSON.stringify(this.cap)) {
+		this.cap = this.len * 2;
 	}
-	return 0;
+	this.len++;
 }
+
+
+S.prototype.String = function() {
+	var str = this.f.toString();
+	var spl = str.split(",");
+	return spl.join("");
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -85,5 +126,5 @@ M.prototype.get = function(k) {
 	return [v, true];
 }
 
-g.Export(g, [Export, S, M]);
+g.Export(g, [Export, S, String, M]);
 })();

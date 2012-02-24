@@ -314,7 +314,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		}
 
 		tr.WriteString(fmt.Sprintf("for%s(%s in %s", SP, key, expr))
-		if tr.isType(mapT, expr) {
+		if tr.isType(mapType, expr) {
 			tr.WriteString(".m")
 			isMap = true
 		}
