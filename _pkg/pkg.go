@@ -34,18 +34,17 @@ type S struct {
 	cap int
 }
 
-// Sets the slice from an array.
-func (s S) fromArray(i interface{}, low, high int) {
-	s.f = i.slice(low, high)
+// Sets the slice.
+func (s S) set(i interface{}, low, high int) {
 	s.len = high - low
-	s.cap = len(i) - s.len
-}
 
-// Sets the slice from another slice.
-func (s S) fromSlice(i []interface{}, low, high int) {
-	s.f = i.f.slice(low, high)
-	s.len = high - low
-	s.cap = len(i.f) - s.len
+	if i.f != nil { // slice
+		s.f = i.f.slice(low, high)
+		s.cap = i.cap - low
+	} else { // array
+		s.f = i.slice(low, high)
+		s.cap = len(i) - low
+	}
 }
 
 // Initializes the slice.

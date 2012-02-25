@@ -551,11 +551,7 @@ _noFunc:
 			tr.WriteString(nameExpr)
 
 			if expr.isSlice {
-				if tr.isType(sliceType, expr.name) {
-					tr.WriteString(".fromSlice(" + value + ")")
-				} else {
-					tr.WriteString(".fromArray(" + value + ")")
-				}
+				tr.WriteString(".set(" + value + ")")
 			} else if value != "" {
 				tr.WriteString(SP + sign + SP + value)
 			}

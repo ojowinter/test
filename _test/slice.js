@@ -37,16 +37,16 @@ function shortHand() {
 
 	var msg = "slicing";
 
-	a_slice.fromArray(array, 4, 8);
+	a_slice.set(array, 4, 8);
 
-	if (a_slice.String() === "efgh") {
+	if (a_slice.String() === "efgh" && a_slice.len === 4 && a_slice.cap === 6) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
 	}
 
 
-	a_slice.fromArray(array, 6, 7);
+	a_slice.set(array, 6, 7);
 
 	if (a_slice.String() === "g") {
 		console.log("[OK]\n");
@@ -57,16 +57,16 @@ function shortHand() {
 
 	msg = "shorthand";
 
-	a_slice.fromArray(array, 0, 3);
+	a_slice.set(array, 0, 3);
 
-	if (a_slice.String() === "abc") {
+	if (a_slice.String() === "abc" && a_slice.len === 3 && a_slice.cap === 10) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
 	}
 
 
-	a_slice.fromArray(array, 5);
+	a_slice.set(array, 5);
 
 	if (a_slice.String() === "fghij") {
 		console.log("[OK]\n");
@@ -75,7 +75,7 @@ function shortHand() {
 	}
 
 
-	a_slice.fromArray(array, 0);
+	a_slice.set(array, 0);
 
 	if (a_slice.String() === "abcdefghij") {
 		console.log("[OK]\n");
@@ -86,25 +86,25 @@ function shortHand() {
 
 	msg = "slice of a slice";
 
-	a_slice.fromArray(array, 3, 7);
+	a_slice.set(array, 3, 7);
 
-	if (a_slice.String() === "defg") {
+	if (a_slice.String() === "defg" && a_slice.len === 4 && a_slice.cap === 7) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
 	}
 
 
-	b_slice.fromSlice(a_slice, 1, 3);
+	b_slice.set(a_slice, 1, 3);
 
-	if (b_slice.String() === "ef") {
+	if (b_slice.String() === "ef" && b_slice.len === 2 && b_slice.cap === 6) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
 	}
 
 
-	b_slice.fromSlice(a_slice, 0, 3);
+	b_slice.set(a_slice, 0, 3);
 
 	if (b_slice.String() === "def") {
 		console.log("[OK]\n");
@@ -113,7 +113,7 @@ function shortHand() {
 	}
 
 
-	b_slice.fromSlice(a_slice, 0);
+	b_slice.set(a_slice, 0);
 
 	if (b_slice.String() === "defg") {
 		console.log("[OK]\n");
@@ -145,11 +145,11 @@ function useFunc() {
 
 	var slice = new g.S(undefined, 0, 0);
 
-	slice.fromArray(A1, 0);
+	slice.set(A1, 0);
 	console.log("The biggest value of A1 is " + Max(slice.f) + "\n");
-	slice.fromArray(A2, 0);
+	slice.set(A2, 0);
 	console.log("The biggest value of A2 is " + Max(slice.f) + "\n");
-	slice.fromArray(A3, 0);
+	slice.set(A3, 0);
 	console.log("The biggest value of A3 is " + Max(slice.f) + "\n");
 }
 
@@ -170,9 +170,9 @@ function reference() {
 	var A = []; for (var i=0; i<10; i++){ A[i]=0; } A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
 
-	var slice1.fromArray(A, 3, 7);
-	var slice2.fromArray(A, 5);
-	var slice3.fromArray(slice1, 0, 2);
+	var slice1.set(A, 3, 7);
+	var slice2.set(A, 5);
+	var slice3.set(slice1, 0, 2);
 
 
 	console.log("=== First content of A and the slices\n");

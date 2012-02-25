@@ -208,17 +208,17 @@ function blankIdentifierInRange() {
 
 	var slice = new g.S(undefined, 0, 0);
 
-	slice.fromArray(A1, 0);
+	slice.set(A1, 0);
 	if (Max(slice.f) !== 9) {
 		alert("[Error] 'A1': value expected '9', got " + Max(slice.f) + "\n");
 		hasError = true;
 	}
-	slice.fromArray(A2, 0);
+	slice.set(A2, 0);
 	if (Max(slice.f) !== 4) {
 		alert("[Error] 'A2': value expected '4', got " + Max(slice.f) + "\n");
 		hasError = true;
 	}
-	slice.fromArray(A3, 0);
+	slice.set(A3, 0);
 	if (Max(slice.f) !== 1) {
 		alert("[Error] 'A3': value expected '1', got " + Max(slice.f) + "\n");
 		hasError = true;

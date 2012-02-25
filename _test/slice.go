@@ -39,7 +39,7 @@ func shortHand() {
 
 	a_slice = array[4:8]
 	// Checking
-	if string(a_slice) == "efgh" {
+	if string(a_slice) == "efgh" && len(a_slice) == 4 && cap(a_slice) == 6 {
 		println("[OK]", msg)
 	} else {
 		fmt.Println("[Error]", msg)
@@ -59,7 +59,7 @@ func shortHand() {
 
 	a_slice = array[:3]
 	// Checking
-	if string(a_slice) == "abc" {
+	if string(a_slice) == "abc" && len(a_slice) == 3 && cap(a_slice) == 10 {
 		println("[OK]", msg)
 	} else {
 		fmt.Println("[Error]", msg)
@@ -88,7 +88,7 @@ func shortHand() {
 
 	a_slice = array[3:7]
 	// Checking
-	if string(a_slice) == "defg" {
+	if string(a_slice) == "defg" && len(a_slice) == 4 && cap(a_slice) == 7 {
 		println("[OK]", msg)
 	} else {
 		fmt.Println("[Error]", msg)
@@ -97,7 +97,7 @@ func shortHand() {
 
 	b_slice = a_slice[1:3]
 	// Checking
-	if string(b_slice) == "ef" {
+	if string(b_slice) == "ef" && len(b_slice) == 2 && cap(b_slice) == 6 {
 		println("[OK]")
 	} else {
 		fmt.Println("[Error]")

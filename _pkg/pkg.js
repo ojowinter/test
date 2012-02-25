@@ -35,17 +35,16 @@ function S(f, len, cap) {
 }
 
 
-S.prototype.fromArray = function(i, low, high) {
-	this.f = i.slice(low, high);
+S.prototype.set = function(i, low, high) {
 	this.len = high - low;
-	this.cap = i.length - this.len;
-}
 
-
-S.prototype.fromSlice = function(i, low, high) {
-	this.f = i.f.slice(low, high);
-	this.len = high - low;
-	this.cap = i.f.length - this.len;
+	if (i.f !== undefined) {
+		this.f = i.f.slice(low, high);
+		this.cap = i.cap - low;
+	} else {
+		this.f = i.slice(low, high);
+		this.cap = i.length - low;
+	}
 }
 
 
