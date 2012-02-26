@@ -206,7 +206,7 @@ function blankIdentifierInRange() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = new g.S(undefined, 0, 0);
+	var slice = new g.S([], 0, 0);
 
 	slice.set(A1, 0);
 	if (Max(slice.f) !== 9) {

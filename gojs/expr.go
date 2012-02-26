@@ -164,14 +164,17 @@ func (e *expression) transform(expr ast.Expr) {
 	//  Op    token.Token // operator
 	//  Y     Expr        // right operand
 	case *ast.BinaryExpr:
-		op := typ.Op.String()
 		isComparing := false
+		isOpNot := false
+		op := typ.Op.String()
 
 		switch typ.Op {
-		case token.EQL, token.NEQ:
+		case token.NEQ:
+			isOpNot = true
+			fallthrough
+		case token.EQL:
 			op += "="
 			isComparing = true
-			
 		}
 
 		if e.tr.isConst {
@@ -181,9 +184,32 @@ func (e *expression) transform(expr ast.Expr) {
 			break
 		}
 
-		stringify := false
+		// * * *
 		x := e.tr.getExpression(typ.X)
 		y := e.tr.getExpression(typ.Y)
+
+		if isComparing {
+			xStr := stripField(x.String())
+			yStr := stripField(y.String())
+
+			if y.isNil && e.tr.isType(sliceType, xStr) {
+				if isOpNot {
+					e.WriteString("!")
+				}
+				e.WriteString(xStr + ".isNil()")
+				break
+			}
+			if x.isNil && e.tr.isType(sliceType, yStr) {
+				if isOpNot {
+					e.WriteString("!")
+				}
+				e.WriteString(yStr + ".isNil()")
+				break
+			}
+		}
+
+		// * * *
+		stringify := false
 
 		// JavaScript only compares basic literals.
 		if isComparing && !x.isBasicLit && !x.returnBasicLit && !y.isBasicLit && !y.returnBasicLit {
@@ -304,7 +330,7 @@ func (e *expression) transform(expr ast.Expr) {
 				e.WriteString(arg)
 				e.returnBasicLit = true
 			} else {
-				e.WriteString(_arg + ".String()")
+				e.WriteString(_arg + ".toString()")
 			}
 
 		case "uint", "uint8", "uint16", "uint32",

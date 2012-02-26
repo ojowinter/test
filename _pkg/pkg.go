@@ -26,7 +26,6 @@ func Export(pkg map[interface{}]interface{}, exported []interface{}) {
 // == Slice
 //
 
-//	base *interface{}  // element type
 // S represents a slice.
 type S struct {
 	f   []interface{} // slice
@@ -49,8 +48,11 @@ func (s S) set(i interface{}, low, high int) {
 
 // Initializes the slice.
 func (s S) make(len, cap int) {
-	s.f = nil
 	s.len = len
+
+	for i := 0; i < len; i++ {
+		s.f[i] = 0
+	}
 
 	if cap != nil {
 		s.cap = cap
@@ -68,34 +70,17 @@ func (s S) append(elt interface{}) {
 }
 
 // Returns the slice like a string.
-func (s S) String() string {
-	str := s.f.toString()
-	spl := str.split(",")
-	return spl.join("")
-
-//	str := strings.Split(string(s.f.toString), ",")
-//	return strings.Join(str, "")
+func (s S) toString() string {
+	return s.f.join("")
 }
 
-/*func (s S) get() []interface{} {
-	
-}*/
-
-/*// Returns the length of the slice.
-func (s S) len() int {
-	if s.f != nil {
-		return len(s.f)
+// Checks if the slice is nil.
+func (s S) isNil() bool {
+	if s.len != 0 {
+		return false
 	}
-	return 0
+	return true
 }
-
-// Returns the capacity of the slice.
-func (s S) cap() int {
-	if s.f != nil {
-		return s.base.p.length - s.f.length
-	}
-	return 0
-}*/
 
 // == Map
 //

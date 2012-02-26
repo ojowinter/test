@@ -146,11 +146,31 @@ func useFunc() {
 	var slice []int
 
 	slice = A1[:] // Take all A1 elements.
-	println("The biggest value of A1 is", Max(slice))
+	// Checking
+	if Max(slice) == 9 {
+		println("[OK] A1")
+	} else {
+		fmt.Println("[Error] A1")
+	}
+	//==
+
 	slice = A2[:] // Take all A2 elements.
-	println("The biggest value of A2 is", Max(slice))
+	// Checking
+	if Max(slice) == 4 {
+		println("[OK] A2")
+	} else {
+		fmt.Println("[Error] A2")
+	}
+	//==
+
 	slice = A3[:] // Take all A3 elements.
-	println("The biggest value of A3 is", Max(slice))
+	// Checking
+	if Max(slice) == 1 {
+		println("[OK] A3")
+	} else {
+		fmt.Println("[Error] A3")
+	}
+	//==
 }
 
 // * * *
@@ -202,21 +222,25 @@ func reference() {
 
 func resize() {
 	var slice []int
-
+/*
 	println("=== Before calling make")
 	if slice == nil {
 		println("slice == nil")
 	}
 	println("len(slice) ==", len(slice))
 	println("cap(slice) ==", cap(slice))
-
+*/
 	// Let's allocate the underlying array:
 	println("=== After calling make")
 	slice = make([]int, 4)
 	println(fmt.Sprintf("slice == %v", slice))
 	println("len(slice) ==", len(slice))
 	println("cap(slice) ==", cap(slice))
-
+if slice == nil {
+	println("nil")
+} else {
+	println("no nil")
+}
 	// Let's change things:
 	println("=== Let's change some of its elements: slice[1], slice[3] = 2, 3")
 	slice[1], slice[3] = 2, 3
@@ -239,12 +263,6 @@ func main() {
 }
 
 /*
-== useFunc()
-
-The biggest value of A1 is 9
-The biggest value of A2 is 4
-The biggest value of A3 is 1
-
 == reference()
 
 === First content of A and the slices

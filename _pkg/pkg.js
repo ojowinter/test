@@ -27,7 +27,6 @@ function Export(pkg, exported) {
 
 
 
-
 function S(f, len, cap) {
 	this.f=f;
 	this.len=len;
@@ -49,8 +48,11 @@ S.prototype.set = function(i, low, high) {
 
 
 S.prototype.make = function(len, cap) {
-	this.f = undefined;
 	this.len = len;
+
+	for (var i = 0; i < len; i++) {
+		this.f[i] = 0;
+	}
 
 	if (cap !== undefined) {
 		this.cap = cap;
@@ -68,34 +70,17 @@ S.prototype.append = function(elt) {
 }
 
 
-S.prototype.String = function() {
-	var str = this.f.toString();
-	var spl = str.split(",");
-	return spl.join("");
-
-
-
+S.prototype.toString = function() {
+	return this.f.join("");
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+S.prototype.isNil = function() {
+	if (this.len !== 0) {
+		return false;
+	}
+	return true;
+}
 
 
 
@@ -125,5 +110,5 @@ M.prototype.get = function(k) {
 	return [v, true];
 }
 
-g.Export(g, [Export, S, String, M]);
+g.Export(g, [Export, S, M]);
 })();

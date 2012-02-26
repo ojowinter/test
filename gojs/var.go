@@ -551,7 +551,12 @@ _noFunc:
 			tr.WriteString(nameExpr)
 
 			if expr.isSlice {
-				tr.WriteString(".set(" + value + ")")
+				if isNewVar {
+					tr.WriteString(fmt.Sprintf("%snew g.S();%s.set(%s)",
+						SP+sign+SP, SP+nameExpr, value))
+				} else {
+					tr.WriteString(".set(" + value + ")")
+				}
 			} else if value != "" {
 				tr.WriteString(SP + sign + SP + value)
 			}
@@ -610,7 +615,7 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, dt dat
 			tr.skipSemicolon = true
 			return tr.getExpression(t).String(), otherType
 		}
-		return fmt.Sprintf("new g.S(undefined,%s0,%s0)", SP, SP), sliceType
+		return fmt.Sprintf("new g.S([],%s0,%s0)", SP, SP), sliceType
 
 	case *ast.InterfaceType: // nil
 		return "undefined", otherType

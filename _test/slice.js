@@ -3,11 +3,11 @@
 
 
 function valueNil() {
-	var s = new g.S(undefined, 0, 0);
+	var s = new g.S([], 0, 0);
 
 
 	var msg = "value";
-	if (s.f === undefined) {
+	if (s.isNil()) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
@@ -33,13 +33,13 @@ function shortHand() {
 
 	var array = []; for (var i=0; i<10; i++){ array[i]=0; } array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
-	var a_slice = new g.S(undefined, 0, 0), b_slice = new g.S(undefined, 0, 0);
+	var a_slice = new g.S([], 0, 0), b_slice = new g.S([], 0, 0);
 
 	var msg = "slicing";
 
 	a_slice.set(array, 4, 8);
 
-	if (a_slice.String() === "efgh" && a_slice.len === 4 && a_slice.cap === 6) {
+	if (a_slice.toString() === "efgh" && a_slice.len === 4 && a_slice.cap === 6) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
@@ -48,7 +48,7 @@ function shortHand() {
 
 	a_slice.set(array, 6, 7);
 
-	if (a_slice.String() === "g") {
+	if (a_slice.toString() === "g") {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
@@ -59,7 +59,7 @@ function shortHand() {
 
 	a_slice.set(array, 0, 3);
 
-	if (a_slice.String() === "abc" && a_slice.len === 3 && a_slice.cap === 10) {
+	if (a_slice.toString() === "abc" && a_slice.len === 3 && a_slice.cap === 10) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
@@ -68,7 +68,7 @@ function shortHand() {
 
 	a_slice.set(array, 5);
 
-	if (a_slice.String() === "fghij") {
+	if (a_slice.toString() === "fghij") {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
@@ -77,7 +77,7 @@ function shortHand() {
 
 	a_slice.set(array, 0);
 
-	if (a_slice.String() === "abcdefghij") {
+	if (a_slice.toString() === "abcdefghij") {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
@@ -88,7 +88,7 @@ function shortHand() {
 
 	a_slice.set(array, 3, 7);
 
-	if (a_slice.String() === "defg" && a_slice.len === 4 && a_slice.cap === 7) {
+	if (a_slice.toString() === "defg" && a_slice.len === 4 && a_slice.cap === 7) {
 		console.log("[OK] " + msg + "\n");
 	} else {
 		alert("[Error] " + msg + "\n");
@@ -97,7 +97,7 @@ function shortHand() {
 
 	b_slice.set(a_slice, 1, 3);
 
-	if (b_slice.String() === "ef" && b_slice.len === 2 && b_slice.cap === 6) {
+	if (b_slice.toString() === "ef" && b_slice.len === 2 && b_slice.cap === 6) {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
@@ -106,7 +106,7 @@ function shortHand() {
 
 	b_slice.set(a_slice, 0, 3);
 
-	if (b_slice.String() === "def") {
+	if (b_slice.toString() === "def") {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
@@ -115,7 +115,7 @@ function shortHand() {
 
 	b_slice.set(a_slice, 0);
 
-	if (b_slice.String() === "defg") {
+	if (b_slice.toString() === "defg") {
 		console.log("[OK]\n");
 	} else {
 		alert("[Error]\n");
@@ -143,14 +143,34 @@ function useFunc() {
 	var A3 = []; for (var i=0; i<1; i++){ A3[i]=0; } A3 = [1];
 
 
-	var slice = new g.S(undefined, 0, 0);
+	var slice = new g.S([], 0, 0);
 
 	slice.set(A1, 0);
-	console.log("The biggest value of A1 is " + Max(slice.f) + "\n");
+
+	if (Max(slice.f) === 9) {
+		console.log("[OK] A1\n");
+	} else {
+		alert("[Error] A1\n");
+	}
+
+
 	slice.set(A2, 0);
-	console.log("The biggest value of A2 is " + Max(slice.f) + "\n");
+
+	if (Max(slice.f) === 4) {
+		console.log("[OK] A2\n");
+	} else {
+		alert("[Error] A2\n");
+	}
+
+
 	slice.set(A3, 0);
-	console.log("The biggest value of A3 is " + Max(slice.f) + "\n");
+
+	if (Max(slice.f) === 1) {
+		console.log("[OK] A3\n");
+	} else {
+		alert("[Error] A3\n");
+	}
+
 }
 
 
@@ -170,9 +190,9 @@ function reference() {
 	var A = []; for (var i=0; i<10; i++){ A[i]=0; } A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
 
-	var slice1.set(A, 3, 7);
-	var slice2.set(A, 5);
-	var slice3.set(slice1, 0, 2);
+	var slice1 = new g.S(); slice1.set(A, 3, 7);
+	var slice2 = new g.S(); slice2.set(A, 5);
+	var slice3 = new g.S(); slice3.set(slice1, 0, 2);
 
 
 	console.log("=== First content of A and the slices\n");
@@ -201,14 +221,14 @@ function reference() {
 
 
 function resize() {
-	var slice = new g.S(undefined, 0, 0);
+	var slice = new g.S([], 0, 0);
 
-	console.log("=== Before calling make\n");
-	if (slice.f === undefined) {
-		console.log("slice == nil\n");
-	}
-	console.log("len(slice) == " + slice.len + "\n");
-	console.log("cap(slice) == " + slice.cap + "\n");
+
+
+
+
+
+
 
 
 	console.log("=== After calling make\n");
@@ -216,7 +236,11 @@ function resize() {
 	console.log("slice == " + slice.f + "\n");
 	console.log("len(slice) == " + slice.len + "\n");
 	console.log("cap(slice) == " + slice.cap + "\n");
-
+	if (slice.isNil()) {
+		console.log("nil\n");
+	} else {
+		console.log("no nil\n");
+	}
 
 	console.log("=== Let's change some of its elements: slice[1], slice[3] = 2, 3\n");
 	slice[1] = 2, slice[3] = 3;
