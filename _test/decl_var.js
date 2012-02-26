@@ -33,8 +33,8 @@ var b2 = []; for (var i=0; i<4; i++){ b2[i]=0; } b2 = [1, , , 4];
 
 
 
-var s1 = []; for (var i=0; i<10; i++){ s1[i]=0; }
-var s2 = []; for (var i=0; i<10; i++){ s2[i]=0; }
+var s1 = new g.S([]); s1.make(0, 10);
+var s2 = new g.S([]); s2.make(0, 10, 20);
 
 var s3 = [2, 4, 6];
 var s4 = [1, _, 3];

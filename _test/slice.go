@@ -221,30 +221,41 @@ func reference() {
 // * * *
 
 func resize() {
-	var slice []int
-/*
-	println("=== Before calling make")
-	if slice == nil {
-		println("slice == nil")
-	}
-	println("len(slice) ==", len(slice))
-	println("cap(slice) ==", cap(slice))
-*/
+	var slice []byte
+
 	// Let's allocate the underlying array:
-	println("=== After calling make")
-	slice = make([]int, 4)
-	println(fmt.Sprintf("slice == %v", slice))
-	println("len(slice) ==", len(slice))
-	println("cap(slice) ==", cap(slice))
-if slice == nil {
-	println("nil")
-} else {
-	println("no nil")
-}
+	slice = make([]byte, 4, 5)
+	// Checking
+	if len(slice) == 4 && cap(slice) == 5 &&
+		slice[0] == 0 && slice[1] == 0 && slice[2] == 0 && slice[3] == 0 {
+		println("[OK] allocation")
+	} else {
+		fmt.Println("[Error] allocation")
+	}
+	//==
+	println(fmt.Sprint(slice))
+
 	// Let's change things:
-	println("=== Let's change some of its elements: slice[1], slice[3] = 2, 3")
 	slice[1], slice[3] = 2, 3
-	println(fmt.Sprintf("slice == %v", slice))
+	// Checking
+	if slice[0] == 0 && slice[1] == 2 && slice[2] == 0 && slice[3] == 3 {
+		println("[OK] change")
+	} else {
+		fmt.Println("[Error] change")
+	}
+	//==
+	println(fmt.Sprint(slice))
+
+	slice = make([]byte, 2)
+	// Checking
+	if len(slice) == 2 && cap(slice) == 2 &&
+		slice[0] == 0 && slice[1] == 0 {
+		println("[OK] resize")
+	} else {
+		fmt.Println("[Error] resize")
+	}
+	//==
+	println(fmt.Sprint(slice))
 }
 
 // * * *
@@ -283,16 +294,4 @@ slice1 is : ['d','E','f','G']
 slice2 is : ['f','G','h','i','j']
 slice3 is : ['d','E']
 
-== resize()
-
-=== Before calling make
-slice == nil
-len(slice) == 0
-cap(slice) == 0
-=== After calling make
-slice == [0 0 0 0]
-len(slice) == 4
-cap(slice) == 4
-=== Let's change some of its elements: slice[1], slice[3] = 2, 3
-slice == [0 2 0 3]
 */

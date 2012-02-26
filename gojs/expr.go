@@ -38,6 +38,7 @@ type expression struct {
 	isAddress  bool
 	isEllipsis bool
 	isIdent    bool
+	isMake     bool
 	isNil      bool
 	isPointer  bool
 	isSlice    bool
@@ -75,6 +76,7 @@ func (tr *transform) newExpression(iVar interface{}) *expression {
 		"",
 		"",
 		"",
+		false,
 		false,
 		false,
 		false,
@@ -246,7 +248,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.transform(call)
 
 			str := fmt.Sprintf("%s", e.tr.GetArgs(e.funcName, typ.Args))
-			if e.funcName != "fmt.Sprintf" {
+			if e.funcName != "fmt.Sprintf" && e.funcName != "fmt.Sprint" {
 				str = "(" + str + ")"
 			}
 
@@ -277,23 +279,18 @@ func (e *expression) transform(expr ast.Expr) {
 			switch argType := typ.Args[0].(type) {
 			// For slice
 			case *ast.ArrayType:
-//				e.tr.slices[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
-				length := e.tr.getExpression(typ.Args[1]).String()
-				// TODO: add capacity
-				//capacity := 0
-
-				/*if len(typ.Args) == 3 {
-					capacity = e.tr.getExpression(typ.Args[-1]).String()
-				}*/
-
 				zero, _ := e.tr.zeroValue(true, argType.Elt)
 
-				e.WriteString("[]")
-				e.lenArray = append(e.lenArray, length)
-				e.writeLoop()
-				e.WriteString(fmt.Sprintf("{%s=%s;%s}",
-					SP+e.tr.lastVarName+e.printArray(), zero, SP))
-				e.skipSemicolon = true
+				e.WriteString(fmt.Sprintf("%s,%s%s", zero, SP,
+					e.tr.getExpression(typ.Args[1]))) // length
+
+				// capacity
+				if len(typ.Args) == 3 {
+					e.WriteString("," + SP + e.tr.getExpression(typ.Args[2]).String())
+				}
+
+//				e.tr.slices[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
+				e.isMake = true
 
 			case *ast.MapType:
 				e.tr.maps[e.tr.funcId][e.tr.blockId][e.tr.lastVarName] = void
@@ -621,6 +618,8 @@ func (e *expression) transform(expr ast.Expr) {
 			} else {
 				e.WriteString(x + ".get(" + indexArgs + ")[0]")
 			}
+		} else if e.tr.isType(sliceType, x) {
+			e.WriteString(x + ".f" + index)
 		} else {
 			e.WriteString(x + index)
 		}
@@ -737,8 +736,8 @@ func (e *expression) transform(expr ast.Expr) {
 		}
 
 		e.WriteString(x + "," + SP+slice)
-		e.isSlice = true
 		e.name = x
+		e.isSlice = true
 
 	// godoc go/ast StructType
 	//  Struct     token.Pos  // position of "struct" keyword

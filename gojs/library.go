@@ -39,6 +39,7 @@ var Function = map[string]string{
 	"fmt.Print":   "document.write",
 	"fmt.Println": "document.write",
 	"fmt.Printf":  "document.write",
+	"fmt.Sprint":  "",
 	"fmt.Sprintf": "",
 
 	"math.Abs":   "Math.abs",
@@ -106,7 +107,7 @@ func (tr *transform) GetArgs(funcName string, args []ast.Expr) string {
 	var jsArgs string
 
 	switch funcName {
-	case "print", "fmt.Print":
+	case "print", "fmt.Print", "fmt.Sprint":
 		jsArgs = tr.joinArgsPrint(args, false)
 	case "println", "fmt.Println":
 		jsArgs = tr.joinArgsPrint(args, true)

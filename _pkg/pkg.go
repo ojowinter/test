@@ -46,12 +46,13 @@ func (s S) set(i interface{}, low, high int) {
 	}
 }
 
-// Initializes the slice.
-func (s S) make(len, cap int) {
-	s.len = len
-
+// Initializes the slice with the zero value.
+func (s S) make(zero interface{}, len, cap int) {
+	if s.len != 0 { // set an empty slice
+		s.f = s.f.slice(0, 0)
+	}
 	for i := 0; i < len; i++ {
-		s.f[i] = 0
+		s.f[i] = zero
 	}
 
 	if cap != nil {
@@ -59,6 +60,7 @@ func (s S) make(len, cap int) {
 	} else {
 		s.cap = len
 	}
+	s.len = len
 }
 
 // Appends an element to the slice.

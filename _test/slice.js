@@ -178,9 +178,9 @@ function useFunc() {
 function PrintByteSlice(name, slice) {
 	var s = "" + name + " is : [";
 	for (var index = 0; index < slice.len - 1; index++) {
-		s += "" + slice[index] + ",";
+		s += "" + slice.f[index] + ",";
 	}
-	s += "" + slice[slice.len - 1] + "]";
+	s += "" + slice.f[slice.len - 1] + "]";
 
 	console.log(s + "\n");
 }
@@ -224,27 +224,38 @@ function resize() {
 	var slice = new g.S([], 0, 0);
 
 
+	slice.make(0, 4, 5);
 
+	if (slice.len === 4 && slice.cap === 5 && slice.f[0] === 0 && slice.f[1] === 0 && slice.f[2] === 0 && slice.f[3] === 0) {
 
-
-
-
-
-
-	console.log("=== After calling make\n");
-	slice = []; for (var i=0; i<4; i++){ slice[i]=0; }
-	console.log("slice == " + slice.f + "\n");
-	console.log("len(slice) == " + slice.len + "\n");
-	console.log("cap(slice) == " + slice.cap + "\n");
-	if (slice.isNil()) {
-		console.log("nil\n");
+		console.log("[OK] allocation\n");
 	} else {
-		console.log("no nil\n");
+		alert("[Error] allocation\n");
 	}
 
-	console.log("=== Let's change some of its elements: slice[1], slice[3] = 2, 3\n");
-	slice[1] = 2, slice[3] = 3;
-	console.log("slice == " + slice.f + "\n");
+	console.log(slice.f + "\n");
+
+
+	slice.f[1] = 2, slice.f[3] = 3;
+
+	if (slice.f[0] === 0 && slice.f[1] === 2 && slice.f[2] === 0 && slice.f[3] === 3) {
+		console.log("[OK] change\n");
+	} else {
+		alert("[Error] change\n");
+	}
+
+	console.log(slice.f + "\n");
+
+	slice.make(0, 2);
+
+	if (slice.len === 2 && slice.cap === 2 && slice.f[0] === 0 && slice.f[1] === 0) {
+
+		console.log("[OK] resize\n");
+	} else {
+		alert("[Error] resize\n");
+	}
+
+	console.log(slice.f + "\n");
 }
 
 

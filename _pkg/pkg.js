@@ -47,11 +47,12 @@ S.prototype.set = function(i, low, high) {
 }
 
 
-S.prototype.make = function(len, cap) {
-	this.len = len;
-
+S.prototype.make = function(zero, len, cap) {
+	if (this.len !== 0) {
+		this.f = this.f.slice(0, 0);
+	}
 	for (var i = 0; i < len; i++) {
-		this.f[i] = 0;
+		this.f[i] = zero;
 	}
 
 	if (cap !== undefined) {
@@ -59,6 +60,7 @@ S.prototype.make = function(len, cap) {
 	} else {
 		this.cap = len;
 	}
+	this.len = len;
 }
 
 
