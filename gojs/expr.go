@@ -456,26 +456,10 @@ func (e *expression) transform(expr ast.Expr) {
 			if len(typ.Elts) != 0 {
 				// Specify the fields
 				if _, ok := typ.Elts[0].(*ast.KeyValueExpr); ok {
-					typeName := e.tr.lastVarName
 					useField = true
 
-					e.WriteString("()")
-
-					for i, v := range typ.Elts {
-						kv := v.(*ast.KeyValueExpr)
-
-						if i != 0 {
-							e.WriteString(",")
-						} else {
-							e.WriteString(";")
-						}
-
-						e.WriteString(fmt.Sprintf("%s.%s=%s",
-							SP + typeName,
-							e.tr.getExpression(kv.Key).String() + SP,
-							SP + e.tr.getExpression(kv.Value).String(),
-						))
-					}
+					e.WriteString("();")
+					e.writeTypeElts(typ.Elts, typ.Lbrace)
 				}
 			}
 			if !useField {
@@ -564,7 +548,15 @@ func (e *expression) transform(expr ast.Expr) {
 				e.tr.addPointer(name)
 			} else {
 				if !e.tr.isVar {
+					isSlice := false
+
 					if e.tr.isType(sliceType, name) {
+						isSlice = true
+					}
+					/*if name == e.tr.recvVar {
+						name = "this"
+					}*/
+					if isSlice {
 						name += ".f" // slice field
 					}
 
@@ -845,6 +837,52 @@ func (e *expression) writeElts(elts []ast.Expr, Lbrace, Rbrace token.Pos) {
 		e.WriteString(strings.Repeat(TAB, e.tr.tabLevel))
 	}
 
+	e.tr.line += posNewElt - firstPos // update the global position
+}
+
+// Writes the list of elements for a custom type.
+func (e *expression) writeTypeElts(elts []ast.Expr, Lbrace token.Pos) {
+	firstPos := e.tr.getLine(Lbrace)
+	posOldElt := firstPos
+	posNewElt := 0
+	useBracket := false
+
+	for i, el := range elts {
+		posNewElt = e.tr.getLine(el.Pos())
+		kv := el.(*ast.KeyValueExpr)
+		key := e.tr.getExpression(kv.Key).String()
+
+		if i == 0 {
+			if strings.HasPrefix(key, `"`) {
+				useBracket = true
+			} else {
+				useBracket = false
+			}
+		}
+		if useBracket {
+			key = "[" + key + "]"
+		} else {
+			key = "." + key
+		}
+
+		if i != 0 {
+			e.WriteString(",")
+		}
+		if posNewElt != posOldElt {
+			e.WriteString(strings.Repeat(NL, posNewElt - posOldElt))
+			e.WriteString(strings.Repeat(TAB, e.tr.tabLevel))
+		} else { // in the same line
+			e.WriteString(SP)
+		}
+
+		e.WriteString(fmt.Sprintf("%s%s=%s",
+			e.tr.lastVarName,
+			key + SP,
+			SP + e.tr.getExpression(kv.Value).String(),
+		))
+
+		posOldElt = posNewElt
+	}
 	e.tr.line += posNewElt - firstPos // update the global position
 }
 

@@ -85,11 +85,11 @@ AgesByNames.prototype.older = function() {
 
 function withNamedType() {
 	var s = new SliceOfints(1, 2, 3, 4, 5);
-	var folks = new AgesByNames(); folks."Bob" = 36, folks."Mike" = 44, folks."Jane" = 30, folks."Popey" = 100;
-
-
-
-
+	var folks = new AgesByNames();
+	folks["Bob"] = 36,
+	folks["Mike"] = 44,
+	folks["Jane"] = 30,
+	folks["Popey"] = 100;
 
 
 

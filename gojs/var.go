@@ -552,10 +552,10 @@ _noFunc:
 
 			if expr.isSlice {
 				if isNewVar {
-					tr.WriteString(fmt.Sprintf("%snew g.S();%s",
-						SP+sign+SP, SP+nameExpr))
+					tr.WriteString(fmt.Sprintf("%sg.NewS(%s)", SP+sign+SP, value))
+				} else {
+					tr.WriteString(".set(" + value + ")")
 				}
-				tr.WriteString(".set(" + value + ")")
 
 			} else if expr.isMake {
 				if isNewVar {

@@ -33,25 +33,14 @@ function S(f, len, cap) {
 	this.cap=cap;
 }
 
+
 function NewS(i, low, high) {
 	var s = new S([], 0, 0);
-	s.len = high - low;
-
-	if (i.f !== undefined) {
-		s.f = i.fthis.slice(low, high);
-		s.cap = i.cap - low;
-	} else {
-		s.f = i.slice(low, high);
-		s.cap = i.length - low;
-	}
-
-	return s;
+	return s.set(i, low, high);
 }
 
 
 S.prototype.set = function(i, low, high) {
-	this.len = high - low;
-
 	if (i.f !== undefined) {
 		this.f = i.f.slice(low, high);
 		this.cap = i.cap - low;
@@ -59,6 +48,8 @@ S.prototype.set = function(i, low, high) {
 		this.f = i.slice(low, high);
 		this.cap = i.length - low;
 	}
+
+	this.len = this.f.length;
 }
 
 
@@ -93,7 +84,7 @@ S.prototype.toString = function() {
 
 
 S.prototype.isNil = function() {
-	if (this.len !== 0) {
+	if (this.cap !== 0) {
 		return false;
 	}
 	return true;

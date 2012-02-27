@@ -33,25 +33,14 @@ type S struct {
 	cap int
 }
 
+// Creates a new slice.
 func NewS(i interface{}, low, high int) *S {
 	s := new(S)
-	s.len = high - low
-
-	if i.f != nil { // slice
-		s.f = i.f.slice(low, high)
-		s.cap = i.cap - low
-	} else { // array
-		s.f = i.slice(low, high)
-		s.cap = len(i) - low
-	}
-
-	return s
+	return s.set(i, low, high)
 }
 
 // Sets the slice.
 func (s S) set(i interface{}, low, high int) {
-	s.len = high - low
-
 	if i.f != nil { // slice
 		s.f = i.f.slice(low, high)
 		s.cap = i.cap - low
@@ -59,6 +48,8 @@ func (s S) set(i interface{}, low, high int) {
 		s.f = i.slice(low, high)
 		s.cap = len(i) - low
 	}
+
+	s.len = len(s.f)
 }
 
 // Initializes the slice with the zero value.
@@ -93,7 +84,7 @@ func (s S) toString() string {
 
 // Checks if the slice is nil.
 func (s S) isNil() bool {
-	if s.len != 0 {
+	if s.cap != 0 {
 		return false
 	}
 	return true

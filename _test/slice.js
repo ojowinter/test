@@ -190,9 +190,9 @@ function reference() {
 	var A = []; for (var i=0; i<10; i++){ A[i]=0; } A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
 
-	var slice1 = new g.S(); slice1.set(A, 3, 7);
-	var slice2 = new g.S(); slice2.set(A, 5);
-	var slice3 = new g.S(); slice3.set(slice1, 0, 2);
+	var slice1 = g.NewS(A, 3, 7);
+	var slice2 = g.NewS(A, 5);
+	var slice3 = g.NewS(slice1, 0, 2);
 
 
 	console.log("=== First content of A and the slices\n");
