@@ -223,7 +223,7 @@ func reference() {
 func resize() {
 	var slice []byte
 
-	// Let's allocate the underlying array:
+	// Let's allocate the underlying array: [0 0 0 0]
 	slice = make([]byte, 4, 5)
 	// Checking
 	if len(slice) == 4 && cap(slice) == 5 &&
@@ -233,9 +233,8 @@ func resize() {
 		fmt.Println("[Error] allocation")
 	}
 	//==
-	println(fmt.Sprint(slice))
 
-	// Let's change things:
+	// Let's change things: [0 2 0 3]
 	slice[1], slice[3] = 2, 3
 	// Checking
 	if slice[0] == 0 && slice[1] == 2 && slice[2] == 0 && slice[3] == 3 {
@@ -244,18 +243,16 @@ func resize() {
 		fmt.Println("[Error] change")
 	}
 	//==
-	println(fmt.Sprint(slice))
 
+	// Resize: [0 0]
 	slice = make([]byte, 2)
 	// Checking
-	if len(slice) == 2 && cap(slice) == 2 &&
-		slice[0] == 0 && slice[1] == 0 {
+	if len(slice) == 2 && cap(slice) == 2 && slice[0] == 0 && slice[1] == 0 {
 		println("[OK] resize")
 	} else {
 		fmt.Println("[Error] resize")
 	}
 	//==
-	println(fmt.Sprint(slice))
 }
 
 // * * *

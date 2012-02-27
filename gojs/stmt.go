@@ -73,7 +73,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 		tr.addr[tr.funcId][tr.blockId] = make(map[string]bool)
 		tr.maps[tr.funcId][tr.blockId] = make(map[string]struct{})
 		tr.slices[tr.funcId][tr.blockId] = make(map[string]struct{})
-		tr.typeZero[tr.funcId][tr.blockId] = make(map[string]string)
+		tr.zeroType[tr.funcId][tr.blockId] = make(map[string]string)
 
 		if !tr.skipLbrace {
 			tr.WriteString("{")

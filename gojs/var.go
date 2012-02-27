@@ -278,7 +278,7 @@ func (tr *transform) getType(spec []ast.Spec, isGlobal bool) {
 				SP, fieldsInit, fieldLines))
 */
 			// Store the name of new type with its values initialized
-			tr.typeZero[tr.funcId][tr.blockId][tSpec.Name.Name] = fieldsInit
+			tr.zeroType[tr.funcId][tr.blockId][tSpec.Name.Name] = fieldsInit
 
 			tr.line += posNewField - firstPos // update the global position
 
@@ -622,7 +622,10 @@ func (tr *transform) zeroValue(init bool, typ interface{}) (value string, dt dat
 			tr.skipSemicolon = true
 			return tr.getExpression(t).String(), otherType
 		}
-		return fmt.Sprintf("new g.S([],%s0,%s0)", SP, SP), sliceType
+		if !Bootstrap {
+			return fmt.Sprintf("new g.S([],%s0,%s0)", SP, SP), sliceType
+		}
+		return "[]", sliceType
 
 	case *ast.InterfaceType: // nil
 		return "undefined", otherType
@@ -682,16 +685,16 @@ func (tr *transform) zeroOfType(name string) string {
 	// In the actual function
 	if tr.funcId != 0 {
 		for block := tr.blockId; block >= 1; block-- {
-			if _, ok := tr.typeZero[tr.funcId][block][name]; ok {
-				return tr.typeZero[tr.funcId][block][name]
+			if _, ok := tr.zeroType[tr.funcId][block][name]; ok {
+				return tr.zeroType[tr.funcId][block][name]
 			}
 		}
 	}
 
 	// Finally, search in the global variables (funcId = 0).
 	for block := tr.blockId; block >= 0; block-- { // block until 0
-		if _, ok := tr.typeZero[0][block][name]; ok {
-			return tr.typeZero[0][block][name]
+		if _, ok := tr.zeroType[0][block][name]; ok {
+			return tr.zeroType[0][block][name]
 		}
 	}
 	//fmt.Printf("Function %d, block %d, name %s\n", tr.funcId, tr.blockId, name)

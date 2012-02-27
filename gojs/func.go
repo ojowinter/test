@@ -48,7 +48,7 @@ func (tr *transform) getFunc(decl *ast.FuncDecl) {
 		tr.addr[tr.funcId] = make(map[int]map[string]bool)
 		tr.maps[tr.funcId] = make(map[int]map[string]struct{})
 		tr.slices[tr.funcId] = make(map[int]map[string]struct{})
-		tr.typeZero[tr.funcId] = make(map[int]map[string]string)
+		tr.zeroType[tr.funcId] = make(map[int]map[string]string)
 	}
 	// ==
 

@@ -33,6 +33,21 @@ function S(f, len, cap) {
 	this.cap=cap;
 }
 
+function NewS(i, low, high) {
+	var s = new S([], 0, 0);
+	s.len = high - low;
+
+	if (i.f !== undefined) {
+		s.f = i.fthis.slice(low, high);
+		s.cap = i.cap - low;
+	} else {
+		s.f = i.slice(low, high);
+		s.cap = i.length - low;
+	}
+
+	return s;
+}
+
 
 S.prototype.set = function(i, low, high) {
 	this.len = high - low;
@@ -112,5 +127,9 @@ M.prototype.get = function(k) {
 	return [v, true];
 }
 
-g.Export(g, [Export, S, M]);
+g.Export = Export;
+g.S = S;
+g.NewS = NewS;
+g.M = M;
+
 })();

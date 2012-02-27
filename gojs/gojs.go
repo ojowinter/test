@@ -44,9 +44,12 @@ const (
 	NIL  = "<<nil>>"
 )
 
-var MaxMessage = 10 // Maximum number of errors and warnings to show.
-
 var void struct{} // A struct without any elements occupies no space at all.
+
+var (
+	Bootstrap  bool // is transforming the gojs's package?
+	MaxMessage = 10 // maximum number of errors and warnings to show.
+)
 
 // Represents information about code being transformed to JavaScript.
 type transform struct {
@@ -72,7 +75,7 @@ type transform struct {
 	slices map[int]map[int]map[string]struct{}
 
 	// Zero value for custom types.
-	typeZero map[int]map[int]map[string]string
+	zeroType map[int]map[int]map[string]string
 }
 
 func newTransform() *transform {
@@ -108,14 +111,14 @@ func newTransform() *transform {
 	tr.addr[0] = make(map[int]map[string]bool)
 	tr.maps[0] = make(map[int]map[string]struct{})
 	tr.slices[0] = make(map[int]map[string]struct{})
-	tr.typeZero[0] = make(map[int]map[string]string)
+	tr.zeroType[0] = make(map[int]map[string]string)
 
 	// blockId = 0
 	tr.vars[0][0] = make(map[string]bool)
 	tr.addr[0][0] = make(map[string]bool)
 	tr.maps[0][0] = make(map[string]struct{})
 	tr.slices[0][0] = make(map[string]struct{})
-	tr.typeZero[0][0] = make(map[string]string)
+	tr.zeroType[0][0] = make(map[string]string)
 
 	return tr
 }
@@ -276,13 +279,24 @@ func Compile(filename string) error {
 		if len(trans.exported) != 0 {
 			for i, v := range trans.exported {
 				if i == 0 {
-					trans.WriteString(fmt.Sprintf("%sg.Export(%s,%s[%s",
-						NL+NL, pkgName, SP, v))
+					trans.WriteString(NL+NL)
+				}
+
+				if !Bootstrap {
+					if i == 0 {
+						trans.WriteString(fmt.Sprintf("g.Export(%s,%s[%s",
+							pkgName, SP, v))
+					} else {
+						trans.WriteString("," + SP + v)
+					}
 				} else {
-					trans.WriteString("," + SP + v)
+					trans.WriteString(fmt.Sprintf("%s.%s=%s;%s",
+						pkgName, v+SP, SP+v, NL))
 				}
 			}
-			trans.WriteString("]);")
+			if !Bootstrap {
+				trans.WriteString("]);")
+			}
 		} else {
 			trans.WriteString(NL)
 		}

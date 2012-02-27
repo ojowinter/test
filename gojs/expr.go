@@ -711,7 +711,7 @@ func (e *expression) transform(expr ast.Expr) {
 			e.funcName = goName
 			e.WriteString(jsName)
 		} else {
-			/*if _, ok := e.tr.typeZero[x]; !ok {
+			/*if _, ok := e.tr.zeroType[x]; !ok {
 				panic("selector: " + x)
 			}*/
 

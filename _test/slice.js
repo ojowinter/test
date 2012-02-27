@@ -233,7 +233,6 @@ function resize() {
 		alert("[Error] allocation\n");
 	}
 
-	console.log(slice.f + "\n");
 
 
 	slice.f[1] = 2, slice.f[3] = 3;
@@ -244,18 +243,16 @@ function resize() {
 		alert("[Error] change\n");
 	}
 
-	console.log(slice.f + "\n");
+
 
 	slice.make(0, 2);
 
 	if (slice.len === 2 && slice.cap === 2 && slice.f[0] === 0 && slice.f[1] === 0) {
-
 		console.log("[OK] resize\n");
 	} else {
 		alert("[Error] resize\n");
 	}
 
-	console.log(slice.f + "\n");
 }
 
 

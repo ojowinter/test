@@ -96,8 +96,10 @@ func compile(kind rune, filename string, t *testing.T) {
 
 	if kind == 't' {
 		dir = DIR_TEST
+		Bootstrap = false
 	} else if kind == 'p' {
 		dir = DIR_PKG
+		Bootstrap = true
 	} else {
 		panic("Wrong kind")
 	}
