@@ -190,13 +190,13 @@ function reference() {
 	var A = []; for (var i=0; i<10; i++){ A[i]=0; } A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
 
-	var slice1 = g.NewS(A, 3, 7);
-	var slice2 = g.NewS(A, 5);
-	var slice3 = g.NewS(slice1, 0, 2);
+	var slice1 = g.NewSlice(A, 3, 7);
+	var slice2 = g.NewSlice(A, 5);
+	var slice3 = g.NewSlice(slice1, 0, 2);
 
 
 	console.log("=== First content of A and the slices\n");
-	PrintByteSlice("A", A, 0);
+	PrintByteSlice("A", g.NewSlice(A, 0));
 	PrintByteSlice("slice1", slice1);
 	PrintByteSlice("slice2", slice2);
 	PrintByteSlice("slice3", slice3);
@@ -204,7 +204,7 @@ function reference() {
 
 	A[4] = 'E';
 	console.log("\n=== Content of A and the slices, after changing 'e' to 'E' in array A\n");
-	PrintByteSlice("A", A, 0);
+	PrintByteSlice("A", g.NewSlice(A, 0));
 	PrintByteSlice("slice1", slice1);
 	PrintByteSlice("slice2", slice2);
 	PrintByteSlice("slice3", slice3);
@@ -212,7 +212,7 @@ function reference() {
 
 	slice2[1] = 'G';
 	console.log("\n=== Content of A and the slices, after changing 'g' to 'G' in slice2\n");
-	PrintByteSlice("A", A, 0);
+	PrintByteSlice("A", g.NewSlice(A, 0));
 	PrintByteSlice("slice1", slice1);
 	PrintByteSlice("slice2", slice2);
 	PrintByteSlice("slice3", slice3);
@@ -224,7 +224,7 @@ function resize() {
 	var slice = new g.S([], 0, 0);
 
 
-	slice.make(0, 4, 5);
+	slice = g.MakeSlice(0, 4, 5);
 
 	if (slice.len === 4 && slice.cap === 5 && slice.f[0] === 0 && slice.f[1] === 0 && slice.f[2] === 0 && slice.f[3] === 0) {
 
@@ -245,7 +245,7 @@ function resize() {
 
 
 
-	slice.make(0, 2);
+	slice = g.MakeSlice(0, 2);
 
 	if (slice.len === 2 && slice.cap === 2 && slice.f[0] === 0 && slice.f[1] === 0) {
 		console.log("[OK] resize\n");

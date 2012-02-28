@@ -34,9 +34,27 @@ function S(f, len, cap) {
 }
 
 
-function NewS(i, low, high) {
+function NewSlice(i, low, high) {
 	var s = new S([], 0, 0);
 	return s.set(i, low, high);
+}
+
+
+function MakeSlice(zero, len, cap) {
+	var s = new S([], 0, 0);
+
+	for (var i = 0; i < len; i++) {
+		s.f[i] = zero;
+	}
+
+	if (cap !== undefined) {
+		s.cap = cap;
+	} else {
+		s.cap = len;
+	}
+	s.len = len;
+
+	return s;
 }
 
 
@@ -50,23 +68,6 @@ S.prototype.set = function(i, low, high) {
 	}
 
 	this.len = this.f.length;
-}
-
-
-S.prototype.make = function(zero, len, cap) {
-	if (this.len !== 0) {
-		this.f = this.f.slice(0, 0);
-	}
-	for (var i = 0; i < len; i++) {
-		this.f[i] = zero;
-	}
-
-	if (cap !== undefined) {
-		this.cap = cap;
-	} else {
-		this.cap = len;
-	}
-	this.len = len;
 }
 
 
@@ -120,7 +121,8 @@ M.prototype.get = function(k) {
 
 g.Export = Export;
 g.S = S;
-g.NewS = NewS;
+g.NewSlice = NewSlice;
+g.MakeSlice = MakeSlice;
 g.M = M;
 
 })();

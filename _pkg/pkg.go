@@ -34,9 +34,27 @@ type S struct {
 }
 
 // Creates a new slice.
-func NewS(i interface{}, low, high int) *S {
+func NewSlice(i interface{}, low, high int) *S {
 	s := new(S)
 	return s.set(i, low, high)
+}
+
+// Initializes a slice with the zero value.
+func MakeSlice(zero interface{}, len, cap int) *S {
+	s := new(S)
+
+	for i := 0; i < len; i++ {
+		s.f[i] = zero
+	}
+
+	if cap != nil {
+		s.cap = cap
+	} else {
+		s.cap = len
+	}
+	s.len = len
+
+	return s
 }
 
 // Sets the slice.
@@ -50,23 +68,6 @@ func (s S) set(i interface{}, low, high int) {
 	}
 
 	s.len = len(s.f)
-}
-
-// Initializes the slice with the zero value.
-func (s S) make(zero interface{}, len, cap int) {
-	if s.len != 0 { // set an empty slice
-		s.f = s.f.slice(0, 0)
-	}
-	for i := 0; i < len; i++ {
-		s.f[i] = zero
-	}
-
-	if cap != nil {
-		s.cap = cap
-	} else {
-		s.cap = len
-	}
-	s.len = len
 }
 
 // Appends an element to the slice.

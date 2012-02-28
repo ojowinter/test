@@ -727,7 +727,12 @@ func (e *expression) transform(expr ast.Expr) {
 			slice += "," + SP + typ.High.(*ast.BasicLit).Value // e.tr.getExpression(typ.High).String()
 		}
 
-		e.WriteString(x + "," + SP+slice)
+		if e.tr.isVar {
+			e.WriteString(x + "," + SP+slice)
+		} else {
+			e.WriteString(fmt.Sprintf("g.NewSlice(%s,%s)", x, SP+slice))
+		}
+
 		e.name = x
 		e.isSlice = true
 
