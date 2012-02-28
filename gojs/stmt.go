@@ -197,7 +197,7 @@ func (tr *transform) getStatement(stmt ast.Stmt) {
 			case token.VAR:
 				tr.getVar(decl.Specs, false)
 			case token.CONST:
-				tr.getConst(decl.Specs, false)
+				tr.getConst(decl.TokPos, decl.Specs, false)
 			case token.TYPE:
 				tr.getType(decl.Specs, false)
 			default:

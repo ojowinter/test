@@ -26,14 +26,16 @@ import (
 //
 // http://golang.org/doc/go_spec.html#Constant_declarations
 // https://developer.mozilla.org/en/JavaScript/Reference/Statements/const
-func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
-	isMultipleLine := false
+func (tr *transform) getConst(pos token.Pos, spec []ast.Spec, isGlobal bool) {
 	iotaExpr := make([]string, 0) // iota expressions
+	isMultipleLine := false
+	tr.isConst = true
 
 	if len(spec) > 1 {
 		isMultipleLine = true
+		tr.addLine(pos)
+		tr.WriteString("const ")
 	}
-	tr.isConst = true
 
 	// godoc go/ast ValueSpec
 	//  Doc     *CommentGroup // associated documentation; or nil
@@ -41,7 +43,7 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 	//  Type    Expr          // value type; or nil
 	//  Values  []Expr        // initial values; or nil
 	//  Comment *CommentGroup // line comments; or nil
-	for _, s := range spec {
+	for i, s := range spec {
 		vSpec := s.(*ast.ValueSpec)
 
 		// Type checking
@@ -93,15 +95,28 @@ func (tr *transform) getConst(spec []ast.Spec, isGlobal bool) {
 				if !isGlobal && isMultipleLine {
 					tr.WriteString(strings.Repeat(TAB, tr.tabLevel))
 				}
-				tr.WriteString(fmt.Sprintf("const %s=%s", ident.Name+SP, SP+value))
+				if isMultipleLine {
+					tr.WriteString(ident.Name+SP + "=" + SP+value)
+				} else {
+					tr.WriteString(fmt.Sprintf("const %s=%s", ident.Name+SP, SP+value))
+				}
+
 			} else {
 				tr.WriteString(fmt.Sprintf(",%s=%s", SP+ident.Name+SP, SP+value))
 			}
 		}
 
-		// It is possible that there is only a blank identifier
+		// It is possible that there is only a blank identifier.
 		if !isFirst {
-			tr.WriteString(";")
+			if isMultipleLine {
+				if i == len(spec)-1 {
+					tr.WriteString(";")
+				} else {
+					tr.WriteString(",")
+				}
+			} else {
+				tr.WriteString(";")
+			}
 		}
 	}
 

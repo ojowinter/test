@@ -248,7 +248,7 @@ func Compile(filename string) error {
 			case token.IMPORT:
 				trans.getImport(genDecl.Specs)
 			case token.CONST:
-				trans.getConst(genDecl.Specs, true)
+				trans.getConst(genDecl.TokPos, genDecl.Specs, true)
 			case token.TYPE:
 				trans.getType(genDecl.Specs, true)
 			case token.VAR:
